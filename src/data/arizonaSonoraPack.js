@@ -3,6 +3,15 @@
  * Merged into App MC + RD. Verify FMM, insurance, and current Sonora vehicle rules before travel.
  */
 
+import {
+  buildRichBp,
+  buildRichIns,
+  buildRichAc,
+  buildRichCt,
+  buildOutlook,
+  closingIns,
+} from "./arizonaSonoraRichDefaults.js";
+
 const MEX_PLATE_NOTE =
   "Tourist entry: US passport + FMM typically required. Sonora has had simplified US-plate / 'hassle-free' corridor programs — confirm current SAT/Aduana rules, insurance, and Highway 15 vs coastal route before driving.";
 
@@ -412,25 +421,13 @@ function makeCity(id, name, county, la, ln, pop, zoneKey, extra = {}) {
   const co = extra.co || "US";
   const r = extra.r || `${name}, ${county}${co === "US" ? ", AZ" : ""}`;
   const emoji = extra.em || z.em;
-  const bp =
-    extra.bp ||
-    `${name} anchors ${county}${co === "US" ? " County" : ""} municipal services — schools, police, zoning, and utilities shape daily life as much as weather. ${z.blurb} For relocation: compare property tax, water provider (CAP / groundwater / hauled), wildfire evacuation routes, and summer utility bills.`;
-  const ac =
-    extra.ac ||
-    [
-      `Walk historic downtown / main street — ${name}`,
-      `City parks & recreation programs (verify seasonal hours)`,
-      `Talk to neighbors about monsoon wash flooding & power outages`,
-    ];
-  const ct =
-    extra.ct ||
-    [{ nm: `${name} (city)`, pop, no: `Incorporated Arizona municipality — verify median home prices, HOAs, and flood zones with county GIS.` }];
-  const ins = [
-    ...(extra.ins || []),
-    "Verify school boundaries and hospital capacity before rural-adjacent buys.",
-    "Never drive through running water in washes — annual fatalities statewide.",
-  ];
+  const hasCustomNarrative = !!extra.bp;
+  const bp = hasCustomNarrative ? extra.bp : buildRichBp(name, county, pop, zoneKey, co);
+  const ac = extra.ac ?? buildRichAc(zoneKey, name);
+  const ct = extra.ct ?? buildRichCt(name, county, pop, co);
+  const ins = [...buildRichIns(zoneKey, name), ...(extra.ins || []), ...closingIns(co)];
   if (co === "MX") ins.unshift(MEX_PLATE_NOTE);
+  const out = extra.out ?? buildOutlook(zoneKey, co, name);
 
   const o = {
     id,
@@ -472,7 +469,9 @@ function makeCity(id, name, county, la, ln, pop, zoneKey, extra = {}) {
     si: extra.si || [901, 20, 26],
     tl: extra.tl || `${name} — municipal microclimate & services snapshot.`,
     ins,
+    out,
     img: `https://picsum.photos/seed/mc${id}/800/400`,
+    ...(extra.wl ? { wl: extra.wl } : {}),
   };
   return { loc: o, rd: { ...riskFor(zoneKey, co, id), ...(extra.rd || {}) } };
 }
@@ -482,35 +481,89 @@ const detailed = [
   makeCity(910, "Sierra Vista", "Cochise", 31.5545, -110.3037, "~45,000", "southeastSkyIsland", {
     tl: "Gateway to the Huachucas — hummingbird capital with a Fort Huachuca-sized weather divide.",
     ins: [
-      "Fort Huachuca gate access affects traffic patterns — research housing near post vs San Pedro corridor.",
-      "Ramsey Canyon & Ash Canyon beat summer heat by a few degrees — prime hummingbird banding sites.",
-      "Border Patrol presence is visible; combine outdoor ethics with respect for restricted areas.",
+      "Fort Huachuca gate traffic pulses weekday mornings — ‘on-post’ vs ‘off-post’ housing markets behave like different MLS filters; listen for Blackhawk training cycles.",
+      "Zillow/Realtor searches here often advertise ‘Huachuca views’ or ‘minutes to Ramsey’ — drive the route in monsoon at dusk before trusting drive-time copy.",
+      "San Pedro riparian microclimate can run 8–15°F cooler at dawn than the mall strip — migrants cue on that gradient; so should joggers in July.",
+      "Border Patrol aviation and checkpoints are part of the soundscape; not a comment on any resident — plan photography ethics accordingly.",
     ],
-    bp: "Sierra Vista is the retail and medical hub of southeast Arizona — flat desert floor giving way to the Sky Island|Sky Island rampart of the Huachuca Mountains. Summer highs run cooler than Tucson by elevation and afternoon convection, but monsoon lightning starts range fires that can smoke out the valley for days. The San Pedro River's last free-flowing miles draw neotropical migrants — 14 hummingbird species possible in a season. Military families rotate through Fort Huachuca, stabilizing rents but stressing schools cyclically. Housing ranges from 1970s ranch tracts to newer builds pushing toward the Whetstones.",
+    bp: "Sierra Vista is the retail, medical, and big-box hub of southeast Arizona — the place you drive to when Hereford’s well pump fails or Bisbee’s specialty care refers you out. The city spreads across the upper San Pedro basin floor; to the west and south the Huachuca Mountains rise as a textbook Sky Island|Sky Island front with oak-pine and mixed-conifer pockets above desert scrub. That wall does real meteorological work: orographic lifting wrings summer moisture into anvil clouds, outflow boundaries shove dust across SR 92, and lightning ignitions on remote slopes can close trails for years.\n\nBirders treat this ZIP code like a pilgrimage: Ramsey and Ash canyons host violet-crowned hummingbirds, elegant trogons spill from Mexico in wet years, and the San Pedro Riparian corridor still functions as one of the northward-thinning threads of Fremont cottonwood–mesquite gallery forest. If you’ve browsed homes online, you’ve seen the pattern — ranchettes toward the range with dark-sky photos, or newer stucco near Fry Boulevard prioritizing schools and commutes. Neither is ‘wrong’; they’re different bets on water, fire evacuation, and whether you want hummingbirds at the feeder or a shorter drive to Safeway.\n\nSummer is serious: not Phoenix-inferno serious, but afternoon heat indices still punish midday trailheads. Monsoon converts the visual palette overnight — creosote perfume, ant highways, and toads in wheel ruts. Winter is the secret sales pitch: frost in the washes, snowcaps on Miller Peak, and patio mornings that feel stolen from Colorado.\n\nEconomically, Fort Huachuca’s personnel tempo stabilizes leases; when rotations surge, school waitlists and restaurant staffing wobble. Climate-aware buyers increasingly ask about rooftop solar export rules, turf ordinances, and whether the lot sits in a chute that moves sheet flow during a gully washer — ask, then verify in Cochise County GIS.",
     ac: [
-      "Ramsey Canyon Preserve — hummingbirds & sycamores (fee; reservations peak season)",
-      "Carr Canyon road — oak-pine transition (high-clearance sections)",
-      "San Pedro House riparian trails & bird blinds",
-      "Fort Huachuca museums (ID check at gate)",
-      "Parker Canyon Lake day trip — high-country relief",
+      "Ramsey Canyon Preserve (The Nature Conservancy) — fee + reservations when hummingbird traffic peaks; arrive at gate open with long lens and patience.",
+      "Carr Canyon scenic drive — oak transition and campground temperatures often beat the valley by double digits; ice on hairpins is a winter reality.",
+      "San Pedro House & riparian trails — dawn warblers, flycatchers, and kingfishers; carry bug repellent after rains.",
+      "Fort Huachuca museums & historic posts — REAL ID / access rules change; check current gate procedures.",
+      "Parker Canyon Lake day trip — motorboat breeze + ponderosa edge; watch convective buildups over the range before boating.",
+      "Brown Canyon / Sunnyside trails — quieter than Ramsey when crowds peak; still carry monsoon lightning awareness.",
+      "Evening scout of SV east vs west — feel dust inflow channels and jet noise roses before you offer on a lot.",
     ],
     ct: [
-      { nm: "Sierra Vista core", pop: "~45,000", no: "All major services; compare east vs west side for wind and dust." },
-      { nm: "Whetstone / SV outskirts", pop: "growing", no: "Newer subdivisions; verify HOA and water source." },
+      { nm: "Sierra Vista core (Fry / Hwy 92 corridor)", pop: "~45,000", no: "Services, hospitals, retail; afternoon west-side dust more common when outflow hits; east-side catches first sunrise heating." },
+      { nm: "Whetstone Ranch / SV southeast growth", pop: "fast", no: "New builds on former grassland — HOAs, CAP-adjacent water stories, and longer views toward the Mules; verify drainage models post-2020 fires." },
+      { nm: "Canyon-adjacent ranchettes (Hereford fringe)", pop: "mixed", no: "Zillow often lists these as Sierra Vista MLS spillover; wells + septic + wildlife interface; dark skies and hummingbird density can be exceptional." },
     ],
-    si: [901, 20, 26],
+    out: [
+      "By mid-century, high-confidence projections emphasize more warm nights and additional extreme-heat days across southern Arizona — Sierra Vista’s elevation helps versus Tucson or Phoenix, but UTCI stress still rises without shade and efficient cooling.",
+      "Monsoon total rainfall may wobble up or down by decade; the costly failures are often ‘missed’ seasons and heavier single-day rain rates on burn scars — flood insurance logic beats optimism.",
+      "Sky-island fire regimes are trending toward larger high-severity patches when fuels align with ignition and wind — smoke exposure becomes a recurring summer–fall public-health variable.",
+      "San Pedro flow is over-allocated on paper and stressed by climate + pumping — riparian real estate is emotionally priceless and hydrologically fragile; support conservation easements if you love the corridor.",
+    ],
+    si: [929, 901, 20, 26],
   }),
   makeCity(911, "Hereford", "Cochise (CDP)", 31.321, -110.139, "~6,500", "southeastSkyIsland", {
     tl: "High-desert ranchettes between the San Pedro and the Huachuca front.",
-    ins: ["CDP — county services not city; well & septic common.", "Closer to canyons = more wildlife (javelina, bears rare)."],
-    bp: "Hereford spreads along the San Pedro corridor below the Huachucas — slightly higher and greener than Sierra Vista's core desert floor. Many homes sit on acreage with private wells; water-table depth and septic percolation are buyer due-diligence items. Night skies are darker than the city; monsoon storms march visibly down the range. Fire evacuation routes toward Hwy 92 matter more each drought year.",
-    si: [910, 901, 20],
+    ins: [
+      "CDP = county sheriff, road grading fights, and septic design rules — not a knock, just a governance texture difference vs Sierra Vista city utilities.",
+      "Zillow often codes these parcels as ‘Hereford’ with Sierra Vista schools — verify bus routes and last-mile gravel maintenance.",
+      "Private wells: ask for pump depth history + static level trend; neighbors’ dry holes are legally irrelevant but emotionally loud.",
+      "Wildlife interface is not optional — javelina packs, occasional black bear in wet years, and coatis in oak transition; chicken coops need Fort Knox discipline.",
+    ],
+    bp: "Hereford is the unincorporated quilt between the San Pedro River’s thin green thread and the Huachuca Mountain wall — the place Sierra Vista shoppers come home to when they wanted five acres and a Milky Way you can drink. Lots trend larger, HOAs thinner, and infrastructure more DIY: propane, septic, well pumps with backup generators, and driveways that turn to adobe cement after monsoon.\n\nMicroclimatically you’re buying gradient: a few hundred feet of elevation or a cottonwood shelterbelt can separate 104°F dashboard readings from a 94°F porch with a wet breeze off the river. That same gradient funnels migratory birds — dawn along the corridor can feel like a sound library of flycatchers, tanagers, and grosbeaks while the coffee brews.\n\nReal-estate psychology here leans ‘almost canyon’ — listings boast Huachuca views and dark skies, but title work must distinguish floodway slices, Army overflight easements, and whether the ‘seasonal wash’ is actually an FEMA A-zone after the next hydrology update. Fire is the sleeper issue: grass cures to glass by June; evacuation toward Hwy 92 is the default script when the range ignites.\n\nSocially, Hereford mixes retired birders, remote workers who discovered fiber maps too late, and multi-generational ranch families who remember when the San Pedro still punched harder year-round. Respect both data sets — eBird and oral history.",
+    ac: [
+      "Dawn bike or walk along lower San Pedro access points — compare dew point to Sierra Vista strip same morning.",
+      "Ramsey Canyon approach from Hereford — note temperature drop at preserve gate vs your driveway thermometer.",
+      "Private-road maintenance walk with a neighbor — puddles reveal crown and drainage sins before offer.",
+      "Night sky baseline reading (Bortle estimate) — compare new moon vs full moon humidity haze.",
+      "Post-office / coffee chatter method — learn which wells silt after big rains.",
+      "Huachuca Peak telephoto from Hereford ridge — document lenticular vs cumulus regimes monthly.",
+    ],
+    ct: [
+      { nm: "Hereford river-parcel ribbon", pop: "mixed", no: "Higher humidity, mosquitoes after floods, incredible migrant fallout mornings — flood insurance is a conversation, not a checkbox." },
+      { nm: "Hereford bench / Huachuca toeslope", pop: "mixed", no: "Views + wildlife premium; debris-flow homework mandatory if upslope burned within ~15 years." },
+      { nm: "Sierra Vista services anchor", pop: "~6 mi typical", no: "Commute thermodynamics: eastbound sunrise heat load on windshield summer — sounds silly until you do it daily." },
+    ],
+    out: [
+      "Groundwater + surface-water coupling along the San Pedro will tighten under warming — domestic wells near the corridor need professional hydrogeologic advice, not seller disclosures alone.",
+      "Grassland fire spread rates increase with invasive annual grasses — defensible space standards may jump faster than HOA aesthetics adapt.",
+      "Bird phenology may advance in warm springs — ‘peak week’ tourism could scatter across a longer, flatter calendar.",
+    ],
+    si: [929, 910, 901, 20],
   }),
   makeCity(912, "Patagonia", "Santa Cruz", 31.539, -110.756, "~800", "santaCruzWine", {
     tl: "Tiny mountain-town soul in the middle of a windy wine grassland.",
-    bp: "Patagonia is a village-scale community in the Sonoita-Patagonia wine grassland — spring winds can hit 50+ mph when Pacific fronts meet Mexican Plateau heat. The historic main street survives on birding tourism (Paton Center legacy), artists, and weekend winery traffic. Hail cores have scrubbed vineyards bare in minutes; insurance is non-trivial. Water is finite — rainwater harvesting culture is strong.",
-    ac: ["Patagonia Lake State Park swim & camp", "Paton Center for Hummingbirds successor sites", "Drive wine loop to Sonoita"],
-    si: [913, 914, 26],
+    ins: [
+      "Paton Center legacy means birders still treat Patagonia as sacred — support current feeder sites ethically; do not crowd private yards.",
+      "Town water vs hauled vs rain catchment — three hydrant cultures; ask before judging brown lawns.",
+    ],
+    bp: "Patagonia is a postage-stamp municipality punched into one of Arizona's windiest, prettiest grassland benches — where Pacific troughs meet interior Mexican heat lows and the result is spring gusts that sandblast vineyard shoots off trellis wire. The street grid is human-scale; the economy is birders, artists, second-homeowners, and ranch kids who know which gates stick in monsoon mud.\n\nMicroclimate: slightly higher and more exposed than Sonoita's crossroads, Patagonia catches hail cores that insurers remember in premium math. Summer afternoons build convection you can watch propagate off the Huachucas; nights can drop fast enough to flirt with jacket weather in August — a rarity Tucsonans pay to experience.\n\nWater is the religion. Rainwater harvesting is not aesthetic; it is arithmetic. Listings with shared well agreements deserve lawyer hours, not only Zillow saves.\n\nCulturally, Patagonia is what happens when a town refuses to die quietly — murals, music, library depth surprising for population, and a willingness to argue about dark skies vs security lights at town hall.",
+    ac: [
+      "Patagonia Lake State Park — swim season Jul–Aug sweet spot; camp reservations on holiday weekends.",
+      "Paton successor hummingbird sites — verify current access; ethics over life list.",
+      "Wine loop toward Sonoita / Elgin — designate driver; watch eastbound dust at sunset.",
+      "Town walking temperature profile — west vs east side wind channeling at 4 p.m.",
+      "Las Cienegas NCA grassland edges — dawn sparrows; respect closure signs.",
+      "Post-monsoon fungi / grasshopper boom photography — tripod low, patience high.",
+    ],
+    ct: [
+      { nm: "Historic main strip", pop: "<1k core", no: "Mixed-condition adobe + frame; verify roof hail history and insulation for winter wind infiltration." },
+      { nm: "Lake-road weekend corridor", pop: "seasonal", no: "STR competition; noise ordinances evolving; check septic capacity on older lake cabins." },
+      { nm: "Sonoita commute-shed", pop: "n/a", no: "Some buyers sleep in Sonoita for services, play in Patagonia for vibe — fuel and time true cost." },
+    ],
+    out: [
+      "Grassland fire behavior may intensify with invasive annual grasses — town evacuation drills and single-lane exits are existential planning, not paperwork.",
+      "Hail risk may strengthen with convective energy trends — vineyard trellis engineering and crop insurance riders are adaptive finance.",
+      "Warmer springs could shift peak hummingbird tourism earlier — small-town cash flow may need shoulder-season programming.",
+    ],
+    si: [913, 914, 929, 26],
   }),
   makeCity(913, "Sonoita", "Santa Cruz", 31.679, -110.656, "~800", "santaCruzWine", {
     tl: "Arizona's original modern wine-country crossroads.",
@@ -524,8 +577,8 @@ const detailed = [
   }),
   makeCity(915, "Huachuca City", "Cochise", 31.626, -110.334, "~1,700", "southeastSkyIsland", {
     tl: "Flat desert gateway tucked under the Huachuca wall.",
-    bp: "Huachuca City lies on the bajada below the range's north face — quick access to canyons but full exposure to dust outflow from storms. Affordable relative to Sierra Vista; some manufactured-home communities. Noise from military training flights is periodic.",
-    si: [910, 901],
+    bp: "Huachuca City lies on the bajada below the range's north face — quick access to canyons but full exposure to dust outflow from storms. Affordable relative to Sierra Vista; some manufactured-home communities. Noise from military training flights is periodic.\n\nBuyers here often want ‘Huachuca access’ without canyon-road terror — you trade elevation coolth for horizontal heat until you drive. Monsoon outflows shove haboob curtains across the flats while the crest gets lightning art. Zillow psychology: cheaper SFH, older park models, and a few ambitious custom builds aimed at dark-sky retirees who still need Walmart ten minutes away.",
+    si: [929, 910, 901],
   }),
   makeCity(916, "Tombstone", "Cochise", 31.7129, -110.0676, "~1,300", "southeastSkyIsland", {
     tl: "OK Corral tourism meets real desert wind and wash floods.",
@@ -613,11 +666,25 @@ detailed.push(
     n: "Phoenix (Valley Reference)",
     r: "Phoenix, AZ — Salt River Valley urban core",
     tl: "America's least shy sun — canal-cooled trees and concrete heat islands.",
-    bp: "Phoenix is the anchor of the sixth-largest US metro — Hohokam canal DNA underlies every citrus tree and flood irrigation lateral. Urban heat island effects add 8–12°F to summer nights downtown vs irrigated suburbs. CAP water reshaped lawns; xeriscape rebates now compete with pickleball demand for shade structures. Inversion layers trap ozone; check High Pollution Advisory days before hiking Camelback at noon. Winter is why people stay — patio season Nov–Mar pays the psychological dividend for May hell.",
-    ac: ["Desert Botanical Garden (dawn visits)", "South Mountain summit road", "Canal paths (Central Ave bridges)", "Museums + NBA/Spring training seasonal"],
+    bp: "Phoenix is the gravitational center of the sixth-largest US metro — a low-basin furnace that Hohokam engineers learned to irrigate or die in. Modern survival stacks Colorado River water, groundwater governance fights, and the largest air-conditioning load on the continent. Summer is not ‘dry heat’ in the human sense once concrete re-radiates midnight warmth into bedrooms; it’s a thermal battery problem with a mortgage.\n\nNeighborhood microclimates are brutally uneven: flood-irrigated legacy shade, gravel lots with baby palo verdes, and glass towers each write different heat-index diaries. Ozone and PM2.5 spike under stagnant highs — pediatric asthma and elder cardiopulmonary admissions track those curves closer than tourists guess.\n\nEconomically, logistics hubs, semiconductor-adjacent supply chains, and healthcare campuses anchor payrolls; Sun Belt migration and interest-rate cycles whip housing inventory. Insurance markets already repricing hail, microbursts, and rare hard freezes that burst pool equipment on exurban pipe runs.\n\nWinter redeems the brand: open-air dining November–March is genuinely world-class if you forgive pollen and occasional windblown citrus perfume.",
+    ac: [
+      "Desert Botanical Garden — first hour after open summer; desert plants telegraph humidity you can’t feel yet.",
+      "South Mountain summit loop — measure temperature drop vs valley floor same afternoon.",
+      "Canal paths (Indian School / Central bridges) — compare radiant heat off concrete vs mesquite tunnels.",
+      "Camelback / Piestewa dawn hikes — carry absurd water; turn on first thunder.",
+      "Roosevelt or Apache Lake day escape — measure marine air intrusion vs basin cap.",
+      "Spring training scatter plot — March UV + beer + no shade = dermatology referrals.",
+    ],
     ct: [
-      { nm: "Urban core", pop: "dense", no: "Walk/bike improving but still car-primary many corridors." },
-      { nm: "Arcadia / north slope", pop: "premium", no: "Irrigated mature canopy measurably cools lots vs new builds." },
+      { nm: "Urban core (Midtown / downtown adjacent)", pop: "dense", no: "Heat island maxima; walkable pockets expanding; check high-rise HOA reserve studies for chiller maintenance." },
+      { nm: "Arcadia / irrigated legacy east", pop: "premium", no: "Mature canopy = measurable night cooling; flood irrigation politics may tighten — water bill literacy matters." },
+      { nm: "West Valley boom corridors", pop: "fast", no: "Cheaper SFH, longer commutes, thinner tree canopy — model July peak kWh before emotional offer." },
+    ],
+    out: [
+      "High-confidence: more extreme heat days and warmer nights by mid-century — grid peak demand co-moves with health outcomes; distributed solar + storage policy will determine comfort equity.",
+      "Colorado River shortage tiers are structural — turf removal, non-functional grass bans, and wastewater reuse are preview, not pilot.",
+      "Hail and wind-driven fire risk at the wildland interface may increase insurance deductibles faster than CPI — check roof class 4 impact ratings.",
+      "Monsoon + urban flooding: heavier single-hour rain rates test 1980s stormwater design — ask for parcel-level hydrology updates, not city averages.",
     ],
     si: [902, 78, 26],
   }),
@@ -625,9 +692,74 @@ detailed.push(
     n: "Tucson (Sun Corridor Reference)",
     r: "Tucson, AZ — Santa Cruz Valley",
     tl: "Mesquite shade, saguaros, and monsoon drama under five ranges.",
-    bp: "Tucson spreads in a bowl of mountain sky islands — Catalinas north, Rincons east, Tucson Mountains west. The wetter eastern suburbs catch more monsoon rain than Avra Valley west of I-10. U of A brings culture and youth; Davis-Monthan adds jet noise compass. Water futures hinge on CAP, groundwater, and effluent recharge politics. Bike infrastructure is real but summer heat caps ridership season.",
-    ac: ["Sabino Canyon tram / walk", "Mission San Xavier del Bac", "4th Ave / downtown murals", "Kitt Peak / telescopes (west)"],
+    bp: "Tucson spreads in a bowl of mountain Sky Island|Sky Island ranges — Catalinas north, Rincons east, Tucson Mountains west, with the Santa Rita siren call to the south. Moisture favoring is brutally asymmetric: east-side foothills often tally higher Jul–Aug storm totals than Avra Valley’s dust-polished subdivisions. The University of Arizona anchors science culture (and atmospheric physics talent); Davis-Monthan’s boneyard adds a jet-noise compass rose; optics and defense contractors underwrite parts of the middle class.\n\nWater is the slow-moving storm: CAP deliveries, groundwater drawdown neighborhoods, and purple-pipe effluent futures shape whether your HOA can keep ryegrass guilt-free. Heat kills here — not hypothetically — so bike lane pride peaks October–April while summer riders shrink to dawn masochists and e-bike battery nerds.\n\nReal estate narratives split on elevation, mesquite canopy, and whether you’re willing to hear coyotes or trains louder. This card is the metro reference point for comparing every smaller place in the pack.",
+    ac: [
+      "Sabino Canyon tram / walk — start before 7 a.m. in July; lightning kills more hikers than rattlesnakes.",
+      "Mission San Xavier del Bac — thermal photography at last light; donate to restoration.",
+      "Fourth Ave / downtown murals — park in shade; carry water even for ‘urban’ walks in June.",
+      "Kitt Peak / western scopes — check monsoon lightning policy; telescopes fear humidity spikes.",
+      "Mt. Lemmon escape ladder — measure 15°F drops per ~3,000 ft on scorcher weekends.",
+      "Sweetwater Wetlands — reclaimed-water birding; compare odor days to wind direction.",
+    ],
+    ct: [
+      { nm: "Central / Sam Hughes / Blenman-Elm", pop: "historic core", no: "Canopy + grid walkability; price premium; verify flood history on 1980s-era storm drains." },
+      { nm: "Eastside (Tanque Verde corridor)", pop: "large", no: "Monsoon favor; higher hail claims; views of Rincons worth morning coffee." },
+      { nm: "West / Avra Valley exurbs", pop: "growing", no: "Cheaper dirt, hotter nights, longer drives; incredible saguaro sunsets and dust-outflow photography." },
+    ],
+    out: [
+      "Tucson’s future is hotter, probably drier in cool season, and monsoon-variable — water banking and shade equity will separate comfortable neighborhoods from survivalist ones.",
+      "Increased vapor pressure deficit may stress mesquite–palo verde parkscapes unless irrigation budgets hold — city heat management is now public health.",
+      "Remote-work in-migration competes with climate out-migration anecdotes — housing volatility may exceed temperature volatility in any given five-year window.",
+    ],
     si: [20, 901, 78],
+  }),
+  makeCity(929, "Huachuca Mountains (foothills & canyons)", "Cochise — Coronado NF", 31.454, -110.305, "unincorporated", "southeastSkyIsland", {
+    n: "Huachuca Mountains (foothills & canyons)",
+    r: "Huachuca Mountains — Ramsey · Carr · Miller country, Coronado NF, AZ",
+    tl: "The range behind every Sierra Vista Zillow hero photo — birding fame, lightning risk, and canyon microclimates worth a mortgage premium.",
+    ins: [
+      "This is not a town — it’s public land interleaved with private inholdings and military airspace. Listings may say ‘Huachuca area’ while sitting in Hereford, SV, or Whetstone; map the parcel.",
+      "Carr Canyon Road ices and washboards; Miller Peak trail can still hold corn snow into spring — carry traction and tell someone your plan.",
+      "Lightning on exposed ridges is the primary lethal hazard Jul–Sep — start hikes before dawn on red-flag convection days.",
+      "Hummingbird banding and eBird hotspots mean ethical lens distances — stress kills small birds faster than heat.",
+    ],
+    bp: "The Huachuca Mountains are the vertical continent looming over Sierra Vista and the upper San Pedro — Madrean oak woodland giving way to pine–fir mixes, with cliffs that catch Pacific moisture and Mexican monsoon surges alike. Elevation spans roughly 4,000 ft above the valley floor to Miller Peak near 9,500 ft, compressing life zones you’d otherwise drive hundreds of miles to cross. That compression is why birders speak about this range in hushed, obsessive tones: elegant trogons, sulphur-bellied flycatchers, and absurd hummingbird diversity (a dozen+ species in a good August) use these canyons as the northernmost reliable apartments for neo-tropical taste.\n\nIf you’ve scrolled real estate near ‘the Huachucas,’ you’ve seen the marketing language — panoramic ramparts, dark skies, ‘Ramsey minutes away.’ The honest field notes: canyon-adjacent parcels trade views for debris-flow risk after burns; private roads may be unmaintained; wells can be heroic depths or modest artesian surprises; and you will share space with bears, lions, coatis, and javelina like it or not. Fort Huachuca’s training envelope adds helicopter and fixed-wing soundscapes; it’s not constant, but it’s not rare.\n\nWeather lives in episodes. Pre-monsoon May–June is psychologically cruel — dry lightning, tinderbox grasses, and skies the color of hammered steel. July–August flips to electric-green arroyos and frogs screaming from tinajas. Winter storms brush the crest with snow while the valley stays shirt-sleeve mild — a photographer’s dream if you remember chains and a full fuel tank.\n\nEcologically, these mountains are a hinge in the borderlands: fire return intervals, invasive grasses, and climate-driven upslope shifts in oak–pine ecotones will write the next chapter. Loving this place means funding trail maintenance, respecting seasonal closures, and accepting that some summers the canyons will be too smoky to ethically visit.",
+    ac: [
+      "Ramsey Canyon Preserve — timed entry when busy; donate; practice quiet boardwalk etiquette.",
+      "Beatty’s Guest Ranch / hummingbird feeders (Miller Canyon area) — legendary August densities; respect private-business rules.",
+      "Carr Canyon campground & upper road — photograph inversion layers at dawn; watch for monsoon mist eating visibility.",
+      "Miller Peak summit push — start headlamp-early; carry 4L+ summer; turn around on thunder.",
+      "Huachuca Canyon / overshoot trails — quieter trogon habitat some seasons; eBird before you chase rarities.",
+      "Brown Canyon / Sunnyside — javelina jams possible; never feed wildlife.",
+      "Night-sky time-lapse from SV east ridge — compose Huachuca silhouette with Milky Way; check moon phase.",
+    ],
+    ct: [
+      { nm: "Ramsey Canyon enclave (private + preserve interface)", pop: "few dozen", no: "Ultra-high birding amenity; premium pricing; HOA / easement complexity — title search depth matters." },
+      { nm: "Carr Canyon strip", pop: "sparse", no: "Steep drive maintenance; fire evacuation single-lane risk; incredible conifer shade July afternoons." },
+      { nm: "Sierra Vista / Hereford commute-shed", pop: "SV ~45k + Hereford CDP", no: "Where most ‘mountain lifestyle’ buyers actually sleep — compare utility providers and school buses before romanticizing ridge lines." },
+    ],
+    wl: [
+      {
+        an: "Elegant Trogon (Trogon elegans)",
+        ex: "A cloud-forest jewel spilling into Arizona only in select Madrean canyons — the Huachucas are the most reliable US stage; listen for barking calls at sycamore mid-canopy.",
+      },
+      {
+        an: "Violet-crowned Hummingbird (Amazilia violiceps)",
+        ex: "Ramsey/Ash canyons host some of the best feeder diplomacy in North America — August banding stations turn science into spectacle; sugar-water wars decide territory down to the inch.",
+      },
+      {
+        an: "White-nosed Coati (Nasua narica)",
+        ex: "Ring-tailed chaos gremlins of the oak zone — learns trash schedules faster than your HOA can update them; keep lids locked in canyon cabins.",
+      },
+    ],
+    out: [
+      "Upslope warming is projected to squeeze montane habitat envelopes — trogon and hummingbird niche maps may shift elevation or migrate latitude over decades; conservation easements at canyon mouths buy time.",
+      "High-severity fire patches + invasive grass feedback loops increase debris-flow probability for decades post-burn — canyon real estate due diligence must include post-fire hydrology, not just view cones.",
+      "Monsoon variability could increase ‘boom-bust’ bird migration pulses — tourism and lodge economics should budget for uneven seasons.",
+      "Military training tempo and border sensor infrastructure may evolve independently of climate — noise and access buffers are policy variables.",
+    ],
+    si: [910, 20, 901],
+    tg: ["huachuca", "birding", "hummingbirds", "coronado-nf", "sky-island", "real-estate-context"],
   }),
 );
 
@@ -638,7 +770,29 @@ const sonora = [
     r: "Heroica Nogales, Sonora — border metro",
     nr: "Hermosillo (HMO) · Tucson (TUS)",
     tl: "The south half of Ambos Nogales — produce, pharmacies, and mountain views.",
-    bp: "Heroica Nogales is the dense urban continuation of the border economy — calle commercial retail, dentists, and family networks spanning the line. Hillside colonias catch storms as sheet flow; infrastructure can strain. Evening mountain silhouettes are spectacular; diesel and dust are the tradeoff.",
+    ins: [
+      "Pedestrian vs vehicle return rules differ — carry passport book/card consistent with CBP guidance, not forum lore.",
+      "Pharmacy and dental pricing arbitrage is real; medication transport rules are also real — research before your cooler becomes evidence.",
+    ],
+    bp: "Heroica Nogales is the urban half of Ambos Nogales — a single labor and kinship network photographed as two countries. Produce logistics, cold-chain warehouses, dentists, opticians, and weekend shoppers thread the same hills the Spanish mission era saw as a pass between deserts. Summer humidity spikes when Gulf moisture backs against the Sierra Madre Occidental foothills; dust still arrives on Pacific outflow days, painting apocalyptic sunsets over the port queue.\n\nTopography sorts risk: hillside colonias may catch sheet flow during convective bombs; older grids near the river thread deal with century-old drainage assumptions upgraded slowly. Diesel, border idling, and occasional agricultural burn smoke mix into AQI stories Tucson rarely tells.\n\nSocial heat index: the bridge wait is emotional infrastructure — it shapes school schedules, elder care, and who shows up to family dinner on time. Real estate narratives split between dense urban cores with walkable evening culture and perimeter growth chasing breeze and parking.\n\nCulinarily, Sonoran carne asada culture is the baseline; creativity shows up in taco de cahuamanta stands, coyotas cooling on counters, and michelada chemistry that could be thesis material.",
+    ac: [
+      "Plaza evening paseo — compare heat stress pre- vs post-sunset with a handheld thermometer (nerd cred + safety).",
+      "Mercado mornings — hydrate like ultrarunning; watch wallet etiquette in crowds.",
+      "Ridge viewpoints toward Mt. Hopkins — telephoto lightning safety from covered porches, not peaks.",
+      "Cross-border birding with licensed guides — ethics + permits first.",
+      "Hermosillo overnight heat comparison — feel Gulf vs basin humidity differences.",
+      "Document border infrastructure photography sensitively — some angles are federal no-fly socially and legally.",
+    ],
+    ct: [
+      { nm: "Centro / commercial spine", pop: "dense", no: "Walkable services; noise + diesel; verify building drainage after monsoon storms." },
+      { nm: "Hillside colonias", pop: "large", no: "Views + sheet-flow flood risk; infrastructure variable; drive roads after a storm before judging listings." },
+      { nm: "Perimeter industrial / logistics", pop: "growing", no: "Employment anchor; ultrafine particulates; housing often newer with AC load spikes." },
+    ],
+    out: [
+      "Border metros face compounding heat + humidity trends — outdoor labor and informal vending economics may shift hours toward night (already partially cultural, soon structural).",
+      "Water security on the Sonoran side parallels Arizona — agriculture and municipal demand may tighten peri-urban groundwater access.",
+      "Cross-border wait-time volatility could worsen with climate migration narratives — resilience is multiple passport strategies and flexible childcare, not optimism.",
+    ],
     si: [919, 903, 907],
   }),
   makeCity(941, "Agua Prieta", "Sonora", 31.3279, -109.5488, "~92,000", "sonoraBorder", {
@@ -652,7 +806,7 @@ const sonora = [
     co: "MX",
     r: "Puerto Peñasco, Sonora — Sea of Cortez",
     nr: "Phoenix (PHX) ~3.5hr · Lukeville AZ port",
-    ins: [MEX_PLATE_NOTE, "Tide flats — know tide charts before beach driving."],
+    ins: ["Tide flats — know tide charts before beach driving; salt crust hides soft mud that traps vehicles."],
     bp: "Rocky Point is Arizona's beach — tidal flats of the Upper Gulf, condo towers, and shrimp cocktails. Summer humid heat is brutal; Semana Santa crowds are legendary. US-plate tourism has been heavy for decades — still verify insurance and port wait times.",
     si: [909, 927],
   }),
@@ -683,7 +837,7 @@ const sonora = [
     co: "MX",
     r: "Bahía de Kino, Sonora — Seri coast",
     nr: "Hermosillo (HMO) ~1hr",
-    ins: [MEX_PLATE_NOTE],
+    ins: ["Respect Comcáac (Seri) communities and conservation norms — ask before photographing people or sacred sites."],
     bp: "Kino Bay pairs desert scrub with Gulf shallows — tidal flats, dolphin pods, and Comcáac (Seri) cultural heritage nearby. Quieter than San Carlos for some travelers; services are thinner.",
     si: [909, 907],
   }),

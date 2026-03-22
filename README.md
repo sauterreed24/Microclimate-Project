@@ -22,7 +22,7 @@
 
 ### Arizona / Sonora location pack
 
-- Bulk **Arizona** municipalities (plus selected CDPs and reference cards for Phoenix & Tucson) and **Sonora** border / tourist-corridor towns are defined in **`src/data/arizonaSonoraPack.js`** and merged into the main catalog at runtime (`MC` + `RD`).
+- Bulk **Arizona** municipalities (plus selected CDPs and reference cards for Phoenix & Tucson) and **Sonora** border / tourist-corridor towns are defined in **`src/data/arizonaSonoraPack.js`** with long-form narrative templates in **`src/data/arizonaSonoraRichDefaults.js`**, merged at runtime (`MC` + `RD`). Each pack location includes a **Climate outlook** section (`out` field) with multi-decade regional themes (not parcel-level predictions).
 - Mexico travel notes in the app are **not legal advice** — confirm **FMM**, insurance, and current **vehicle / Sonora-only** rules with official sources before driving.
 
 ---

@@ -1,5 +1,5 @@
 {
-  "notes": "Featured slugs below map to MC ids in App.jsx. Arizona municipalities, Phoenix/Tucson references, CDPs, and Sonora corridor towns are merged from src/data/arizonaSonoraPack.js (ids 910–1026).",
+  "notes": "Featured slugs below map to MC ids in App.jsx. Arizona municipalities, Phoenix/Tucson references, CDPs, Sonora corridor towns, and Huachuca Mountains (929) are merged from src/data/arizonaSonoraPack.js (ids 910–1026+). Narrative templates: arizonaSonoraRichDefaults.js.",
   "entries": [
     { "slug": "bisbee-warren-mining", "appMcId": 901 },
     { "slug": "flagstaff-san-francisco-peaks", "appMcId": 902 },
@@ -13,6 +13,7 @@
   ],
   "optionalFields": {
     "tl": "Short tagline shown on list cards and in detail (Field tagline).",
-    "ins": "Array of analyst-note bullets in Overview."
+    "ins": "Array of analyst-note bullets in Overview.",
+    "out": "Climate outlook bullets (regional scenarios — see UI disclaimer)."
   }
 }
