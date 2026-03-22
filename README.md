@@ -7,15 +7,31 @@
    ```bash
    VITE_GOOGLE_MAPS_API_KEY=your_key_here
    ```
-3. Restart `npm run dev`.
+3. Restart `npm run dev` (defaults to **port 5174** in `vite.config.js`).
 
 **Never commit** `.env.local` or paste your key into source code or chats.
+
+## Homes tab (Zillow data via RapidAPI)
+
+The **Homes** tab shows live listings merged with microclimate insights (Sierra Vista, Hereford, Huachuca Mountains). A small **Express** server (`server/index.js`) calls the **OpenWeb Ninja Real-Time Zillow Data** API on RapidAPI and **caches responses for 15 minutes** to stay within free-tier limits.
+
+1. Subscribe to the API on [RapidAPI](https://rapidapi.com/) and copy your **X-RapidAPI-Key**.
+2. Add to `.env`: `RAPIDAPI_KEY=your_key` (same key as `OPENWEB_NINJA_KEY` if you prefer that name).
+3. Run frontend + API together:
+   ```bash
+   npm run dev:all
+   ```
+   Or run `npm run server` in one terminal and `npm run dev` in another (Vite proxies `/api` → `http://localhost:3001`).
+
+In production, set **`VITE_API_URL`** to your API origin if the SPA is not served from the same host as `/api`.
+
+If the upstream returns **502**, check RapidAPI’s docs for the exact endpoint path and set **`ZILLOW_SEARCH_PATH`** in `.env` if it differs from `/search`.
 
 ### Keeping Google Cloud costs low (personal use)
 
 - Google Maps Platform includes a **monthly $200 credit** for many products; light personal use often stays within that, but **Google bills based on usage** — we can’t guarantee “under $1/month” for you.
 - In [Google Cloud Console](https://console.cloud.google.com/):
-  - **Restrict the API key**: Application restrictions → **HTTP referrers** (add `http://localhost:5173/*` for dev and your production domain later). API restrictions → enable only **Maps JavaScript API** (and only what you need).
+  - **Restrict the API key**: Application restrictions → **HTTP referrers** (add `http://localhost:5174/*` for dev and your production domain later). API restrictions → enable only **Maps JavaScript API** (and only what you need).
   - **Set budgets & alerts**: Billing → **Budgets & alerts** so you get emailed before charges grow.
   - **Quotas**: APIs & Services → Maps JavaScript API → **Quotas** — set sensible caps if you want a hard ceiling (may cause the map to stop loading if exceeded).
 - This app only loads the map when you open the **Map** tab, which reduces unnecessary API use compared to always-on maps.
