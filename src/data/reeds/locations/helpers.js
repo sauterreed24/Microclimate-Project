@@ -23,7 +23,14 @@ export function us(p) {
   };
 }
 
-/** Sonora Free Zone — no Zillow coverage */
+/**
+ * Sonora travel / microclimate pins — NOT for Zillow (no searchQuery).
+ * @param {object} p
+ * @param {string} [p.feelsLike] — one-line “thermal personality”
+ * @param {string[]} [p.climateFactors] — short bullets (heat, monsoon, wind…)
+ * @param {string[]} [p.travelBullets] — FMM, insurance, plates, ports
+ * @param {string} [p.zoneDisclaimer] — legal / program disclaimer
+ */
 export function mx(p) {
   return {
     id: p.id,
@@ -42,5 +49,10 @@ export function mx(p) {
       { label: "Vivanuncios", href: "https://www.vivanuncios.com" },
       { label: "Inmuebles24", href: "https://www.inmuebles24.com" },
     ],
+    feelsLike: p.feelsLike,
+    climateFactors: p.climateFactors || [],
+    travelBullets: p.travelBullets || [],
+    zoneDisclaimer: p.zoneDisclaimer || "",
+    microclimateProfile: p.microclimateProfile,
   };
 }

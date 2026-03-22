@@ -142,6 +142,39 @@ export const MICROCLIMATE_PROFILE_META = {
   },
 };
 
+/** Map / UI: distinct hues so pins read at a glance vs monochrome basemaps */
+export const MICROCLIMATE_PROFILE_STYLE = {
+  "hot-desert-basin": { fill: "#f59e0b", stroke: "#b45309", glow: "rgba(245, 158, 11, 0.45)" },
+  "sonoran-sun-corridor": { fill: "#10b981", stroke: "#047857", glow: "rgba(16, 185, 129, 0.4)" },
+  "sky-island-madrean": { fill: "#6366f1", stroke: "#4338ca", glow: "rgba(99, 102, 241, 0.45)" },
+  "pinal-thermal-basin": { fill: "#eab308", stroke: "#a16207", glow: "rgba(234, 179, 8, 0.4)" },
+  "colorado-river-low-desert": { fill: "#06b6d4", stroke: "#0e7490", glow: "rgba(6, 182, 212, 0.45)" },
+  "verde-mogollon-transition": { fill: "#22c55e", stroke: "#15803d", glow: "rgba(34, 197, 94, 0.4)" },
+  "mogollon-pine-country": { fill: "#15803d", stroke: "#14532d", glow: "rgba(21, 128, 61, 0.45)" },
+  "colorado-plateau-high": { fill: "#d97706", stroke: "#92400e", glow: "rgba(217, 119, 6, 0.4)" },
+  "coastal-marine-cal": { fill: "#38bdf8", stroke: "#0369a1", glow: "rgba(56, 189, 248, 0.45)" },
+  "bay-inland-mediterranean": { fill: "#818cf8", stroke: "#4f46e5", glow: "rgba(129, 140, 248, 0.4)" },
+  "sacramento-thermal-valley": { fill: "#fbbf24", stroke: "#d97706", glow: "rgba(251, 191, 36, 0.4)" },
+  "central-valley-thermal": { fill: "#f97316", stroke: "#c2410c", glow: "rgba(249, 115, 22, 0.45)" },
+  "inland-empire-foothill": { fill: "#ef4444", stroke: "#b91c1c", glow: "rgba(239, 68, 68, 0.4)" },
+  "sierra-alpine-cal": { fill: "#e2e8f0", stroke: "#64748b", glow: "rgba(148, 163, 184, 0.5)" },
+  "north-state-mixed": { fill: "#14b8a6", stroke: "#0f766e", glow: "rgba(20, 184, 166, 0.4)" },
+  "nm-rio-grande-arid": { fill: "#c084fc", stroke: "#7e22ce", glow: "rgba(192, 132, 252, 0.45)" },
+  "nm-chihuahuan-basin": { fill: "#f472b6", stroke: "#be185d", glow: "rgba(244, 114, 182, 0.4)" },
+  "nm-high-plains": { fill: "#a78bfa", stroke: "#5b21b6", glow: "rgba(167, 139, 250, 0.4)" },
+  "nm-northwest-plateau": { fill: "#94a3b8", stroke: "#475569", glow: "rgba(148, 163, 184, 0.45)" },
+};
+
+export function getProfileMapStyle(profileId) {
+  return (
+    MICROCLIMATE_PROFILE_STYLE[profileId] ?? {
+      fill: "#64748b",
+      stroke: "#334155",
+      glow: "rgba(100, 116, 139, 0.4)",
+    }
+  );
+}
+
 export function getMicroclimateMeta(profileId) {
   return MICROCLIMATE_PROFILE_META[profileId] ?? {
     emoji: "📍",
