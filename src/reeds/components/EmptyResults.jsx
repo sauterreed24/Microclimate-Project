@@ -3,16 +3,16 @@ import { Compass, SlidersHorizontal } from "lucide-react";
 export default function EmptyResults({ loading }) {
   if (loading) return null;
   return (
-    <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-white/15 bg-zinc-900/40 px-6 py-16 text-center">
-      <Compass className="mb-4 h-12 w-12 text-teal-500/50" />
-      <h3 className="font-display text-lg font-semibold text-zinc-200">No listings match (yet)</h3>
-      <p className="mt-2 max-w-md text-sm leading-relaxed text-zinc-500">
-        Try raising the max price, dropping bedroom minimums, switching sort to <strong className="text-zinc-400">Newest</strong>, or
-        choosing a broader city chip. The API can also return sparse results for very small markets.
+    <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-stone-300 bg-white px-6 py-14 text-center shadow-sm">
+      <Compass className="mb-4 h-11 w-11 text-teal-200" />
+      <h3 className="font-display text-lg font-semibold text-stone-800">No listings match</h3>
+      <p className="mt-2 max-w-md text-sm leading-relaxed text-stone-500">
+        Try widening price or room filters, switch sort to <strong className="text-stone-700">Newest</strong>, or pick a larger market
+        (e.g. Phoenix, Phoenix metro, or Tucson).
       </p>
-      <p className="mt-4 flex items-center justify-center gap-2 text-xs text-zinc-600">
+      <p className="mt-4 flex items-center justify-center gap-2 text-xs text-stone-400">
         <SlidersHorizontal className="h-3.5 w-3.5" />
-        Tip: save favorites with the heart — they persist on this device.
+        Hearts save favorites on this device.
       </p>
     </div>
   );

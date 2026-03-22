@@ -1,5 +1,7 @@
 # Reed's Home Finder — architecture
 
+**Markets in the app:** Arizona, California, and New Mexico only (no Indiana / Greenwood or other states in the location picker).
+
 ## What runs where
 
 | Script | Purpose |

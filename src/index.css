@@ -31,6 +31,20 @@
   font-family: var(--font-family-display);
 }
 
+/* Leaflet — match light UI */
+.leaflet-container {
+  font-family: var(--font-family-sans);
+  color: #44403c;
+}
+.reed-map-frame .leaflet-popup-content-wrapper {
+  border-radius: 12px;
+  box-shadow: 0 10px 40px rgba(15, 23, 42, 0.12);
+  border: 1px solid #e7e5e4;
+}
+.reed-map-frame .leaflet-popup-tip {
+  box-shadow: none;
+}
+
 /* Legacy microclimate styles (optional backup app) */
 :root {
   --mc-ink: #020617;

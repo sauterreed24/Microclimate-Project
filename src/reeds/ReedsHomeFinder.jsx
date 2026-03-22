@@ -1,7 +1,7 @@
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import toast, { Toaster } from "react-hot-toast";
 import { Activity, Heart, Home, Keyboard, Loader2, Map as MapIcon, Menu, RefreshCw, Search } from "lucide-react";
-import { getLocationById } from "../data/reeds/locations/index.js";
+import { DEFAULT_LOCATION_ID, getLocationById } from "../data/reeds/locations/index.js";
 import { useReedStore } from "./store/useReedStore.js";
 import { searchListings } from "./api/client.js";
 import { extractListings } from "./lib/extractListings.js";
@@ -9,7 +9,6 @@ import LocationLibrary from "./components/LocationLibrary.jsx";
 import ListingCard from "./components/ListingCard.jsx";
 import ListingSkeleton from "./components/ListingSkeleton.jsx";
 import EmptyResults from "./components/EmptyResults.jsx";
-import MexicoZonePanel from "./components/MexicoZonePanel.jsx";
 
 const ListingMap = lazy(() => import("./components/ListingMap.jsx"));
 const PropertyModal = lazy(() => import("./components/PropertyModal.jsx"));
@@ -32,7 +31,7 @@ const RENT_HOME_TYPES = [
 
 function buildSearchParams(state) {
   const loc = getLocationById(state.locationId);
-  if (!loc || loc.mexicoZone) return null;
+  if (!loc) return null;
   const p = {
     location: loc.searchQuery,
     page: String(state.page || 1),
@@ -93,6 +92,12 @@ export default function ReedsHomeFinder() {
 
   const active = useMemo(() => getLocationById(locationId), [locationId]);
   const priceSuffix = homeStatus === "FOR_RENT" ? "/mo" : "";
+
+  useEffect(() => {
+    if (!getLocationById(locationId)) {
+      setLocationId(DEFAULT_LOCATION_ID);
+    }
+  }, [locationId, setLocationId]);
 
   useEffect(() => {
     localStorage.setItem("reed-view", view);
@@ -196,63 +201,69 @@ export default function ReedsHomeFinder() {
   };
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100">
-      <Toaster position="top-center" toastOptions={{ className: "bg-zinc-900 text-zinc-100 border border-white/10" }} />
+    <div className="min-h-screen bg-gradient-to-b from-stone-100 via-stone-50 to-white text-stone-800">
+      <Toaster
+        position="top-center"
+        toastOptions={{ className: "bg-white text-stone-800 border border-stone-200 shadow-lg", duration: 3000 }}
+      />
 
-      <header className="sticky top-0 z-50 border-b border-white/10 bg-zinc-950/90 backdrop-blur-xl">
+      <header className="sticky top-0 z-50 border-b border-stone-200/90 bg-white/90 shadow-sm backdrop-blur-md">
         <div className="mx-auto flex max-w-[1600px] items-center justify-between gap-4 px-4 py-3">
           <div className="flex items-center gap-3">
             <button
               type="button"
               onClick={() => setSidebar((s) => !s)}
-              className="rounded-xl border border-white/10 bg-white/5 p-2 text-zinc-300 hover:bg-white/10 lg:hidden"
+              className="rounded-xl border border-stone-200 bg-white p-2 text-stone-600 shadow-sm hover:bg-stone-50 lg:hidden"
             >
               <Menu className="h-5 w-5" />
             </button>
             <div className="flex items-center gap-2">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-teal-400 to-emerald-700 shadow-lg shadow-teal-900/40">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-teal-500 to-emerald-700 shadow-md shadow-teal-900/15">
                 <Home className="h-5 w-5 text-white" />
               </div>
               <div>
-                <h1 className="font-display text-lg font-semibold tracking-tight text-white">Reed&apos;s Home Finder</h1>
-                <p className="text-[11px] font-medium uppercase tracking-[0.2em] text-teal-400/90">Personal search · Zillow data</p>
+                <h1 className="font-display text-lg font-semibold tracking-tight text-stone-900">Reed&apos;s Home Finder</h1>
+                <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-teal-700/90">Arizona · California · New Mexico</p>
               </div>
             </div>
           </div>
           <div className="flex flex-wrap items-center justify-end gap-2 sm:gap-3">
-            <div className="hidden items-center gap-1.5 rounded-full border border-white/10 bg-black/30 px-2.5 py-1 text-[10px] text-zinc-500 sm:flex" title="API proxy health">
-              <Activity className={`h-3.5 w-3.5 ${apiOk ? "text-emerald-400" : apiOk === false ? "text-red-400" : "text-zinc-600"}`} />
+            <div
+              className="hidden items-center gap-1.5 rounded-full border border-stone-200 bg-stone-50/90 px-2.5 py-1 text-[10px] text-stone-500 sm:flex"
+              title="API proxy"
+            >
+              <Activity className={`h-3.5 w-3.5 ${apiOk ? "text-emerald-600" : apiOk === false ? "text-red-500" : "text-stone-400"}`} />
               <span>{apiOk == null ? "API…" : apiOk ? "API live" : "API down"}</span>
             </div>
             {favoriteZpids.length > 0 && (
-              <span className="flex items-center gap-1 rounded-full border border-rose-500/25 bg-rose-500/10 px-2 py-0.5 text-[10px] text-rose-200">
-                <Heart className="h-3 w-3 fill-rose-400/80" />
+              <span className="flex items-center gap-1 rounded-full border border-rose-200 bg-rose-50 px-2 py-0.5 text-[10px] font-medium text-rose-800">
+                <Heart className="h-3 w-3 fill-rose-400 text-rose-500" />
                 {favoriteZpids.length} saved
               </span>
             )}
-            <span className="hidden items-center gap-1 text-[10px] text-zinc-600 md:flex">
+            <span className="hidden items-center gap-1 text-[10px] text-stone-500 md:flex">
               <Keyboard className="h-3 w-3" />
-              <kbd className="rounded border border-white/10 bg-white/5 px-1">/</kbd> filter locations
+              <kbd className="rounded border border-stone-200 bg-white px-1 font-sans text-stone-600 shadow-sm">/</kbd> filter
             </span>
             <div className="flex items-center gap-1">
               <button
                 type="button"
                 onClick={() => setView("split")}
-                className={`rounded-lg px-2.5 py-1.5 text-xs font-medium ${view === "split" ? "bg-teal-500/20 text-teal-200" : "text-zinc-500 hover:text-zinc-300"}`}
+                className={`rounded-lg px-2.5 py-1.5 text-xs font-medium ${view === "split" ? "bg-teal-100 text-teal-900 ring-1 ring-teal-200" : "text-stone-500 hover:bg-stone-100 hover:text-stone-800"}`}
               >
                 Split
               </button>
               <button
                 type="button"
                 onClick={() => setView("list")}
-                className={`rounded-lg px-2.5 py-1.5 text-xs font-medium ${view === "list" ? "bg-teal-500/20 text-teal-200" : "text-zinc-500 hover:text-zinc-300"}`}
+                className={`rounded-lg px-2.5 py-1.5 text-xs font-medium ${view === "list" ? "bg-teal-100 text-teal-900 ring-1 ring-teal-200" : "text-stone-500 hover:bg-stone-100 hover:text-stone-800"}`}
               >
                 List
               </button>
               <button
                 type="button"
                 onClick={() => setView("map")}
-                className={`rounded-lg px-2.5 py-1.5 text-xs font-medium ${view === "map" ? "bg-teal-500/20 text-teal-200" : "text-zinc-500 hover:text-zinc-300"}`}
+                className={`rounded-lg px-2.5 py-1.5 text-xs font-medium ${view === "map" ? "bg-teal-100 text-teal-900 ring-1 ring-teal-200" : "text-stone-500 hover:bg-stone-100 hover:text-stone-800"}`}
               >
                 Map
               </button>
@@ -260,9 +271,9 @@ export default function ReedsHomeFinder() {
             <button
               type="button"
               onClick={() => runSearch()}
-              className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs font-semibold text-zinc-200 hover:bg-white/10"
+              className="inline-flex items-center gap-2 rounded-xl border border-stone-200 bg-white px-3 py-2 text-xs font-semibold text-stone-800 shadow-sm hover:bg-stone-50"
             >
-              <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
+              <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin text-teal-600" : ""}`} />
               Refresh
             </button>
           </div>
@@ -273,37 +284,37 @@ export default function ReedsHomeFinder() {
         <aside
           className={`${
             sidebar ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
-          } fixed inset-y-0 left-0 z-40 w-[min(100%,320px)] border-r border-white/10 bg-zinc-950 p-4 transition-transform lg:static lg:w-80 lg:shrink-0 lg:border-0 lg:bg-transparent`}
+          } fixed inset-y-0 left-0 z-40 w-[min(100%,320px)] border-r border-stone-200 bg-white p-4 shadow-lg transition-transform lg:static lg:w-80 lg:shrink-0 lg:border-0 lg:bg-transparent lg:shadow-none`}
         >
-          <div className="mb-3 flex items-center gap-2 rounded-xl border border-white/10 bg-black/30 px-3 py-2">
-            <Search className="h-4 w-4 text-zinc-500" />
+          <div className="mb-3 flex items-center gap-2 rounded-xl border border-stone-200 bg-white px-3 py-2 shadow-sm">
+            <Search className="h-4 w-4 text-stone-400" />
             <input
               ref={locFilterRef}
               value={libSearch}
               onChange={(e) => setLibSearch(e.target.value)}
               placeholder="Filter locations…"
-              className="w-full bg-transparent text-sm text-zinc-200 placeholder:text-zinc-600 focus:outline-none"
+              className="w-full bg-transparent text-sm text-stone-800 placeholder:text-stone-400 focus:outline-none"
             />
           </div>
           <LocationLibrary locationId={locationId} onSelect={selectLocation} search={libSearch} />
         </aside>
         {sidebar && (
-          <button type="button" className="fixed inset-0 z-30 bg-black/60 lg:hidden" aria-label="Close menu" onClick={() => setSidebar(false)} />
+          <button type="button" className="fixed inset-0 z-30 bg-stone-900/40 backdrop-blur-[1px] lg:hidden" aria-label="Close menu" onClick={() => setSidebar(false)} />
         )}
 
         <main className="min-w-0 flex-1 space-y-4 px-4 py-4">
-          <div className="rounded-2xl border border-white/10 bg-gradient-to-br from-zinc-900/90 to-zinc-950 p-4 shadow-xl">
+          <div className="rounded-2xl border border-stone-200/90 bg-white p-4 shadow-lg shadow-stone-200/40 ring-1 ring-stone-100">
             <div className="flex flex-wrap items-end gap-3">
               <div className="min-w-[200px] flex-1">
-                <label className="text-[10px] font-bold uppercase tracking-wider text-zinc-500">Active market</label>
-                <p className="mt-1 font-display text-lg text-white">{active?.label ?? "—"}</p>
-                <p className="text-xs text-zinc-500">{active?.region}</p>
+                <label className="text-[10px] font-bold uppercase tracking-wider text-stone-500">Active market</label>
+                <p className="mt-1 font-display text-lg text-stone-900">{active?.label ?? "—"}</p>
+                <p className="text-xs text-stone-500">{active?.region}</p>
               </div>
               <Field label="Status">
                 <select
                   value={homeStatus}
                   onChange={(e) => setFilters({ homeStatus: e.target.value, page: 1 })}
-                  className="rounded-lg border border-white/10 bg-black/40 px-2 py-2 text-xs text-zinc-200"
+                  className="rounded-lg border border-stone-200 bg-white px-2 py-2 text-xs text-stone-800 shadow-sm"
                 >
                   <option value="FOR_SALE">For sale</option>
                   <option value="FOR_RENT">For rent</option>
@@ -314,7 +325,7 @@ export default function ReedsHomeFinder() {
                 <select
                   value={homeType}
                   onChange={(e) => setFilters({ homeType: e.target.value, page: 1 })}
-                  className="rounded-lg border border-white/10 bg-black/40 px-2 py-2 text-xs text-zinc-200"
+                  className="rounded-lg border border-stone-200 bg-white px-2 py-2 text-xs text-stone-800 shadow-sm"
                 >
                   {(homeStatus === "FOR_RENT" ? RENT_HOME_TYPES : SALE_HOME_TYPES).map(([val, lab]) => (
                     <option key={val} value={val}>
@@ -327,7 +338,7 @@ export default function ReedsHomeFinder() {
                 <select
                   value={sort}
                   onChange={(e) => setFilters({ sort: e.target.value, page: 1 })}
-                  className="rounded-lg border border-white/10 bg-black/40 px-2 py-2 text-xs text-zinc-200"
+                  className="rounded-lg border border-stone-200 bg-white px-2 py-2 text-xs text-stone-800 shadow-sm"
                 >
                   <option value="DEFAULT">Default</option>
                   {homeStatus === "FOR_RENT" && <option value="VERIFIED_SOURCE">Verified source</option>}
@@ -343,7 +354,7 @@ export default function ReedsHomeFinder() {
             </div>
 
             <div className="mt-3 flex flex-wrap gap-2">
-              <span className="self-center text-[10px] font-bold uppercase tracking-wider text-zinc-600">Quick</span>
+              <span className="self-center text-[10px] font-bold uppercase tracking-wider text-stone-400">Quick</span>
               {homeStatus === "FOR_SALE" && (
                 <>
                   <PresetChip onClick={() => applyPreset({ maxPrice: "400000" })} label="≤ $400k" />
@@ -380,7 +391,7 @@ export default function ReedsHomeFinder() {
                   value={minPrice}
                   onChange={(e) => setFilters({ minPrice: e.target.value, page: 1 })}
                   placeholder="0"
-                  className="w-full rounded-lg border border-white/10 bg-black/40 px-2 py-2 text-xs"
+                  className="w-full rounded-lg border border-stone-200 bg-white px-2 py-2 text-xs text-stone-800 shadow-sm"
                 />
               </Field>
               <Field label={homeStatus === "FOR_RENT" ? "Max rent/mo" : "Max price"}>
@@ -388,7 +399,7 @@ export default function ReedsHomeFinder() {
                   value={maxPrice}
                   onChange={(e) => setFilters({ maxPrice: e.target.value, page: 1 })}
                   placeholder="Any"
-                  className="w-full rounded-lg border border-white/10 bg-black/40 px-2 py-2 text-xs"
+                  className="w-full rounded-lg border border-stone-200 bg-white px-2 py-2 text-xs text-stone-800 shadow-sm"
                 />
               </Field>
               <Field label="Beds (min–max)">
@@ -396,13 +407,13 @@ export default function ReedsHomeFinder() {
                   <input
                     value={minBedrooms}
                     onChange={(e) => setFilters({ minBedrooms: e.target.value, page: 1 })}
-                    className="w-full rounded-lg border border-white/10 bg-black/40 px-2 py-2 text-xs"
+                    className="w-full rounded-lg border border-stone-200 bg-white px-2 py-2 text-xs shadow-sm"
                     placeholder="min"
                   />
                   <input
                     value={maxBedrooms}
                     onChange={(e) => setFilters({ maxBedrooms: e.target.value, page: 1 })}
-                    className="w-full rounded-lg border border-white/10 bg-black/40 px-2 py-2 text-xs"
+                    className="w-full rounded-lg border border-stone-200 bg-white px-2 py-2 text-xs shadow-sm"
                     placeholder="max"
                   />
                 </div>
@@ -412,13 +423,13 @@ export default function ReedsHomeFinder() {
                   <input
                     value={minBathrooms}
                     onChange={(e) => setFilters({ minBathrooms: e.target.value, page: 1 })}
-                    className="w-full rounded-lg border border-white/10 bg-black/40 px-2 py-2 text-xs"
+                    className="w-full rounded-lg border border-stone-200 bg-white px-2 py-2 text-xs shadow-sm"
                     placeholder="min"
                   />
                   <input
                     value={maxBathrooms}
                     onChange={(e) => setFilters({ maxBathrooms: e.target.value, page: 1 })}
-                    className="w-full rounded-lg border border-white/10 bg-black/40 px-2 py-2 text-xs"
+                    className="w-full rounded-lg border border-stone-200 bg-white px-2 py-2 text-xs shadow-sm"
                     placeholder="max"
                   />
                 </div>
@@ -428,13 +439,13 @@ export default function ReedsHomeFinder() {
                   <input
                     value={minSqft}
                     onChange={(e) => setFilters({ minSqft: e.target.value, page: 1 })}
-                    className="w-full rounded-lg border border-white/10 bg-black/40 px-2 py-2 text-xs"
+                    className="w-full rounded-lg border border-stone-200 bg-white px-2 py-2 text-xs shadow-sm"
                     placeholder="min"
                   />
                   <input
                     value={maxSqft}
                     onChange={(e) => setFilters({ maxSqft: e.target.value, page: 1 })}
-                    className="w-full rounded-lg border border-white/10 bg-black/40 px-2 py-2 text-xs"
+                    className="w-full rounded-lg border border-stone-200 bg-white px-2 py-2 text-xs shadow-sm"
                     placeholder="max"
                   />
                 </div>
@@ -442,78 +453,79 @@ export default function ReedsHomeFinder() {
             </div>
           </div>
 
-          {active?.mexicoZone ? (
-            <MexicoZonePanel location={active} />
-          ) : (
-            <>
-              {loading && <ListingSkeleton />}
+          {loading && <ListingSkeleton />}
 
-              {!loading && listings.length === 0 && <EmptyResults loading={loading} />}
+          {!loading && listings.length === 0 && <EmptyResults loading={loading} />}
 
-              <div
-                className={`grid gap-4 ${view === "split" ? "lg:grid-cols-2" : view === "map" ? "grid-cols-1" : "grid-cols-1"}`}
-              >
-                {(view === "split" || view === "list") && !loading && (
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <p className="text-sm text-zinc-500">
-                        {listings.length} results · page {page}
-                      </p>
-                      <div className="flex gap-2">
-                        <button
-                          type="button"
-                          disabled={page <= 1}
-                          onClick={() => setPage(page - 1)}
-                          className="rounded-lg border border-white/10 px-3 py-1 text-xs disabled:opacity-40"
-                        >
-                          Prev
-                        </button>
-                        <button type="button" onClick={() => setPage(page + 1)} className="rounded-lg border border-white/10 px-3 py-1 text-xs">
-                          Next
-                        </button>
-                      </div>
-                    </div>
-                    <div className="grid gap-3 sm:grid-cols-2">
-                      {listings.map((li) => (
-                        <ListingCard
-                          key={li.zpid || li.address}
-                          listing={li}
-                          priceSuffix={priceSuffix}
-                          onOpen={(l) => {
-                            setSelectedListing(l);
-                            setDetailOpen(true);
-                          }}
-                          isFavorite={(z) => favoriteZpids.includes(z)}
-                          onToggleFavorite={toggleFavorite}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {(view === "split" || view === "map") && active && !loading && (
-                  <div className="min-h-[400px]">
-                    <div className="mb-2 flex items-center gap-2 text-xs text-zinc-500">
-                      <MapIcon className="h-3.5 w-3.5" />
-                      OpenStreetMap · tap markers to preview
-                    </div>
-                    <Suspense
-                      fallback={<div className="flex h-[min(50vh,420px)] items-center justify-center rounded-2xl border border-white/10 bg-zinc-900/50 text-sm text-zinc-500">Loading map…</div>}
+          <div className={`grid gap-4 ${view === "split" ? "lg:grid-cols-2" : view === "map" ? "grid-cols-1" : "grid-cols-1"}`}>
+            {(view === "split" || view === "list") && !loading && (
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <p className="text-sm text-stone-600">
+                    {listings.length} results · page {page}
+                  </p>
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      disabled={page <= 1}
+                      onClick={() => setPage(page - 1)}
+                      className="rounded-lg border border-stone-200 bg-white px-3 py-1 text-xs font-medium text-stone-700 shadow-sm disabled:opacity-40"
                     >
-                      <ListingMap
-                        center={{ lat: active.lat, lng: active.lng }}
-                        listings={listings}
-                        onSelect={(l) => {
-                          setSelectedListing(l);
-                          setDetailOpen(true);
-                        }}
-                      />
-                    </Suspense>
+                      Prev
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setPage(page + 1)}
+                      className="rounded-lg border border-stone-200 bg-white px-3 py-1 text-xs font-medium text-stone-700 shadow-sm"
+                    >
+                      Next
+                    </button>
                   </div>
-                )}
+                </div>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {listings.map((li) => (
+                    <ListingCard
+                      key={li.zpid || li.address}
+                      listing={li}
+                      priceSuffix={priceSuffix}
+                      onOpen={(l) => {
+                        setSelectedListing(l);
+                        setDetailOpen(true);
+                      }}
+                      isFavorite={(z) => favoriteZpids.includes(z)}
+                      onToggleFavorite={toggleFavorite}
+                    />
+                  ))}
+                </div>
               </div>
-            </>
-          )}
+            )}
+
+            {(view === "split" || view === "map") && active && !loading && (
+              <div className="min-h-[400px]">
+                <div className="mb-2 flex items-center gap-2 text-xs text-stone-500">
+                  <MapIcon className="h-3.5 w-3.5 text-teal-600" />
+                  CARTO map · teal ring = search area · white dots = listings
+                </div>
+                <Suspense
+                  fallback={
+                    <div className="flex h-[min(50vh,420px)] items-center justify-center rounded-2xl border border-stone-200 bg-white text-sm text-stone-500 shadow-sm">
+                      <Loader2 className="mr-2 h-5 w-5 animate-spin text-teal-600" />
+                      Loading map…
+                    </div>
+                  }
+                >
+                  <ListingMap
+                    center={{ lat: active.lat, lng: active.lng }}
+                    listings={listings}
+                    onSelect={(l) => {
+                      setSelectedListing(l);
+                      setDetailOpen(true);
+                    }}
+                  />
+                </Suspense>
+              </div>
+            )}
+          </div>
         </main>
       </div>
 
@@ -536,7 +548,7 @@ export default function ReedsHomeFinder() {
 function Field({ label, children }) {
   return (
     <label className="block">
-      <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-500">{label}</span>
+      <span className="text-[10px] font-bold uppercase tracking-wider text-stone-500">{label}</span>
       <div className="mt-1">{children}</div>
     </label>
   );
@@ -547,7 +559,7 @@ function PresetChip({ label, onClick }) {
     <button
       type="button"
       onClick={onClick}
-      className="rounded-full border border-teal-500/25 bg-teal-500/10 px-3 py-1 text-[11px] font-medium text-teal-200/90 transition hover:bg-teal-500/20"
+      className="rounded-full border border-teal-200 bg-teal-50/80 px-3 py-1 text-[11px] font-medium text-teal-900 transition hover:bg-teal-100"
     >
       {label}
     </button>

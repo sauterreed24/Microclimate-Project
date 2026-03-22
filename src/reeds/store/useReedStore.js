@@ -1,13 +1,13 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { ALL_LOCATIONS, getLocationById } from "../../data/reeds/locations/index.js";
+import { ALL_LOCATIONS, getLocationById, DEFAULT_LOCATION_ID } from "../../data/reeds/locations/index.js";
 
-const home = ALL_LOCATIONS.find((l) => l.isHome) || ALL_LOCATIONS[0];
+const initialId = getLocationById(DEFAULT_LOCATION_ID)?.id ?? ALL_LOCATIONS[0]?.id ?? null;
 
 export const useReedStore = create(
   persist(
     (set, get) => ({
-      locationId: home?.id ?? null,
+      locationId: initialId,
       page: 1,
       loading: false,
       rawResponse: null,
@@ -56,7 +56,7 @@ export const useReedStore = create(
       },
     }),
     {
-      name: "reed-home-finder-v1",
+      name: "reed-home-finder-southwest-v1",
       partialize: (s) => ({
         locationId: s.locationId,
         homeStatus: s.homeStatus,

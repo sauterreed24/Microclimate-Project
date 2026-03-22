@@ -1,23 +1,9 @@
-import { HOME_BASE } from "./home.js";
 import { ARIZONA } from "./arizona.js";
+import { CALIFORNIA } from "./california.js";
 import { NEW_MEXICO } from "./newmexico.js";
-import { NEVADA } from "./nevada.js";
-import { COLORADO } from "./colorado.js";
-import { UTAH } from "./utah.js";
-import { WEST_TEXAS } from "./texas.js";
-import { SONORA_MEXICO } from "./mexico.js";
 
-/** @type {import('./helpers.js').LocationRecord[]} */
-export const ALL_LOCATIONS = [
-  ...HOME_BASE,
-  ...ARIZONA,
-  ...NEW_MEXICO,
-  ...NEVADA,
-  ...COLORADO,
-  ...UTAH,
-  ...WEST_TEXAS,
-  ...SONORA_MEXICO,
-];
+/** Only AZ, CA, NM — Zillow-backed US markets */
+export const ALL_LOCATIONS = [...ARIZONA, ...CALIFORNIA, ...NEW_MEXICO];
 
 const byId = new Map(ALL_LOCATIONS.map((l) => [l.id, l]));
 
@@ -25,17 +11,15 @@ export function getLocationById(id) {
   return byId.get(id) ?? null;
 }
 
+/** Default search center when restoring bad saved IDs */
+export const DEFAULT_LOCATION_ID = "phoenix-az";
+
 /** Collapsible region groups for sidebar */
 export const REGION_GROUPS = [
   {
-    key: "home-base",
-    title: "📍 Home Base",
-    pinned: true,
-    locations: HOME_BASE,
-  },
-  {
     key: "az-phx",
     title: "🌵 Arizona — Greater Phoenix",
+    pinned: true,
     locations: ARIZONA.filter((l) => l.region === "Greater Phoenix Metro"),
   },
   {
@@ -64,6 +48,51 @@ export const REGION_GROUPS = [
     locations: ARIZONA.filter((l) => l.region === "Northwest / Grand Canyon"),
   },
   {
+    key: "ca-la",
+    title: "🌴 California — Los Angeles & Orange County",
+    locations: CALIFORNIA.filter((l) => l.region === "Los Angeles & Orange County"),
+  },
+  {
+    key: "ca-sd",
+    title: "🌴 California — San Diego & Imperial",
+    locations: CALIFORNIA.filter((l) => l.region === "San Diego & Imperial"),
+  },
+  {
+    key: "ca-ie",
+    title: "🌴 California — Inland Empire",
+    locations: CALIFORNIA.filter((l) => l.region === "Inland Empire"),
+  },
+  {
+    key: "ca-cc",
+    title: "🌴 California — Central Coast",
+    locations: CALIFORNIA.filter((l) => l.region === "Central Coast"),
+  },
+  {
+    key: "ca-bay",
+    title: "🌴 California — Bay Area & Peninsula",
+    locations: CALIFORNIA.filter((l) => l.region === "Bay Area & Peninsula"),
+  },
+  {
+    key: "ca-sac",
+    title: "🌴 California — Sacramento Valley",
+    locations: CALIFORNIA.filter((l) => l.region === "Sacramento Valley"),
+  },
+  {
+    key: "ca-cv",
+    title: "🌴 California — Central Valley",
+    locations: CALIFORNIA.filter((l) => l.region === "Central Valley"),
+  },
+  {
+    key: "ca-sierra",
+    title: "🌴 California — Sierra & Tahoe",
+    locations: CALIFORNIA.filter((l) => l.region === "Sierra & Tahoe"),
+  },
+  {
+    key: "ca-north",
+    title: "🌴 California — North State",
+    locations: CALIFORNIA.filter((l) => l.region === "North State"),
+  },
+  {
     key: "nm-abq",
     title: "🏜️ New Mexico — Albuquerque Metro",
     locations: NEW_MEXICO.filter((l) => l.region === "Albuquerque Metro"),
@@ -87,45 +116,5 @@ export const REGION_GROUPS = [
     key: "nm-nw",
     title: "🏜️ New Mexico — Northwest",
     locations: NEW_MEXICO.filter((l) => l.region === "Northwest NM"),
-  },
-  {
-    key: "nv",
-    title: "🎰 Nevada",
-    locations: NEVADA,
-  },
-  {
-    key: "co-front",
-    title: "🏔️ Colorado — Front Range",
-    locations: COLORADO.filter((l) => l.region === "Front Range"),
-  },
-  {
-    key: "co-cos",
-    title: "🏔️ Colorado — Colorado Springs Area",
-    locations: COLORADO.filter((l) => l.region === "Colorado Springs Area"),
-  },
-  {
-    key: "co-sw",
-    title: "🏔️ Colorado — Southwest / San Juans",
-    locations: COLORADO.filter((l) => l.region === "Southwest / San Juans"),
-  },
-  {
-    key: "co-mt",
-    title: "🏔️ Colorado — Mountain Towns",
-    locations: COLORADO.filter((l) => l.region === "Mountain Towns"),
-  },
-  {
-    key: "ut",
-    title: "⛰️ Utah",
-    locations: UTAH,
-  },
-  {
-    key: "tx-west",
-    title: "🤠 West Texas",
-    locations: WEST_TEXAS,
-  },
-  {
-    key: "mx-sonora",
-    title: "🇲🇽 Sonora — Free Zone (no Zillow)",
-    locations: SONORA_MEXICO,
   },
 ].filter((g) => g.locations.length > 0);
