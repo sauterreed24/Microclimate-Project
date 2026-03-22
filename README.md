@@ -20,6 +20,11 @@
   - **Quotas**: APIs & Services → Maps JavaScript API → **Quotas** — set sensible caps if you want a hard ceiling (may cause the map to stop loading if exceeded).
 - This app only loads the map when you open the **Map** tab, which reduces unnecessary API use compared to always-on maps.
 
+### Arizona / Sonora location pack
+
+- Bulk **Arizona** municipalities (plus selected CDPs and reference cards for Phoenix & Tucson) and **Sonora** border / tourist-corridor towns are defined in **`src/data/arizonaSonoraPack.js`** and merged into the main catalog at runtime (`MC` + `RD`).
+- Mexico travel notes in the app are **not legal advice** — confirm **FMM**, insurance, and current **vehicle / Sonora-only** rules with official sources before driving.
+
 ---
 
 # React + Vite
