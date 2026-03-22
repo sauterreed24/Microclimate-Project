@@ -1,6 +1,5 @@
-@import "tailwindcss";
-
 @import url("https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700&family=Lexend:wght@400;500;600;700&display=swap");
+@import "tailwindcss";
 
 @theme {
   --font-family-display: "Fraunces", ui-serif, Georgia, serif;

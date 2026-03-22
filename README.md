@@ -1,4 +1,16 @@
-# Microclimates — field guide + map
+# Reed's Home Finder (primary UI)
+
+Personal Zillow-powered search with a large location library, OSM map, favorites, and persisted filters. Run:
+
+```bash
+npm run dev:reed
+```
+
+Details: **`docs/REED_HOME_FINDER.md`**. Restore the old microclimate experience by pointing `src/App.jsx` at `App.microclimate.backup.jsx`.
+
+---
+
+# Microclimates — field guide + map (legacy backup)
 
 ## Google Maps API key (required for the **Map** tab)
 
