@@ -72,7 +72,15 @@ export const useReedStore = create(
         maxSqft: s.maxSqft,
         favoriteZpids: s.favoriteZpids,
       }),
-      version: 1,
+      version: 2,
+      migrate: (persisted) => {
+        if (!persisted || typeof persisted !== "object") return persisted;
+        const id = persisted.locationId;
+        if (id != null && !getLocationById(id)) {
+          return { ...persisted, locationId: DEFAULT_LOCATION_ID };
+        }
+        return persisted;
+      },
     }
   )
 );

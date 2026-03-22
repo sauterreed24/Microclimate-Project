@@ -1369,6 +1369,9 @@ const bulkRows = [
   ["Yuma", "Yuma", 32.6927, -114.6277, "~97000", "coloradoRiver"],
 ];
 
+/** Exported for Reed’s Home Finder — full incorporated-place coverage merged with manual chips */
+export const ARIZONA_BULK_MUNICIPALITY_ROWS = bulkRows;
+
 let nextId = 950;
 const bulkBuilt = [];
 for (const [name, county, la, ln, pop, zKey] of bulkRows) {

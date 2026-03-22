@@ -1,10 +1,48 @@
 import { us } from "./helpers.js";
+import { CALIFORNIA_EXTRA_ROWS } from "./californiaExtra.js";
 
-const C = (id, label, q, region, lat, lng, tags) =>
-  us({ id, label, q, state: "CA", region, lat, lng, flag: "🌴", tags: tags || [], notes: "" });
+const CA_REGION_PROFILE = {
+  "Los Angeles & Orange County": "coastal-marine-cal",
+  "San Diego & Imperial": "coastal-marine-cal",
+  "Inland Empire": "inland-empire-foothill",
+  "Central Coast": "coastal-marine-cal",
+  "Bay Area & Peninsula": "bay-inland-mediterranean",
+  "Sacramento Valley": "sacramento-thermal-valley",
+  "Central Valley": "central-valley-thermal",
+  "Sierra & Tahoe": "sierra-alpine-cal",
+  "North State": "north-state-mixed",
+};
 
-/** Arizona-adjacent + major California markets — Zillow search strings */
-export const CALIFORNIA = [
+function inferCaliforniaProfile(region, id) {
+  if (id === "el-centro-ca" || id === "brawley-ca" || id === "calexico-ca") return "inland-empire-foothill";
+  if (region === "Inland Empire") return "inland-empire-foothill";
+  return CA_REGION_PROFILE[region] || "coastal-marine-cal";
+}
+
+const C = (id, label, q, region, lat, lng, tags, profile) =>
+  us({
+    id,
+    label,
+    q,
+    state: "CA",
+    region,
+    lat,
+    lng,
+    flag: "🌴",
+    tags: tags || [],
+    notes: "",
+    microclimateProfile: profile ?? inferCaliforniaProfile(region, id),
+  });
+
+function mergeByIdPreferFirst(primary, secondary) {
+  const m = new Map();
+  for (const loc of secondary) m.set(loc.id, loc);
+  for (const loc of primary) m.set(loc.id, loc);
+  return [...m.values()].sort((a, b) => a.label.localeCompare(b.label));
+}
+
+/** Core + extra cities — deduped by id (core wins). */
+const CALIFORNIA_CORE = [
   // Greater Los Angeles & OC
   ...[
     ["los-angeles-ca", "Los Angeles, CA", "Los Angeles, CA", "Los Angeles & Orange County", 34.0522, -118.2437, ["metro"]],
@@ -109,3 +147,7 @@ export const CALIFORNIA = [
     ["eureka-ca", "Eureka, CA", "Eureka, CA", "North State", 40.8021, -124.1637, ["coast"]],
   ].map(([id, label, q, rg, la, ln, tg]) => C(id, label, q, rg, la, ln, tg)),
 ];
+
+const CALIFORNIA_EXTRA = CALIFORNIA_EXTRA_ROWS.map(([id, label, q, rg, la, ln]) => C(id, label, q, rg, la, ln, []));
+
+export const CALIFORNIA = mergeByIdPreferFirst(CALIFORNIA_CORE, CALIFORNIA_EXTRA);

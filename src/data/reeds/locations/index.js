@@ -1,9 +1,16 @@
 import { ARIZONA } from "./arizona.js";
 import { CALIFORNIA } from "./california.js";
 import { NEW_MEXICO } from "./newmexico.js";
+import { MICROCLIMATE_PROFILE_ORDER, MICROCLIMATE_PROFILE_META } from "./microclimateProfiles.js";
 
-/** Only AZ, CA, NM — Zillow-backed US markets */
-export const ALL_LOCATIONS = [...ARIZONA, ...CALIFORNIA, ...NEW_MEXICO];
+function ensureProfile(loc) {
+  const microclimateProfile = loc.microclimateProfile || "hot-desert-basin";
+  if (loc.microclimateProfile === microclimateProfile) return loc;
+  return { ...loc, microclimateProfile };
+}
+
+/** Only AZ, CA, NM — Zillow-backed US markets; every row has a `microclimateProfile`. */
+export const ALL_LOCATIONS = [...ARIZONA, ...CALIFORNIA, ...NEW_MEXICO].map(ensureProfile);
 
 const byId = new Map(ALL_LOCATIONS.map((l) => [l.id, l]));
 
@@ -12,10 +19,40 @@ export function getLocationById(id) {
 }
 
 /** Default search center when restoring bad saved IDs */
-export const DEFAULT_LOCATION_ID = "phoenix-az";
+export const DEFAULT_LOCATION_ID = "sierra-vista-az";
 
-/** Collapsible region groups for sidebar */
+/** Browse by similar climate mechanics (all three states mixed). */
+export const MICROCLIMATE_GROUPS = (() => {
+  const m = new Map();
+  for (const k of MICROCLIMATE_PROFILE_ORDER) m.set(k, []);
+  for (const loc of ALL_LOCATIONS) {
+    const prof = loc.microclimateProfile || "hot-desert-basin";
+    if (!m.has(prof)) m.set(prof, []);
+    m.get(prof).push(loc);
+  }
+  const pinned = new Set(["hot-desert-basin", "sonoran-sun-corridor", "sky-island-madrean", "nm-rio-grande-arid"]);
+  return MICROCLIMATE_PROFILE_ORDER.filter((k) => (m.get(k)?.length ?? 0) > 0).map((k) => {
+    const meta = MICROCLIMATE_PROFILE_META[k] || { emoji: "📍", title: k, blurb: "" };
+    return {
+      key: `mc-${k}`,
+      groupKind: "microclimate",
+      profileId: k,
+      title: `${meta.emoji} ${meta.title}`,
+      subtitle: meta.blurb,
+      pinned: pinned.has(k),
+      locations: [...(m.get(k) || [])].sort((a, b) => a.label.localeCompare(b.label)),
+    };
+  });
+})();
+
+/** Geographic — state / corridor (legacy). */
 export const REGION_GROUPS = [
+  {
+    key: "az-huachuca",
+    title: "🌵 Arizona — Huachuca & San Pedro",
+    pinned: true,
+    locations: ARIZONA.filter((l) => l.region === "Huachuca & San Pedro corridor"),
+  },
   {
     key: "az-phx",
     title: "🌵 Arizona — Greater Phoenix",

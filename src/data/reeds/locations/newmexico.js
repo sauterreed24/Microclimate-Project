@@ -1,9 +1,44 @@
 import { us } from "./helpers.js";
+import { NEW_MEXICO_EXTRA_ROWS } from "./newmexicoExtra.js";
 
-const N = (id, label, q, region, lat, lng, tags, notes) =>
-  us({ id, label, q, state: "NM", region, lat, lng, flag: "🏜️", tags: tags || [], notes: notes || "" });
+function inferNewMexicoProfile(region, id) {
+  if (region === "Albuquerque Metro") return "nm-rio-grande-arid";
+  if (region === "Santa Fe / North") {
+    if (/taos|angel-fire|cimarron|raton|mora|chama/i.test(id)) return "nm-northwest-plateau";
+    return "nm-rio-grande-arid";
+  }
+  if (region === "South New Mexico") {
+    if (/silver-city|bayard|ruidoso|cloudcroft|magdalena/i.test(id)) return "sky-island-madrean";
+    return "nm-chihuahuan-basin";
+  }
+  if (region === "East / High Plains") return "nm-high-plains";
+  if (region === "Northwest NM") return "nm-northwest-plateau";
+  return "nm-rio-grande-arid";
+}
 
-export const NEW_MEXICO = [
+const N = (id, label, q, region, lat, lng, tags, notes, profile) =>
+  us({
+    id,
+    label,
+    q,
+    state: "NM",
+    region,
+    lat,
+    lng,
+    flag: "🏜️",
+    tags: tags || [],
+    notes: notes || "",
+    microclimateProfile: profile ?? inferNewMexicoProfile(region, id),
+  });
+
+function mergeByIdPreferFirst(primary, secondary) {
+  const m = new Map();
+  for (const loc of secondary) m.set(loc.id, loc);
+  for (const loc of primary) m.set(loc.id, loc);
+  return [...m.values()].sort((a, b) => a.label.localeCompare(b.label));
+}
+
+const NEW_MEXICO_CORE = [
   ...[
     ["albuquerque-nm", "Albuquerque, NM", "Albuquerque, NM", "Albuquerque Metro", 35.0844, -106.6504, ["metro"]],
     ["rio-rancho-nm", "Rio Rancho, NM", "Rio Rancho, NM", "Albuquerque Metro", 35.2328, -106.663, []],
@@ -21,7 +56,7 @@ export const NEW_MEXICO = [
 
   ...[
     ["santa-fe-nm", "Santa Fe, NM", "Santa Fe, NM", "Santa Fe / North", 35.687, -105.9378, ["capital", "arts"]],
-    ["espanola-nm", "Española, NM", "Española, NM", "Santa Fe / North", 36.0056, -106.0644, []],
+    ["espanola-nm", "Espanola, NM", "Espanola, NM", "Santa Fe / North", 36.0056, -106.0644, []],
     ["los-alamos-nm", "Los Alamos, NM", "Los Alamos, NM", "Santa Fe / North", 35.8801, -106.3031, []],
     ["pojoaque-nm", "Pojoaque, NM", "Pojoaque, NM", "Santa Fe / North", 35.8928, -106.0101, []],
     ["taos-nm", "Taos, NM", "Taos, NM", "Santa Fe / North", 36.4072, -105.5731, ["ski", "arts"]],
@@ -77,3 +112,7 @@ export const NEW_MEXICO = [
     ["tierra-amarilla-nm", "Tierra Amarilla, NM", "Tierra Amarilla, NM", "Northwest NM", 36.7003, -106.5484, []],
   ].map(([id, label, q, rg, la, ln, tg]) => N(id, label, q, rg, la, ln, tg, "")),
 ];
+
+const NEW_MEXICO_EXTRA = NEW_MEXICO_EXTRA_ROWS.map(([id, label, q, rg, la, ln]) => N(id, label, q, rg, la, ln, [], ""));
+
+export const NEW_MEXICO = mergeByIdPreferFirst(NEW_MEXICO_CORE, NEW_MEXICO_EXTRA);

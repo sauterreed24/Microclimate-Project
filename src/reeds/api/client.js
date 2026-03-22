@@ -51,9 +51,26 @@ export async function searchListings(params) {
 }
 
 export async function searchByCoordinates(params) {
-  const res = await api.get("/api/zillow/search-coordinates", { params, validateStatus: () => true });
-  if (res.status >= 400) throw new Error(res.data?.error || res.statusText);
-  return res.data;
+  try {
+    const res = await api.get("/api/zillow/search-coordinates", {
+      params,
+      validateStatus: () => true,
+    });
+    if (res.status >= 400) {
+      const msg =
+        typeof res.data === "object" && res.data?.error
+          ? res.data.error
+          : `Request failed (${res.status})`;
+      const err = new Error(msg);
+      err.response = res;
+      err.status = res.status;
+      throw err;
+    }
+    return res.data;
+  } catch (e) {
+    if (e.response && e.message) throw e;
+    throw wrapAxiosError(e);
+  }
 }
 
 export async function getPropertyDetails(params) {

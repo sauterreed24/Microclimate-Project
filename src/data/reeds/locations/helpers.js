@@ -1,4 +1,4 @@
-/** @typedef {{ id: string, label: string, searchQuery: string, state: string, region: string, country: string, lat: number, lng: number, flag: string, tags: string[], notes: string, isHome?: boolean, homeStar?: boolean, mexicoZone?: boolean, resourceLinks?: { label: string, href: string }[] }} LocationRecord */
+/** @typedef {{ id: string, label: string, searchQuery: string, state: string, region: string, country: string, lat: number, lng: number, flag: string, tags: string[], notes: string, isHome?: boolean, homeStar?: boolean, mexicoZone?: boolean, resourceLinks?: { label: string, href: string }[], searchMode?: "location" | "coordinates", coordRadiusMiles?: number, microclimateProfile?: string }} LocationRecord */
 
 /** US / default location */
 export function us(p) {
@@ -17,6 +17,9 @@ export function us(p) {
     isHome: p.isHome,
     homeStar: p.homeStar,
     mexicoZone: false,
+    searchMode: p.searchMode || "location",
+    coordRadiusMiles: p.coordRadiusMiles ?? undefined,
+    microclimateProfile: p.microclimateProfile,
   };
 }
 

@@ -2,13 +2,16 @@ import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } fro
 import toast, { Toaster } from "react-hot-toast";
 import { Activity, Heart, Home, Keyboard, Loader2, Map as MapIcon, Menu, RefreshCw, Search } from "lucide-react";
 import { DEFAULT_LOCATION_ID, getLocationById } from "../data/reeds/locations/index.js";
+import { getMicroclimateMeta } from "../data/reeds/locations/microclimateProfiles.js";
 import { useReedStore } from "./store/useReedStore.js";
-import { searchListings } from "./api/client.js";
+import { searchByCoordinates, searchListings } from "./api/client.js";
 import { extractListings } from "./lib/extractListings.js";
 import LocationLibrary from "./components/LocationLibrary.jsx";
 import ListingCard from "./components/ListingCard.jsx";
 import ListingSkeleton from "./components/ListingSkeleton.jsx";
 import EmptyResults from "./components/EmptyResults.jsx";
+import MarketMicroclimatePanel from "./components/MarketMicroclimatePanel.jsx";
+import { getMicroclimateBundle } from "./data/microclimateBridge.js";
 
 const ListingMap = lazy(() => import("./components/ListingMap.jsx"));
 const PropertyModal = lazy(() => import("./components/PropertyModal.jsx"));
@@ -29,15 +32,16 @@ const RENT_HOME_TYPES = [
   ["TOWNHOMES", "Townhomes"],
 ];
 
-function buildSearchParams(state) {
+/** @returns {{ kind: "location", params: Record<string, string> } | { kind: "coordinates", params: Record<string, string> } | null} */
+function buildSearchRequest(state) {
   const loc = getLocationById(state.locationId);
   if (!loc) return null;
   const p = {
-    location: loc.searchQuery,
     page: String(state.page || 1),
     home_status: state.homeStatus,
     home_type: state.homeType,
     sort: state.sort,
+    limit: "40",
   };
   const num = (v) => (v === "" || v == null ? undefined : String(v));
   const add = (k, v) => {
@@ -52,7 +56,26 @@ function buildSearchParams(state) {
   add("max_bathrooms", state.maxBathrooms);
   add("min_sqft", state.minSqft);
   add("max_sqft", state.maxSqft);
-  return p;
+
+  if (loc.searchMode === "coordinates" && loc.coordRadiusMiles) {
+    return {
+      kind: "coordinates",
+      params: {
+        ...p,
+        latitude: String(loc.lat),
+        longitude: String(loc.lng),
+        radius: String(loc.coordRadiusMiles),
+      },
+    };
+  }
+
+  return {
+    kind: "location",
+    params: {
+      ...p,
+      location: loc.searchQuery,
+    },
+  };
 }
 
 export default function ReedsHomeFinder() {
@@ -92,6 +115,11 @@ export default function ReedsHomeFinder() {
 
   const active = useMemo(() => getLocationById(locationId), [locationId]);
   const priceSuffix = homeStatus === "FOR_RENT" ? "/mo" : "";
+  const microBundle = useMemo(() => (locationId ? getMicroclimateBundle(locationId) : null), [locationId]);
+  const activeMcMeta = useMemo(() => {
+    const p = active?.microclimateProfile;
+    return p ? getMicroclimateMeta(p) : null;
+  }, [active]);
 
   useEffect(() => {
     if (!getLocationById(locationId)) {
@@ -153,14 +181,15 @@ export default function ReedsHomeFinder() {
 
   const runSearch = useCallback(async () => {
     const snap = useReedStore.getState();
-    const params = buildSearchParams(snap);
-    if (!params) {
+    const req = buildSearchRequest(snap);
+    if (!req) {
       useReedStore.setState({ listings: [], rawResponse: null, loading: false, error: null });
       return;
     }
     useReedStore.setState({ loading: true, error: null });
     try {
-      const raw = await searchListings(params);
+      const raw =
+        req.kind === "coordinates" ? await searchByCoordinates(req.params) : await searchListings(req.params);
       const list = extractListings(raw);
       useReedStore.setState({ rawResponse: raw, listings: list, loading: false });
     } catch (e) {
@@ -292,7 +321,7 @@ export default function ReedsHomeFinder() {
               ref={locFilterRef}
               value={libSearch}
               onChange={(e) => setLibSearch(e.target.value)}
-              placeholder="Filter locations…"
+              placeholder="Filter towns, state, or microclimate…"
               className="w-full bg-transparent text-sm text-stone-800 placeholder:text-stone-400 focus:outline-none"
             />
           </div>
@@ -309,6 +338,14 @@ export default function ReedsHomeFinder() {
                 <label className="text-[10px] font-bold uppercase tracking-wider text-stone-500">Active market</label>
                 <p className="mt-1 font-display text-lg text-stone-900">{active?.label ?? "—"}</p>
                 <p className="text-xs text-stone-500">{active?.region}</p>
+                {activeMcMeta && (
+                  <p className="mt-1.5 max-w-xl text-[11px] leading-snug text-teal-900/85" title={activeMcMeta.blurb}>
+                    <span className="mr-1">{activeMcMeta.emoji}</span>
+                    <span className="font-semibold">{activeMcMeta.title}</span>
+                    <span className="text-stone-600"> — {activeMcMeta.blurb.slice(0, 120)}
+                    {activeMcMeta.blurb.length > 120 ? "…" : ""}</span>
+                  </p>
+                )}
               </div>
               <Field label="Status">
                 <select
@@ -453,6 +490,8 @@ export default function ReedsHomeFinder() {
             </div>
           </div>
 
+          {microBundle && active && <MarketMicroclimatePanel bundle={microBundle} locationLabel={active.label} />}
+
           {loading && <ListingSkeleton />}
 
           {!loading && listings.length === 0 && <EmptyResults loading={loading} />}
@@ -502,9 +541,11 @@ export default function ReedsHomeFinder() {
 
             {(view === "split" || view === "map") && active && !loading && (
               <div className="min-h-[400px]">
-                <div className="mb-2 flex items-center gap-2 text-xs text-stone-500">
+                <div className="mb-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-stone-500">
                   <MapIcon className="h-3.5 w-3.5 text-teal-600" />
-                  CARTO map · teal ring = search area · white dots = listings
+                  <span>
+                    Layered basemap · <span className="font-medium text-stone-700">teal pulse</span> = search center · price chips = listings
+                  </span>
                 </div>
                 <Suspense
                   fallback={
