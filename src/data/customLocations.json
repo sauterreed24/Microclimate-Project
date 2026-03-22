@@ -1,29 +1,18 @@
-[
-  {
-    "id": "bisbee-warren-mining",
-    "name": "Bisbee / Warren Mining District",
-    "region": "Cochise County, Arizona",
-    "country": "us",
-    "biomeType": "Chihuahuan Desert / Madrean Woodland Transition",
-    "appMcId": 901,
-    "note": "Imported into App.jsx MC array as id 901"
-  },
-  {
-    "id": "flagstaff-san-francisco-peaks",
-    "name": "Flagstaff / San Francisco Peaks",
-    "region": "Coconino County, Arizona",
-    "country": "us",
-    "biomeType": "Ponderosa Pine Forest / Alpine Tundra",
-    "appMcId": 902,
-    "note": "Imported into App.jsx MC array as id 902"
-  },
-  {
-    "id": "magdalena-de-kino",
-    "name": "Magdalena de Kino / Altar Valley",
-    "region": "Sonora, Mexico",
-    "country": "mx",
-    "biomeType": "Sonoran Riparian / Foothill Thornscrub",
-    "appMcId": 903,
-    "note": "Imported into App.jsx MC array as id 903"
+{
+  "notes": "Extended locations live in App.jsx MC array.",
+  "entries": [
+    { "slug": "bisbee-warren-mining", "appMcId": 901 },
+    { "slug": "flagstaff-san-francisco-peaks", "appMcId": 902 },
+    { "slug": "magdalena-de-kino", "appMcId": 903 },
+    { "slug": "osoyoos-pocket-desert", "appMcId": 904 },
+    { "slug": "oliver-golden-mile", "appMcId": 905 },
+    { "slug": "similkameen-keremeos", "appMcId": 906 },
+    { "slug": "hermosillo-capital", "appMcId": 907 },
+    { "slug": "cananea-mining-highlands", "appMcId": 908 },
+    { "slug": "guaymas-san-carlos", "appMcId": 909 }
+  ],
+  "optionalFields": {
+    "tl": "Short tagline shown on list cards and in detail (Field tagline).",
+    "ins": "Array of analyst-note bullets in Overview."
   }
-]
+}
