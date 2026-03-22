@@ -1,118 +1,41 @@
-/* Microclimates — atlas typography & atmosphere (not flat white) */
+@import "tailwindcss";
+
+@import url("https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700&family=Lexend:wght@400;500;600;700&display=swap");
+
+@theme {
+  --font-family-display: "Fraunces", ui-serif, Georgia, serif;
+  --font-family-sans: "Lexend", ui-sans-serif, system-ui, sans-serif;
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    font-family: var(--font-family-sans);
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+  }
+  #root {
+    min-height: 100vh;
+  }
+  button {
+    font-family: inherit;
+  }
+}
+
+/* Reed's Home Finder — display headings */
+.font-display {
+  font-family: var(--font-family-display);
+}
+
+/* Legacy microclimate styles (optional backup app) */
 :root {
   --mc-ink: #020617;
-  --mc-ink-soft: #0f172a;
-  --mc-ink-muted: rgba(2, 6, 23, 0.78);
   --mc-accent: #0f766e;
-  --mc-accent-warm: #c2410c;
-  --mc-gold: #b45309;
-  --mc-sage: #0f766e;
-  --mc-border: rgba(15, 23, 42, 0.1);
-  --mc-border-strong: rgba(15, 23, 42, 0.14);
-  --mc-surface: rgba(255, 255, 255, 0.82);
-  --mc-surface-solid: #ffffff;
-  --mc-font-display: "Fraunces", "Georgia", serif;
-  --mc-font-ui: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
-}
-
-html {
-  -webkit-text-size-adjust: 100%;
-}
-
-body {
-  margin: 0;
-  min-height: 100vh;
-  min-width: 320px;
-  font-family: "Lexend", var(--mc-font-ui);
-  font-size: 16px;
-  line-height: 1.65;
-  letter-spacing: 0.02em;
-  color: var(--mc-ink-soft);
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  font-feature-settings: "kern" 1, "liga" 1;
-  /* Layered atmosphere: cool mist + warm corner + soft base */
-  background-color: #e2e8f0;
-  background-image:
-    radial-gradient(ellipse 100% 80% at 50% -25%, rgba(13, 148, 136, 0.09), transparent 55%),
-    radial-gradient(ellipse 70% 50% at 100% 10%, rgba(194, 65, 12, 0.06), transparent 50%),
-    radial-gradient(ellipse 60% 40% at 0% 100%, rgba(99, 102, 241, 0.05), transparent 45%),
-    linear-gradient(168deg, #f8fafc 0%, #f1f5f9 38%, #e8eef5 72%, #dce4ee 100%);
-  background-attachment: fixed;
-}
-
-#root {
-  min-height: 100vh;
-  width: 100%;
-  display: block;
-}
-
-body {
-  display: block;
-  place-items: unset;
-}
-
-button {
-  font-family: inherit;
-}
-
-button:focus-visible {
-  outline: 2px solid rgba(13, 148, 136, 0.45);
-  outline-offset: 2px;
-}
-
-/* Framed map chrome — reads like an instrument panel, not a bare iframe */
-.mc-map-frame {
-  width: 100%;
-}
-
-.mc-map-frame__inner {
-  border-radius: 18px;
-  overflow: hidden;
-  background: linear-gradient(145deg, #cbd5e1, #e2e8f0);
-  padding: 3px;
-  box-shadow:
-    0 4px 6px -1px rgba(15, 23, 42, 0.06),
-    0 24px 48px -12px rgba(15, 23, 42, 0.18),
-    0 0 0 1px rgba(15, 23, 42, 0.06),
-    inset 0 1px 0 rgba(255, 255, 255, 0.85);
-}
-
-.mc-map-frame__map {
-  border-radius: 15px;
-  overflow: hidden;
-  height: calc(100vh - 220px);
-  min-height: 340px;
-  background: #e5e7eb;
-}
-
-/* Long-form reading comfort inside detail panels */
-.mc-read {
-  font-size: 16.5px;
-  line-height: 1.82;
-  letter-spacing: 0.03em;
-  word-spacing: 0.05em;
-  color: var(--mc-ink-muted);
-}
-
-.mc-read strong {
-  color: var(--mc-ink-soft);
-  font-weight: 600;
-}
-
-/* Month climate grid */
-.mc-month-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
-}
-
-@media (max-width: 380px) {
-  .mc-month-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {
