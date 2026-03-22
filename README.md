@@ -1,12 +1,14 @@
 # Reed's Home Finder (primary UI)
 
-Personal Zillow-powered search with a large location library, OSM map, favorites, and persisted filters. Run:
+Personal Zillow-powered search with a large location library, OSM map, favorites, and persisted filters.
+
+**Start the app (Vite + API proxy on port 3001):**
 
 ```bash
-npm run dev:reed
+npm run dev
 ```
 
-Details: **`docs/REED_HOME_FINDER.md`**. Restore the old microclimate experience by pointing `src/App.jsx` at `App.microclimate.backup.jsx`.
+Use **`npm run dev:web`** if you only want the frontend (listings will fail until `npm run api` runs separately). Details: **`docs/REED_HOME_FINDER.md`**. Restore the old microclimate UI by pointing `src/App.jsx` at `App.microclimate.backup.jsx`.
 
 ---
 

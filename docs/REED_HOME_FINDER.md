@@ -6,10 +6,11 @@
 
 | Script | Purpose |
 |--------|---------|
-| `npm run dev` | Vite dev server (default port **5174**). Proxies `/api/*` → `http://localhost:3001`. |
-| `npm run api` | **Reed's** backend: `backend/index.js` — proxies OpenWeb Ninja with `ZILLOW_API_KEY` from `backend/.env`. |
-| `npm run dev:reed` | Runs **both** Vite + `api` (use this for daily home search). |
-| `npm run server` | **Legacy** microclimate RapidAPI proxy (`server/index.js`). Don’t run with `api` on the same `PORT`. |
+| `npm run dev` | **Vite (5174) + Reed API (3001)** — use this so `/api` proxy works. |
+| `npm run dev:web` | Vite only; run `npm run api` in another terminal or listings show “cannot reach API”. |
+| `npm run api` | **Reed's** backend: `backend/index.js` — `ZILLOW_API_KEY` in `backend/.env`. |
+| `npm run dev:reed` | Alias for `npm run dev`. |
+| `npm run server` | **Legacy** microclimate proxy (`server/index.js`). Don’t use with Reed `api` on the same `PORT`. |
 
 Root `server.js` is an alternate experiment; **Reed's app uses `backend/index.js`**.
 
