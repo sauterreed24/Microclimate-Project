@@ -28,7 +28,7 @@ export default function MonthClimatePanel({ mc }) {
               fontSize: 9,
               letterSpacing: "0.14em",
               textTransform: "uppercase",
-              color: "var(--mc-terracotta)",
+              color: "var(--mc-accent, #0d9488)",
               fontWeight: 600,
               marginBottom: 4,
             }}
@@ -38,7 +38,7 @@ export default function MonthClimatePanel({ mc }) {
           <h3
             style={{
               margin: 0,
-              fontFamily: "'Instrument Serif', serif",
+              fontFamily: "'Fraunces', Georgia, serif",
               fontWeight: 400,
               fontSize: 22,
               color: "var(--mc-ink)",
@@ -64,10 +64,11 @@ export default function MonthClimatePanel({ mc }) {
       </div>
       <p
         style={{
-          fontSize: 12,
+          fontSize: 14.5,
           color: "var(--mc-ink-muted)",
-          lineHeight: 1.55,
+          lineHeight: 1.68,
           margin: "0 0 14px",
+          letterSpacing: "0.01em",
         }}
       >
         Each card is <strong style={{ color: "var(--mc-ink)" }}>typical high</strong> and{" "}
@@ -83,9 +84,9 @@ export default function MonthClimatePanel({ mc }) {
               style={{
                 borderRadius: 14,
                 padding: "10px 10px 8px",
-                background: "linear-gradient(165deg, #fffefb 0%, #faf6ef 100%)",
+                background: "linear-gradient(168deg, #ffffff 0%, #f8fafc 100%)",
                 border: "1px solid var(--mc-border)",
-                boxShadow: "0 4px 20px rgba(74, 60, 49, 0.06)",
+                boxShadow: "0 8px 28px -8px rgba(15, 23, 42, 0.07)",
               }}
             >
               <div
@@ -93,7 +94,7 @@ export default function MonthClimatePanel({ mc }) {
                   fontSize: 10,
                   fontWeight: 700,
                   letterSpacing: "0.06em",
-                  color: "var(--mc-terracotta)",
+                  color: "var(--mc-accent, #0d9488)",
                   marginBottom: 6,
                 }}
               >
@@ -103,7 +104,7 @@ export default function MonthClimatePanel({ mc }) {
                 <div>
                   <div
                     style={{
-                      fontFamily: "'Instrument Serif', serif",
+                      fontFamily: "'Fraunces', Georgia, serif",
                       fontSize: 26,
                       lineHeight: 1,
                       color: "#c45c3e",
@@ -124,7 +125,7 @@ export default function MonthClimatePanel({ mc }) {
                 <div>
                   <div
                     style={{
-                      fontFamily: "'Instrument Serif', serif",
+                      fontFamily: "'Fraunces', Georgia, serif",
                       fontSize: 22,
                       lineHeight: 1,
                       color: "#3d7a8c",

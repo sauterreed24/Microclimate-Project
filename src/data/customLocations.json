@@ -1,14 +1,10 @@
 {
-  "notes": "Featured slugs below map to MC ids in App.jsx. Arizona municipalities, Phoenix/Tucson references, CDPs, Sonora corridor towns, and Huachuca Mountains (929) are merged from src/data/arizonaSonoraPack.js (ids 910–1026+). Narrative templates: arizonaSonoraRichDefaults.js.",
+  "notes": "Saguaro Atlas — Arizona (primary), California & New Mexico corridors, Sonora (MX). Slugs map to MC ids in arizonaSonoraPack.js. Verify FMM, Mexican auto insurance, and vehicle permit (TIP) rules before driving beyond free zones — not legal advice.",
   "entries": [
-    { "slug": "bisbee-warren-mining", "appMcId": 901 },
-    { "slug": "flagstaff-san-francisco-peaks", "appMcId": 902 },
-    { "slug": "magdalena-de-kino", "appMcId": 903 },
-    { "slug": "osoyoos-pocket-desert", "appMcId": 904 },
-    { "slug": "oliver-golden-mile", "appMcId": 905 },
-    { "slug": "similkameen-keremeos", "appMcId": 906 },
+    { "slug": "las-cruces-mesilla", "appMcId": 1120 },
+    { "slug": "ciudad-obregon-yaqui", "appMcId": 949 },
+    { "slug": "el-centro-imperial", "appMcId": 1110 },
     { "slug": "hermosillo-capital", "appMcId": 907 },
-    { "slug": "cananea-mining-highlands", "appMcId": 908 },
     { "slug": "guaymas-san-carlos", "appMcId": 909 }
   ],
   "optionalFields": {

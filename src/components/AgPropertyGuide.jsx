@@ -47,9 +47,10 @@ export default function AgPropertyGuide({ mc, onTerm }) {
       <h3
         style={{
           margin: "0 0 12px",
-          fontFamily: "'Instrument Serif', serif",
-          fontWeight: 400,
-          fontSize: 22,
+          fontFamily: "'Fraunces', Georgia, serif",
+          fontWeight: 500,
+          fontSize: 23,
+          letterSpacing: "-0.02em",
           color: "var(--mc-ink)",
         }}
       >
@@ -59,16 +60,16 @@ export default function AgPropertyGuide({ mc, onTerm }) {
         style={{
           borderRadius: 16,
           padding: "14px 16px",
-          background: "linear-gradient(145deg, rgba(93,122,95,.1) 0%, rgba(250,248,244,.9) 100%)",
-          border: "1px solid rgba(93, 122, 95, 0.22)",
+          background: "linear-gradient(145deg, rgba(13,148,136,.09) 0%, rgba(255,255,255,.92) 100%)",
+          border: "1px solid rgba(13, 148, 136, 0.2)",
           marginBottom: 12,
         }}
       >
-        <p style={{ fontSize: 13, lineHeight: 1.7, color: "var(--mc-ink-muted)", margin: "0 0 10px" }}>
+        <p style={{ fontSize: 15, lineHeight: 1.75, color: "var(--mc-ink-muted)", margin: "0 0 12px", letterSpacing: "0.01em" }}>
           {season}
         </p>
-        <p style={{ fontSize: 13, lineHeight: 1.7, color: "var(--mc-ink-muted)", margin: "0 0 10px" }}>{water}</p>
-        <p style={{ fontSize: 13, lineHeight: 1.7, color: "var(--mc-ink-muted)", margin: 0 }}>{sunNote}</p>
+        <p style={{ fontSize: 15, lineHeight: 1.75, color: "var(--mc-ink-muted)", margin: "0 0 12px", letterSpacing: "0.01em" }}>{water}</p>
+        <p style={{ fontSize: 15, lineHeight: 1.75, color: "var(--mc-ink-muted)", margin: 0, letterSpacing: "0.01em" }}>{sunNote}</p>
       </div>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 12 }}>
         {[
@@ -83,7 +84,7 @@ export default function AgPropertyGuide({ mc, onTerm }) {
             style={{
               borderRadius: 12,
               padding: "10px 12px",
-              background: "#fffefb",
+              background: "linear-gradient(180deg,#ffffff,#f8fafc)",
               border: "1px solid var(--mc-border)",
               cursor: x.term ? "pointer" : "default",
             }}
@@ -91,8 +92,8 @@ export default function AgPropertyGuide({ mc, onTerm }) {
             <div style={{ fontSize: 9, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--mc-ink-muted)" }}>
               {x.k}
             </div>
-            <div style={{ fontFamily: "'Instrument Serif', serif", fontSize: 20, color: "var(--mc-ink)", marginTop: 2 }}>{x.v}</div>
-            <div style={{ fontSize: 10, color: "var(--mc-terracotta)", marginTop: 4 }}>{x.hint}</div>
+            <div style={{ fontFamily: "'Fraunces', Georgia, serif", fontSize: 21, fontWeight: 600, color: "var(--mc-ink)", marginTop: 2, letterSpacing: "-0.02em" }}>{x.v}</div>
+            <div style={{ fontSize: 10, color: "var(--mc-accent, #0d9488)", marginTop: 4, fontWeight: 500 }}>{x.hint}</div>
           </div>
         ))}
       </div>

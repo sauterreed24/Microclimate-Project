@@ -29,8 +29,8 @@ export default function TravelActivityCards({ items, biomeColor, renderT, onTerm
         style={{
           borderRadius: 16,
           padding: "16px 18px",
-          background: "linear-gradient(135deg, rgba(196,162,79,.15) 0%, transparent 55%)",
-          border: "1px solid rgba(196, 162, 79, 0.25)",
+          background: "linear-gradient(125deg, rgba(13,148,136,.12) 0%, rgba(255,255,255,.5) 48%, transparent 72%)",
+          border: "1px solid rgba(13, 148, 136, 0.22)",
           marginBottom: 18,
         }}
       >
@@ -39,9 +39,9 @@ export default function TravelActivityCards({ items, biomeColor, renderT, onTerm
             fontSize: 9,
             letterSpacing: "0.16em",
             textTransform: "uppercase",
-            color: "var(--mc-terracotta)",
             fontWeight: 700,
             marginBottom: 6,
+            color: "var(--mc-accent, #0d9488)",
           }}
         >
           Field itinerary
@@ -49,16 +49,17 @@ export default function TravelActivityCards({ items, biomeColor, renderT, onTerm
         <h3
           style={{
             margin: 0,
-            fontFamily: "'Instrument Serif', serif",
-            fontWeight: 400,
-            fontSize: 24,
-            lineHeight: 1.15,
+            fontFamily: "'Fraunces', Georgia, serif",
+            fontWeight: 500,
+            fontSize: 26,
+            lineHeight: 1.12,
+            letterSpacing: "-0.02em",
             color: "var(--mc-ink)",
           }}
         >
           How to spend your days here
         </h3>
-        <p style={{ margin: "10px 0 0", fontSize: 13, lineHeight: 1.68, color: "var(--mc-ink-muted)" }}>
+        <p style={{ margin: "12px 0 0", fontSize: 15, lineHeight: 1.72, color: "var(--mc-ink-muted)", letterSpacing: "0.01em" }}>
           Think of this as a <strong style={{ color: "var(--mc-ink)" }}>travel-forward workbook</strong> — not a checklist to
           finish in one trip. Each card keeps the full original note (nothing trimmed) while borrowing the rhythm of a glossy
           destination guide: a gentle section label, room to breathe, and typography that rewards slow reading. Cross-reference
@@ -84,9 +85,9 @@ export default function TravelActivityCards({ items, biomeColor, renderT, onTerm
               style={{
                 borderRadius: 18,
                 overflow: "hidden",
-                background: "#fffefb",
+                background: "linear-gradient(180deg,#ffffff,#f8fafc)",
                 border: "1px solid var(--mc-border)",
-                boxShadow: "0 8px 32px rgba(74, 60, 49, 0.07)",
+                boxShadow: "0 12px 40px -12px rgba(15, 23, 42, 0.1)",
                 animation: `mcCardIn 0.35s ease ${Math.min(i * 45, 400)}ms both`,
               }}
             >
@@ -114,9 +115,9 @@ export default function TravelActivityCards({ items, biomeColor, renderT, onTerm
                 </span>
                 <span
                   style={{
-                    fontFamily: "'Instrument Serif', serif",
+                    fontFamily: "'Fraunces', Georgia, serif",
                     fontSize: 18,
-                    color: "rgba(74,60,49,.25)",
+                    color: "rgba(15,23,42,.22)",
                     lineHeight: 1,
                   }}
                 >
@@ -128,7 +129,7 @@ export default function TravelActivityCards({ items, biomeColor, renderT, onTerm
                   <h4
                     style={{
                       margin: "0 0 8px",
-                      fontFamily: "'Instrument Serif', serif",
+                      fontFamily: "'Fraunces', Georgia, serif",
                       fontWeight: 400,
                       fontSize: 17,
                       lineHeight: 1.35,
@@ -145,10 +146,10 @@ export default function TravelActivityCards({ items, biomeColor, renderT, onTerm
                   style={{
                     marginTop: 12,
                     paddingTop: 10,
-                    borderTop: "1px dashed rgba(74,60,49,.12)",
-                    fontSize: 11,
+                    borderTop: "1px dashed rgba(15,23,42,.1)",
+                    fontSize: 11.5,
                     fontStyle: "italic",
-                    color: "var(--mc-terracotta)",
+                    color: "var(--mc-accent, #0d9488)",
                     lineHeight: 1.5,
                   }}
                 >

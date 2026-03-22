@@ -388,6 +388,166 @@ const Z = {
     blurb:
       "Gulf humidity + desert sun — watch rip currents, jellyfish, and summer tropical moisture.",
   },
+  /** California low deserts — compare to Yuma / Mexicali axis */
+  californiaImperial: {
+    ty: "Hot Desert Alluvial",
+    nr: "San Diego (SAN) · Palm Springs (PSP) · Imperial (IPL)",
+    eN: -200,
+    eX: 4500,
+    sH: 110,
+    sL: 82,
+    wH: 72,
+    wL: 38,
+    ra: 3,
+    hu: 32,
+    aq: 42,
+    aL: "Moderate",
+    so: "Saline desert alluvium & windblown sand",
+    ph: 8.0,
+    dr: "Excessive",
+    og: "Low",
+    vg: ["Creosote", "Mesquite", "Desert ironwood", "Ocotillo"],
+    gr: ["Winter vegetables", "Dates", "Citrus (coachella)"],
+    la2: ["Logistics to AZ & Sonora", "Snowbirds", "Renewables"],
+    zo: "10a–11a",
+    su: 325,
+    gd: "linear-gradient(135deg,#b45309,#ea580c,#fef08a)",
+    em: "🌴",
+    bm: "Nov–Apr",
+    vi: "Desert Dweller",
+    tg: ["california", "imperial", "coachella", "i-8"],
+    ad: 38,
+    blurb:
+      "SE California furnace — Salton trough heat, agricultural dust, and easy highway links toward Yuma and the Sonoyta–Peñasco corridor.",
+  },
+  /** New Mexico Chihuahuan — Las Cruces / Mesilla */
+  newMexicoChihuahuan: {
+    ty: "Chihuahuan Desert",
+    nr: "El Paso (ELP) · Las Cruces (LRU)",
+    eN: 3800,
+    eX: 7200,
+    sH: 96,
+    sL: 68,
+    wH: 58,
+    wL: 22,
+    ra: 10,
+    hu: 32,
+    aq: 28,
+    aL: "Excellent",
+    so: "Desert caliche & river alluvium",
+    ph: 8.0,
+    dr: "Excessive",
+    og: "Low",
+    vg: ["Creosote", "Honey mesquite", "Soaptree yucca", "Tarbush"],
+    gr: ["Chiles", "Pecans", "Onions"],
+    la2: ["NMSU research", "Holloman / WSMR corridor", "Retirees"],
+    zo: "8a–9a",
+    su: 310,
+    gd: "linear-gradient(135deg,#92400e,#b45309,#fde68a)",
+    em: "🌶️",
+    bm: "Mar–May & Sep–Nov",
+    vi: "Scenic Road Tripper",
+    tg: ["new-mexico", "chihuahuan", "borderlands"],
+    ad: 48,
+    blurb:
+      "Organ Mountains rain shadow + Rio Grande bosque moisture — windy springs, monsoon fireworks, and a straight shot to I-10 Arizona.",
+  },
+  /** Albuquerque / Middle Rio Grande */
+  newMexicoCentral: {
+    ty: "High Desert Steppe",
+    nr: "Albuquerque (ABQ) · Santa Fe (SAF)",
+    eN: 4800,
+    eX: 10600,
+    sH: 92,
+    sL: 62,
+    wH: 52,
+    wL: 18,
+    ra: 9,
+    hu: 38,
+    aq: 35,
+    aL: "Good",
+    so: "Aeolian sand & caliche over basin fill",
+    ph: 7.8,
+    dr: "Good",
+    og: "Moderate",
+    vg: ["One-seed juniper", "Piñon", "Rabbitbrush", "Apache plume"],
+    gr: ["Chiles", "Alfalfa", "Greenhouse tech"],
+    la2: ["Federal labs", "Film", "Tourism", "Balloon economy"],
+    zo: "7a–8a",
+    su: 305,
+    gd: "linear-gradient(135deg,#7c2d12,#c2410c,#fed7aa)",
+    em: "🎈",
+    bm: "Apr–Jun & Sep–Oct",
+    vi: "Contemplative Wanderer",
+    tg: ["new-mexico", "albuquerque", "rio-grande"],
+    ad: 42,
+    blurb:
+      "Sandia wedge + Rio Grande trees — elevation buys sleep; spring winds sandblast patience; smoke seasons follow big Southwest fires.",
+  },
+  /** Southern Rockies / NM north — Taos, high basins */
+  newMexicoNorth: {
+    ty: "High Desert Transition",
+    nr: "Albuquerque (ABQ) · Taos (TSM)",
+    eN: 6200,
+    eX: 12500,
+    sH: 82,
+    sL: 48,
+    wH: 42,
+    wL: 2,
+    ra: 12,
+    hu: 42,
+    aq: 18,
+    aL: "Excellent",
+    so: "Volcanic tuff & colluvium",
+    ph: 7.0,
+    dr: "Good",
+    og: "High",
+    vg: ["Ponderosa", "Gambel oak", "Cottonwood (bosque)", "Aspen (high)"],
+    gr: ["Hay", "Cool-season vegetables", "Craft orchards"],
+    la2: ["Arts", "Ski", "Indigenous tourism"],
+    zo: "5b–7a",
+    su: 290,
+    gd: "linear-gradient(135deg,#1e3a5f,#0d9488,#a7f3d0)",
+    em: "🏔️",
+    bm: "May–Oct",
+    vi: "Cultural Immersion",
+    tg: ["new-mexico", "taos", "rockies"],
+    ad: 52,
+    blurb:
+      "Thin air and big skies — winter cold snaps, spring wind, summer monsoon with hail; fire and smoke are planning realities.",
+  },
+  /** Sonora Yaqui Valley — agriculture heartland */
+  sonoraInterior: {
+    ty: "Sonoran Metropolitan Drylands",
+    nr: "Hermosillo (HMO) · Ciudad Obregón (CEN)",
+    eN: 100,
+    eX: 3500,
+    sH: 108,
+    sL: 78,
+    wH: 78,
+    wL: 42,
+    ra: 7,
+    hu: 42,
+    aq: 40,
+    aL: "Moderate",
+    so: "Irrigated alluvium & coastal plain",
+    ph: 8.0,
+    dr: "Variable",
+    og: "Medium",
+    vg: ["Cardon", "Mesquite", "Palo fierro"],
+    gr: ["Wheat", "Vegetables", "Grapes"],
+    la2: ["Ag industry", "Ford Hermosillo supply", "Port logistics"],
+    zo: "10a–11b",
+    su: 315,
+    gd: "linear-gradient(135deg,#dc2626,#b45309,#fef3c7)",
+    em: "🌾",
+    bm: "Nov–Mar",
+    vi: "Sonoran Cosmopolitan",
+    tg: ["sonora", "yaqui", "highway-15"],
+    ad: 44,
+    blurb:
+      "Irrigated desert breadbasket — pre-monsoon heat, Gulf surges, and the economic gravity of Obregón & Hermosillo.",
+  },
 };
 
 function riskFor(zoneKey, co, id) {
@@ -412,6 +572,21 @@ function riskFor(zoneKey, co, id) {
   }
   if (zoneKey === "sonoraCoastLite") {
     return { ...base, bo: 4, bN: "Suburban", fl: 4, fN: "Coastal", hu: 5, huN: "Very High", ut: 8, uR: "Humid heat; tropical storm surge risk seasonal." };
+  }
+  if (zoneKey === "californiaImperial") {
+    return { ...base, bo: 5, bN: "Suburban", dr: 5, drN: "Extreme", ut: 4, uR: "Salton trough heat; ag dust; irrigation dependence." };
+  }
+  if (zoneKey === "newMexicoChihuahuan") {
+    return { ...base, bo: 3, bN: "Rural Sky", wf: 4, wfN: "High", ut: 7, uR: "Wind + dust; Organ lightning fires; border I-10 corridor." };
+  }
+  if (zoneKey === "newMexicoCentral") {
+    return { ...base, bo: 5, bN: "Suburban", wf: 3, wfN: "Moderate", ut: 6, uR: "Spring wind; fire smoke; balloon wind holds." };
+  }
+  if (zoneKey === "newMexicoNorth") {
+    return { ...base, bo: 3, bN: "Rural Sky", wf: 4, wfN: "High", ut: 5, uR: "Elevation cold; spring wind; monsoon hail." };
+  }
+  if (zoneKey === "sonoraInterior") {
+    return { ...base, bo: 5, bN: "Suburban", dr: 5, drN: "Extreme", ut: 5, uR: "Interior Sonoran heat; verify vehicle permit if leaving free zone." };
   }
   return { ...base, bo: 4, bN: "Suburban", ut: 6, uR: "Typical Sonoran Basin-Range hazards; verify local flood maps." };
 }
@@ -461,12 +636,12 @@ function makeCity(id, name, county, la, ln, pop, zoneKey, extra = {}) {
     em: emoji,
     bm: extra.bm || z.bm,
     vi: extra.vi || z.vi,
-    tg: [...z.tg, ...(extra.tg || [])],
+    tg: extra.tgReplace ? [...extra.tgReplace] : [...z.tg, ...(extra.tg || [])],
     ad: extra.ad ?? z.ad,
     bp,
     ac,
     ct,
-    si: extra.si || [901, 20, 26],
+    si: extra.si || [901, 910, 928],
     tl: extra.tl || `${name} — municipal microclimate & services snapshot.`,
     ins,
     out,
@@ -478,6 +653,24 @@ function makeCity(id, name, county, la, ln, pop, zoneKey, extra = {}) {
 
 /** Hand-built high-detail corridor + references */
 const detailed = [
+  makeCity(901, "Bisbee", "Cochise", 31.4489, -109.9284, "~5,000", "southeastSkyIsland", {
+    tl: "Copper-canyon stairs, 1880s brick, and nights cooler than Tucson’s basin.",
+    bp: "Bisbee clings to the Mule Mountains’ north side — narrow streets, creative in-migration, and a genuine high-desert night chill that Phoenix money chases. Flash floods in monsoon and wildfire smoke from Mexico or the Huachucas are real planning variables. Compare housing to Sierra Vista for services vs aesthetic.",
+    si: [910, 916, 928],
+  }),
+  makeCity(902, "Flagstaff", "Coconino", 35.1983, -111.6513, "~78,000", "mogollonRim", {
+    tl: "Ponderosa + San Francisco Peaks — Arizona’s four-season mountain town.",
+    bp: "Flagstaff sits on the Colorado Plateau’s southern edge — ponderosa air, ski culture, and NAU’s student pulse. Wildfire smoke, snow load, and short-term rental debates shape housing. For Sonoran low-desert buyers, it’s the elevation escape benchmark.",
+    si: [927, 928, 1124],
+  }),
+  makeCity(908, "Cananea", "Sonora", 30.987, -110.301, "~38,000", "sonoraBorder", {
+    co: "MX",
+    r: "Cananea, Sonora — copper highlands",
+    nr: "Tucson (TUS) · Nogales",
+    tl: "Mile-high mining city — cooler nights, trogon country, and border logistics.",
+    bp: "Cananea’s elevation shaves brutal Sonoran lows off summer highs; copper heritage and oak-pine birding attract cross-border visitors. Verify port hours and documents; dust from legacy mining footprints can affect sensitive lungs.",
+    si: [907, 919, 901],
+  }),
   makeCity(910, "Sierra Vista", "Cochise", 31.5545, -110.3037, "~45,000", "southeastSkyIsland", {
     tl: "Gateway to the Huachucas — hummingbird capital with a Fort Huachuca-sized weather divide.",
     ins: [
@@ -507,7 +700,7 @@ const detailed = [
       "Sky-island fire regimes are trending toward larger high-severity patches when fuels align with ignition and wind — smoke exposure becomes a recurring summer–fall public-health variable.",
       "San Pedro flow is over-allocated on paper and stressed by climate + pumping — riparian real estate is emotionally priceless and hydrologically fragile; support conservation easements if you love the corridor.",
     ],
-    si: [929, 901, 20, 26],
+    si: [929, 901, 910, 928],
   }),
   makeCity(911, "Hereford", "Cochise (CDP)", 31.321, -110.139, "~6,500", "southeastSkyIsland", {
     tl: "High-desert ranchettes between the San Pedro and the Huachuca front.",
@@ -536,7 +729,7 @@ const detailed = [
       "Grassland fire spread rates increase with invasive annual grasses — defensible space standards may jump faster than HOA aesthetics adapt.",
       "Bird phenology may advance in warm springs — ‘peak week’ tourism could scatter across a longer, flatter calendar.",
     ],
-    si: [929, 910, 901, 20],
+    si: [929, 910, 901, 928],
   }),
   makeCity(912, "Patagonia", "Santa Cruz", 31.539, -110.756, "~800", "santaCruzWine", {
     tl: "Tiny mountain-town soul in the middle of a windy wine grassland.",
@@ -563,12 +756,12 @@ const detailed = [
       "Hail risk may strengthen with convective energy trends — vineyard trellis engineering and crop insurance riders are adaptive finance.",
       "Warmer springs could shift peak hummingbird tourism earlier — small-town cash flow may need shoulder-season programming.",
     ],
-    si: [913, 914, 929, 26],
+    si: [913, 914, 929, 928],
   }),
   makeCity(913, "Sonoita", "Santa Cruz", 31.679, -110.656, "~800", "santaCruzWine", {
     tl: "Arizona's original modern wine-country crossroads.",
     bp: "Sonoita sits at the intersection of AZ 83 and 82 — the marketing heart of Arizona's first AVA-minded plateau. Vineyards and ranches checkerboard native grassland; cattle guards outnumber stoplights. Elevation buys summer relief versus Tucson but not immunity: lightning-sparked range fires and violent hail are operational realities for growers.",
-    si: [912, 914, 26],
+    si: [912, 914, 928],
   }),
   makeCity(914, "Elgin", "Santa Cruz", 31.433, -110.583, "~150", "santaCruzWine", {
     tl: "Rail-adjacent hamlet turned winery cluster.",
@@ -591,7 +784,7 @@ const detailed = [
     tl: "I-10 exit town with Kartchner Caverns humidity hiding underground.",
     bp: "Benson is a highway services town — truck stops, RV parks, and the gateway to Kartchner Caverns State Park, where 99% humidity and 70°F air lives under desert crust. Summer highs match Tucson's oven but without urban tree canopy. Wind along the San Pedro alignment blows grit through fence lines.",
     ac: ["Kartchner Caverns timed tours (reserve weeks ahead)", "San Pedro river access points south of town"],
-    si: [901, 916, 26],
+    si: [901, 916, 928],
   }),
   makeCity(918, "Douglas", "Cochise", 31.347, -109.545, "~17,000", "southeastSkyIsland", {
     r: "Douglas, AZ — Agua Prieta border twin",
@@ -616,12 +809,12 @@ detailed.push(
       { nm: "Nogales AZ", pop: "~20,000", no: "Verify hillside vs floodplain FEMA maps." },
       { nm: "Heroica Nogales SON", pop: "large metro", no: "Walking crossing possible — still need documents for return." },
     ],
-    si: [903, 907, 920],
+    si: [1101, 907, 920],
   }),
   makeCity(920, "Rio Rico", "Santa Cruz (CDP)", 31.471, -111.104, "~20,000", "sonoraBorder", {
     tl: "Master-planned ridges above the border hustle.",
     bp: "Rio Rico spreads on mesas west of Nogales — newer subdivisions, golf, and retirees seeking views into Mexico. Wells and municipal water districts vary by phase; HOA docs matter. Afternoon updrafts from the desert floor pull dust high enough to polish crimson sunsets.",
-    si: [919, 903],
+    si: [919, 907],
   }),
   makeCity(921, "Tubac", "Santa Cruz", 31.611, -111.055, "~1,200", "tucsonCorridor", {
     eN: 3200,
@@ -631,17 +824,17 @@ detailed.push(
     tl: "Gallery village with golf courses in a cottonwood wash.",
     bp: "Tubac presidio history meets upscale snowbird retail — irrigated cottonwood corridors run cooler than open desert. Art festival weekends clog I-19 exits; groundwater demand supports lush landscaping that neighbors debate. Javelina and coyotes patrol HOA walls at night.",
     ac: ["Tubac Presidio State Historic Park", "Tumacácori National Historical Park", "Titan Missile Museum (nearby)"],
-    si: [919, 26],
+    si: [919, 928],
   }),
   makeCity(922, "Green Valley", "Pima (CDP)", 31.872, -111.0, "~20,000", "tucsonCorridor", {
     tl: "Retiree capital in the Santa Cruz Valley heat basin.",
     bp: "Green Valley is a CDP of contiguous active-adult communities — pickleball density rivals saguaros. Elevation slightly below Tucson proper yields hotter summer nights; monsoon relief is psychological as much as meteorological. Medical services cluster along I-19; water rates and HOA special assessments dominate dinner conversation.",
-    si: [26, 923],
+    si: [928, 923],
   }),
   makeCity(923, "Sahuarita", "Pima", 31.957, -110.98, "~35,000", "tucsonCorridor", {
     tl: "Master-planned boom south of Tucson along I-19.",
     bp: "Sahuarita absorbed copper-country families and Tucson commuters — pecan orchards still fringe some blocks while rooftops march toward the Santa Ritas. Dust from mine tailings and field discing shows on patio furniture. School capacity has lagged bursts of development.",
-    si: [26, 922],
+    si: [928, 922],
   }),
   makeCity(924, "Amado", "Santa Cruz (CDP)", 31.594, -111.065, "~300", "tucsonCorridor", {
     tl: "Highway 19 whistle-stop with winery pretensions.",
@@ -653,14 +846,14 @@ detailed.push(
     tl: "Capital of the Tohono O'odham Nation — saguaro country governance center.",
     ins: ["Respect tribal laws, photography restrictions, and alcohol rules.", "Services for visitors may be limited — plan fuel and water."],
     bp: "Sells is the administrative heart of the Tohono O'odham Nation — a vast saguaro sea on Hot Desert Alluvial|Hot Desert Alluvial pediments around a modest service cluster. Summer heat is lethal for the unprepared; Border Patrol presence reflects geography, not personal suspicion. Cultural events and basketry arts sustain identity amid hydrologic stress on desert aquifers.",
-    si: [26, 926],
+    si: [928, 926],
   }),
   makeCity(926, "Ajo", "Pima", 32.3717, -112.8607, "~3,000", "coloradoRiver", {
     nr: "Phoenix (PHX) ~2.5hr · Yuma (YUM) ~2hr",
     tl: "Company-town plaza ringed by organ pipe desert.",
     bp: "Ajo's Spanish Colonial Revival plaza is a surprise in the middle of organ pipe country — retired teachers and artists reclaimed miner housing. Organ Pipe Cactus National Monument borders bring border-security realities; some roads are advisory-only. Summer is not a casual season.",
     ac: ["Ajo plaza architecture walk", "Organ Pipe Cactus NM (check road status)", "Quitobaquito spring ethics — fragile"],
-    si: [26, 907],
+    si: [928, 907],
   }),
   makeCity(927, "Phoenix (Valley Reference)", "Maricopa", 33.4484, -112.074, "~1.6M city", "phxMetro", {
     n: "Phoenix (Valley Reference)",
@@ -686,7 +879,7 @@ detailed.push(
       "Hail and wind-driven fire risk at the wildland interface may increase insurance deductibles faster than CPI — check roof class 4 impact ratings.",
       "Monsoon + urban flooding: heavier single-hour rain rates test 1980s stormwater design — ask for parcel-level hydrology updates, not city averages.",
     ],
-    si: [902, 78, 26],
+    si: [928, 1124, 1121],
   }),
   makeCity(928, "Tucson (Sun Corridor Reference)", "Pima", 32.2226, -110.9747, "~550k city", "tucsonCorridor", {
     n: "Tucson (Sun Corridor Reference)",
@@ -711,7 +904,7 @@ detailed.push(
       "Increased vapor pressure deficit may stress mesquite–palo verde parkscapes unless irrigation budgets hold — city heat management is now public health.",
       "Remote-work in-migration competes with climate out-migration anecdotes — housing volatility may exceed temperature volatility in any given five-year window.",
     ],
-    si: [20, 901, 78],
+    si: [927, 901, 910],
   }),
   makeCity(929, "Huachuca Mountains (foothills & canyons)", "Cochise — Coronado NF", 31.454, -110.305, "unincorporated", "southeastSkyIsland", {
     n: "Huachuca Mountains (foothills & canyons)",
@@ -758,13 +951,56 @@ detailed.push(
       "Monsoon variability could increase ‘boom-bust’ bird migration pulses — tourism and lodge economics should budget for uneven seasons.",
       "Military training tempo and border sensor infrastructure may evolve independently of climate — noise and access buffers are policy variables.",
     ],
-    si: [910, 20, 901],
+    si: [910, 928, 901],
     tg: ["huachuca", "birding", "hummingbirds", "coronado-nf", "sky-island", "real-estate-context"],
   }),
 );
 
 /** Sonora — border & tourist corridor */
 const sonora = [
+  makeCity(907, "Hermosillo", "Sonora", 29.0892, -110.9559, "~850k metro", "sonoraInterior", {
+    co: "MX",
+    r: "Hermosillo, Sonora — state capital",
+    nr: "Hermosillo Intl (HMO)",
+    tl: "The Sonoran heart — industry, university life, and pre-monsoon heat that reshapes daily rhythm.",
+    ins: [
+      "Hub for flights and Highway 15 — compare Gulf vs Pacific breeze days in summer humidity.",
+      "Vehicle permits: if you arrived in the free zone, driving south toward Guaymas / Obregón may require paperwork — confirm before moving the car.",
+    ],
+    bp: "Hermosillo is the economic and political engine of Sonora — Ford’s assembly plant, university hospitals, and the throb of norteño nightlife wrapped in cardon-and-mesquite desert. Pre-monsoon May–June is a regional stress test; July–September trades furnace for lightning, haboobs, and the smell of wet dust. For US-plate visitors, it’s the logical base for coastal runs to Kino or San Carlos, or south toward Ciudad Obregón and the Yaqui Valley — each leg needs fuel discipline and current documents.\n\nClimate adaptation here is not abstract: afternoon business culture, rooftop solar, and water security debates are daily news. Real estate spans concrete-core apartments to perimeter colonias chasing night breezes — flood maps matter when convection parks overhead.",
+    ac: [
+      "Cerro de la Campana viewpoints — city vs desert heat island.",
+      "Museo de Culturas Populares e Indígenas de Sonora.",
+      "Evening malecón food culture — compare heat index after sunset.",
+      "Day-trip planning screen: Bahía de Kino vs Guaymas sea breeze.",
+    ],
+    ct: [
+      { nm: "Centro & cathedral grid", pop: "dense", no: "Walkable evenings; verify colonia drainage in monsoon." },
+      { nm: "Periférico-adjacent growth", pop: "fast", no: "Car-first; dust + ozone on stagnant days." },
+    ],
+    out: [
+      "Urban heat island intensity is likely to climb without aggressive shade and cool-roof programs.",
+      "Water demand from agriculture and population may tighten peri-urban groundwater access.",
+    ],
+    si: [949, 1101, 909],
+  }),
+  makeCity(909, "Guaymas & San Carlos", "Sonora", 27.918, -110.898, "~180k municipio", "sonoraCoastLite", {
+    co: "MX",
+    r: "Guaymas / San Carlos, Sonora — Gulf of California",
+    nr: "Guaymas (GYM) · Hermosillo (HMO) 1.2hr",
+    tl: "Sea of Cortez marinas, shrimp ports, and Tetakawi basalt — humidity meets desert sun.",
+    bp: "Guaymas is the working port; San Carlos is the marina-and-condo escarpment under Tetakawi’s fin. Gulf moisture lifts summer heat index; winter is why snowbirds brave the drive. Real estate runs from urban colonias to cliff villas with infinity pools — HOA fees and surge history belong in the spreadsheet.\n\nFor Arizona buyers comparing Rocky Point vs here: Guaymas offers deeper services and medical depth; San Carlos skews expat sailing culture. Snorkel tides, stingray etiquette, and hurricane remnants (rare but real) are seasonal homework.",
+    ac: [
+      "San Carlos marina + pangas to Isla San Pedro Nolasco",
+      "Tetakawi summit trail — winter mornings",
+      "Guaymas malecón + shrimp mercado",
+    ],
+    ct: [
+      { nm: "San Carlos", pop: "smaller", no: "Marina-centric; English common in businesses." },
+      { nm: "Guaymas centro", pop: "larger", no: "Authentic city services; lower costs." },
+    ],
+    si: [907, 946, 942],
+  }),
   makeCity(940, "Heroica Nogales", "Sonora", 31.3326, -110.9342, "~260k metro", "sonoraBorder", {
     co: "MX",
     r: "Heroica Nogales, Sonora — border metro",
@@ -793,7 +1029,7 @@ const sonora = [
       "Water security on the Sonoran side parallels Arizona — agriculture and municipal demand may tighten peri-urban groundwater access.",
       "Cross-border wait-time volatility could worsen with climate migration narratives — resilience is multiple passport strategies and flexible childcare, not optimism.",
     ],
-    si: [919, 903, 907],
+    si: [919, 1101, 907],
   }),
   makeCity(941, "Agua Prieta", "Sonora", 31.3279, -109.5488, "~92,000", "sonoraBorder", {
     co: "MX",
@@ -831,7 +1067,7 @@ const sonora = [
     nr: "Hermosillo (HMO) ~2hr · Puerto Peñasco ~3hr",
     ins: ["Interior Sonora — confirm vehicle permit rules if driving beyond free zone."],
     bp: "Caborca is desert agriculture and mission history — grapes, livestock, and summer convection that can drop baseball hail. Less tourist-polished than Peñasco; richer for cultural authenticity if you speak Spanish and plan fuel stops.",
-    si: [907, 903],
+    si: [907, 1101],
   }),
   makeCity(946, "Bahía de Kino", "Sonora", 28.8929, -111.9486, "~6,500", "sonoraCoastLite", {
     co: "MX",
@@ -846,7 +1082,7 @@ const sonora = [
     r: "Santa Ana, Sonora — Magdelena corridor",
     nr: "Nogales / Hermosillo",
     bp: "Santa Ana sits on the rail and highway thread between Nogales and Hermosillo — agricultural supply town with real Sonoran daily life. Stop for carne asada markets; respect local pace.",
-    si: [903, 907],
+    si: [1101, 907],
   }),
   makeCity(948, "Imuris", "Sonora", 30.7639, -110.8489, "~12,000", "sonoraBorder", {
     co: "MX",
@@ -854,6 +1090,192 @@ const sonora = [
     nr: "Nogales SON · Tucson",
     bp: "Imuris is a I-19 service cluster — truck traffic, mechanics, and birria stops. Useful logistics node; not a primary resort destination.",
     si: [919, 940],
+  }),
+  makeCity(949, "Ciudad Obregón", "Sonora", 27.486, -109.929, "~330,000", "sonoraInterior", {
+    co: "MX",
+    r: "Ciudad Obregón, Sonora — Yaqui Valley",
+    nr: "Obregón (CEN) · Hermosillo (HMO) ~3.5hr",
+    tl: "Sonora’s second city — wheat, chiles, and baseball under a furnace sky.",
+    ins: [
+      "Driving from Arizona: Highway 15 is the spine — daylight fuel stops, never run tanks low in July interior heat.",
+      "Beyond the border/adjacent free corridors, Mexico may require a temporary vehicle import permit (TIP) and proof of insurance from a Mexican insurer — rules change; verify before you cross.",
+      "Yaqui cultural heritage is living history — approach ceremonies and communities with respect.",
+    ],
+    bp: "Obregón anchors the Yaqui Valley, one of North America’s great irrigated desert breadbaskets — cotton, wheat, vegetables, and table grapes in rotation under a climate that punishes the careless and rewards planners. Summer is a stress test: pre-monsoon May–June can feel like a kiln; July–September trades furnace for lightning, humidity, and sheet-flow risk in poorly drained streets.\n\nFor US-plate travelers comparing housing or land, think in water rights and road hours, not just peso exchange rates. The city’s grid is modernizing; older colonias may flood differently than new perimeter subdivisions. Baseball culture runs deep (winter league energy), and the cost of living can look attractive versus Phoenix or San Diego — offset by heat, insurance logistics, and the need for fluent Spanish in most transactions.\n\nHistorically, the 1920s federal irrigation project turned desert into rows; politically, water is always the story — CONAGUA allocations, aquifer stress, and climate-driven evaporation all argue for modest expectations on lush lawns.",
+    ac: [
+      "Yaqui Museum (Cd. Obregón) — river culture & history.",
+      "Oviáchic Dam / reservoir viewpoints — monsoon water drama.",
+      "Drive the Valle del Yaqui crop mosaic at sunrise (winter).",
+      "Evening zócalo food tour — compare heat index vs Hermosillo humidity.",
+      "Scenic pullouts toward Navajoa — watch Gulf moisture vs interior dryness.",
+    ],
+    ct: [
+      { nm: "Centro & zócalo", pop: "dense", no: "Services, hospitals, universities; verify colonia drainage before long-stay rentals." },
+      { nm: "Perimeter ag subdivisions", pop: "growing", no: "Car-dependent; dust on easterlies; newer AC loads." },
+      { nm: "Yaqui pueblos (vicinity)", pop: "varies", no: "Cultural protocols first — not a backdrop for real-estate fantasy." },
+    ],
+    out: [
+      "Irrigated agriculture faces rising evaporative demand — crop mix may shift toward less thirsty commodities over decades.",
+      "Extreme heat days are projected to increase — outdoor labor and midday travel become public-health and insurance variables.",
+      "If Colorado River / border-region hydrology tightens, Sonoran irrigation economics ripple into municipal water pricing.",
+    ],
+    si: [907, 1101, 940],
+  }),
+  makeCity(1101, "Navojoa", "Sonora", 27.081, -109.443, "~120,000", "sonoraInterior", {
+    co: "MX",
+    r: "Navojoa, Sonora — Río Mayo / coastal plain",
+    nr: "Obregón (CEN) ~1hr · Los Mochis (LMM) ~2.5hr",
+    tl: "Green irrigated grids between Obregón and the foothills — chiles, orchards, and humid Gulf air.",
+    bp: "Navojoa sits where the Mayo River’s residual moisture meets Highway 15’s commerce — slightly more humid than Hermosillo on many August afternoons, still brutally hot in June. It’s a practical waypoint for travelers threading between Obregón and the Sinaloa transition, with agricultural supply culture (tire shops, irrigation stores, produce cold-chain) written into the streetscape.\n\nFor cross-border explorers, Navojoa is interior Sonora: confirm whether your itinerary stays within rules that allow US-plated cars without a TIP, or whether your route triggers permit requirements. Hotels range from business-class to modest; English is thinner than in beach resorts — phrasebook Spanish pays dividends.",
+    si: [949, 907, 909],
+  }),
+  makeCity(1102, "Altar", "Sonora", 30.712, -111.835, "~8,000", "sonoraBorder", {
+    co: "MX",
+    r: "Altar, Sonora — Sonoyta–Sásabe corridor",
+    nr: "Lukeville AZ · Sonoyta",
+    tl: "Mission-era plaza town — last services before the deep desert run to Caborca or the coast.",
+    ins: [
+      "Altar–Sásabe routes cross remote desert — carry spare water, full fuel, and satellite comms mindset (signal gaps).",
+      "US travelers: FMM tourist permit, passport, and Mexican auto liability insurance are standard expectations — verify current CBP/SAT guidance.",
+    ],
+    bp: "Altar is a small Sonoran municipio with an outsized reputation among desert travelers — mission church, plaza shade, and the psychological comfort of trees before long empty miles. Summer temperatures are not subtle; monsoon can turn arroyos into barriers in minutes. Real estate interest here is usually a function of proximity to routes toward Caborca or coastal connectors, not urban amenities — shop for authenticity, not Instagram infrastructure.",
+    si: [944, 945, 926],
+  }),
+];
+
+/** California, New Mexico & extra cross-border reference cards */
+const southwestCorridorExtra = [
+  makeCity(1110, "El Centro / Imperial Valley", "Imperial County, CA", 32.792, -115.563, "~190k valley", "californiaImperial", {
+    co: "US",
+    r: "Imperial Valley, CA — Salton trough",
+    nr: "Imperial (IPL) · San Diego (SAN) 2hr",
+    tl: "Hottest winter lettuce patch in America — Salton Sea haze, ag dust, and I-8 toward Yuma.",
+    bp: "The Imperial Valley is a hydraulic civilization dropped into one of the continent’s most hostile summer furnaces — Colorado River water paints the desert green while the Salton Sea exhales salt and occasional aerosol funk. For Arizona–Sonora house-hunters, it’s the California comparator: similar heat, different water law, and a straight shot east to Yuma and the San Luis Río Colorado crossing.\n\nClimate change tightens the vise: more person-days above dangerous heat thresholds, rising cooling loads, and particulate episodes from dry playa and field prep. Wildfire smoke from California’s interior can cap air quality for weeks. Yet winter can be almost surreally pleasant — the snowbird economy still fills RV parks when Minnesota is gray.",
+    ins: [
+      "Border commute to Mexicali is routine for workers and shoppers — documents and insurance are not optional.",
+      "Salton Sea shoreline access varies; playa dust is a real PM2.5 driver.",
+    ],
+    out: [
+      "Heat extremes are projected to intensify faster than the US average — outdoor labor and school recess policies are stress tests.",
+      "Water reliability ties to Colorado River tiers — ag→urban transfers will keep reshaping land use.",
+    ],
+    si: [1111, 943, 928],
+  }),
+  makeCity(1111, "Palm Springs & Coachella Valley", "Riverside County, CA", 33.8303, -116.5453, "~400k valley", "californiaImperial", {
+    co: "US",
+    r: "Coachella Valley, CA",
+    nr: "Palm Springs (PSP)",
+    tl: "Resort modernism, wind farms, and 110°F pool parties — mountain-rimmed basin heat.",
+    bp: "Coachella Valley trades Phoenix’s sprawl for a tighter theater of mountains — San Jacinto and San Gorgonio frame every sunset. Wind turbines on the San Gorgonio Pass mark the venturi where Pacific air squeezes through; sand blows, hats fly, and HOA palm trees earn their hazard insurance. Water is imported choreography; golf courses are political; mid-century architecture is a religion.\n\nFor southwest relocators, compare to Tucson foothills or Scottsdale — similar sun-hours, different state tax and insurance regimes. Summer is a social construct: you either leave, swim at dusk, or accept a life of SPF 50 and misters.",
+    ac: [
+      "Aerial tramway (Palm Springs) — elevation chill in 12 minutes.",
+      "Joshua Tree NP day trip — compare Mojave vs Sonoran floristics.",
+      "Salton Sea viewpoints — teach kids about accidental lakes and dust.",
+    ],
+    si: [1110, 1113, 928],
+  }),
+  makeCity(1112, "San Diego County (border lens)", "San Diego County, CA", 32.7157, -117.1611, "~3.3M county", "californiaImperial", {
+    co: "US",
+    r: "San Diego, CA — marine layer & border logistics",
+    nr: "San Diego (SAN)",
+    tl: "Cooler-by-the-Pacific — compare ocean moderation to interior desert picks.",
+    eN: 0,
+    eX: 6500,
+    sH: 78,
+    sL: 62,
+    wH: 66,
+    wL: 48,
+    ra: 10,
+    hu: 68,
+    aq: 45,
+    aL: "Moderate",
+    bp: "San Diego is the counterfactual to every inland Southwest search — June gloom, marine inversion, and a housing market that prices the weather. For buyers also touring Tucson or Las Cruces, use SD as your humidity and wildfire-smoke benchmark: coastal moisture, occasional tropical remnants, and chaparral fire regimes that differ from Sonoran thornscrub.\n\nCross-border culture is daily life — Tijuana proximity shapes food, labor markets, and commute psychology. It’s not Sonora, but it trains your instincts for ports, insurance, and binational time budgets.",
+    ins: ["Wildfire smoke from interior CA can degrade AQI even when the beach looks clear."],
+    si: [1111, 1110, 928],
+  }),
+  makeCity(1113, "Needles & Colorado River CA", "San Bernardino County, CA", 34.848, -114.614, "~5,000", "coloradoRiver", {
+    co: "US",
+    r: "Needles, CA — Colorado River",
+    nr: "Las Vegas (LAS) · Lake Havasu City",
+    tl: "Route 66 river town — triple-digit summers, river breezes, Arizona line in sight.",
+    bp: "Needles is a slender riparian strip where the Colorado River’s blue thread interrupts red desert — I-40 bridge traffic, railroad rhythm, and summer humidity that can feel Gulf-ish when monsoon moisture backs in. Compare real estate here to Bullhead City or Lake Havasu: smaller inventory, more Route 66 character, similar water-policy headlines.",
+    si: [1110, 927, 928],
+  }),
+  makeCity(1120, "Las Cruces & Mesilla", "Doña Ana County, NM", 32.3199, -106.7637, "~115,000", "newMexicoChihuahuan", {
+    co: "US",
+    r: "Las Cruces, NM — Mesilla Valley",
+    nr: "El Paso (ELP) · Las Cruces (LRU)",
+    tl: "Organ Mountains uplift + pecan shade — New Mexico’s chile capital.",
+    bp: "Las Cruces spreads across the Mesilla Valley’s braided desert floor — pecan orchards exhale humidity on summer nights; the Organ Mountains flash lightning like a bar graph of monsoon hope. NMSU brings research culture; White Sands and Holloman shape skies and economies in ways a Zillow photo won’t explain.\n\nFor Arizona shoppers, Cruces offers lower elevation than Santa Fe with more sun than Portland — a pragmatic middle. Water politics mix Rio Grande surface rights, groundwater governance, and climate-stressed snowpack in Colorado headwaters. Wind writes the spring soundtrack; dust storms can scrub outdoor plans for days.\n\nHistoric Mesilla’s plaza still feels like a borderlands movie set — adobe, galleries, and green chile stew debates that are half geology, half religion.",
+    ins: [
+      "Spring winds routinely gust 40+ mph — patio furniture and trampoline relocation are seasonal sports.",
+      "Organ Mountain National Monument trails — carry lightning awareness July–September.",
+    ],
+    out: [
+      "Monsoon variability may increase flash-flood risk in arroyos cut through urban growth.",
+      "Warmer springs can lengthen pollen and fire-smoke overlap with Texas/ Mexico burns.",
+    ],
+    ac: [
+      "White Sands National Park — dawn color palettes.",
+      "Mesilla plaza — history + chile relleno benchmarks.",
+      "Organ Mountains trails — elevation relief on scorcher days.",
+      "Chile harvest festivals (late summer/early fall).",
+    ],
+    ct: [
+      { nm: "East mesa / Sonoma Ranch", pop: "fast growth", no: "New builds + HOAs; verify HOA fees vs water rates." },
+      { nm: "Historic Mesilla", pop: "small", no: "Adobe charm + tourism traffic; premium pricing." },
+      { nm: "Picacho / highway corridor", pop: "mixed", no: "Commute dust; I-25/I-10 logistics noise." },
+    ],
+    si: [1121, 928, 1122],
+  }),
+  makeCity(1121, "Santa Fe", "Santa Fe County, NM", 35.687, -105.9378, "~90,000", "newMexicoNorth", {
+    co: "US",
+    r: "Santa Fe, NM — Sangre de Cristo foothills",
+    nr: "Albuquerque (ABQ) · Santa Fe (SAF)",
+    tl: "Adobe altitude — art markets, piñon smoke, and summer hail on the plaza.",
+    bp: "Santa Fe sells a high-desert aesthetic forged by Pueblo history, Spanish colonial grids, and Anglo art markets — thin air, crisp nights, and wildfire smoke that can arrive from hundreds of miles away. Housing competes with second homes and short-term rentals; water rights and HOA covenants deserve lawyer time, not vibes.\n\nClimate migration narratives meet local affordability stress — the same beauty that attracts remote workers stresses service wages. For comparison shoppers from Phoenix or Tucson, expect cooler nights and fiercer UV; snow drives different roof and driveway maintenance than saguaros ever taught you.",
+    ac: ["Canyon Road galleries", "Bandelier day trip", "Ski Santa Fe winter", "Meow Wolf — indoor climate-proof"],
+    si: [1122, 1120, 1121],
+  }),
+  makeCity(1122, "Albuquerque", "Bernalillo County, NM", 35.0844, -106.6504, "~560,000", "newMexicoCentral", {
+    co: "US",
+    r: "Albuquerque, NM — Middle Rio Grande",
+    nr: "Albuquerque Sunport (ABQ)",
+    tl: "Sandia rain shadow + river bosque — balloons, green chile, and spring dust.",
+    bp: "Albuquerque is the Duke City — a mile-high grid where the Rio Grande’s cottonwood bosque still cools summer evenings while Sandia Crest catches sunset alpenglow. Air Force / Sandia Labs / film incentives shape employment; sprawl debates echo Phoenix on a smaller scale.\n\nMonsoon storms can park over the metro and drop inch-per-hour rain on burn scars — arroyo crossings are not cute Instagram moments. Balloon Fiesta week is gorgeous and wind-sensitive — microclimates separate launch vs cancel mornings by minutes.\n\nCompared to Tucson: similar monsoon romance, colder winter nights, different water governance vocabulary.",
+    ins: ["Petroglyph basalt captures midday heat — hike early.", "Dust + smoke: check AQI before kids’ soccer."],
+    out: [
+      "Rio Grande flows are over-allocated — bosque health and urban groundwater interact unpredictably under warming.",
+      "Large fire seasons may lengthen smoke exposure windows for elders and asthmatics.",
+    ],
+    si: [1121, 1120, 927],
+  }),
+  makeCity(1123, "Silver City & Grant County", "Grant County, NM", 32.7701, -108.2803, "~10,000", "copperGila", {
+    co: "US",
+    tgReplace: ["new-mexico", "silver-city", "grant-county", "madrean"],
+    r: "Silver City, NM — Pinos Altos mining uplands",
+    nr: "Tucson (TUS) ~3hr · El Paso (ELP)",
+    tl: "High-country alternative to desert basins — pines, artists, and copper-country skies.",
+    bp: "Silver City perches on the edge of the Gila — cooler summers than Las Cruces, snow in winter, and a Main Street that mixes miners’ grit with gallery weekends. Wildfire and post-fire flood hydrology matter for canyon-adjacent parcels; copper history left legacy soils questions near old smelts.\n\nFor Arizona cross-shoppers, it’s a climate hedge: less lawn, more jacket. Broadband and healthcare access are the honest constraints.",
+    si: [1120, 1121, 901],
+  }),
+  makeCity(1124, "Taos & high valley", "Taos County, NM", 36.4072, -105.573, "~6,000 town", "newMexicoNorth", {
+    co: "US",
+    r: "Taos, NM — Rio Grande gorge",
+    nr: "Taos (TSM) · Santa Fe (SAF) 1.5hr",
+    tl: "Rio Grande gorge wind + ski altitude — adobe against the Sangre de Cristo.",
+    eN: 6900,
+    eX: 12500,
+    sH: 86,
+    sL: 50,
+    wH: 40,
+    wL: 0,
+    ra: 12,
+    hu: 45,
+    aq: 15,
+    aL: "Excellent",
+    bp: "Taos trades Sonoran heat for thin air and cultural intensity — Pueblo lands adjacent to ski resort economics, art markets, and spring winds that sandblast patience. Housing stock spans historic adobe (maintenance-heavy) to modern passive-solar builds that actually earn their brag.\n\nClimate stress here is less about 115°F days and more about freeze–thaw, roof snow loads, and wildfire evacuation psychology. Compare carefully to Flagstaff or northern Arizona if you want four seasons without Midwest humidity.",
+    si: [1121, 1122, 1120],
   }),
 ];
 
@@ -955,7 +1377,7 @@ for (const [name, county, la, ln, pop, zKey] of bulkRows) {
   bulkBuilt.push({ loc, rd });
 }
 
-const allParts = [...detailed, ...sonora, ...bulkBuilt];
+const allParts = [...detailed, ...sonora, ...southwestCorridorExtra, ...bulkBuilt];
 
 export const arizonaSonoraPackLocations = allParts.map((x) => x.loc);
 
