@@ -35,8 +35,24 @@ function zillowHeaders() {
 async function forwardGet(subPath, req, res) {
   try {
     const url = `${BASE}${subPath}`;
+    const params = { ...req.query };
+    // Upstream variants may expect lat/lon keys; normalize coordinates for compatibility.
+    if (subPath === "/search-coordinates") {
+      const latitude = params.latitude ?? params.lat;
+      const longitude = params.longitude ?? params.long ?? params.lng ?? params.lon;
+      if (latitude != null) {
+        params.latitude = latitude;
+        params.lat = latitude;
+      }
+      if (longitude != null) {
+        params.longitude = longitude;
+        params.long = longitude;
+        params.lng = longitude;
+        params.longtitude = longitude;
+      }
+    }
     const r = await axios.get(url, {
-      params: req.query,
+      params,
       headers: zillowHeaders(),
       timeout: 60_000,
       validateStatus: () => true,
