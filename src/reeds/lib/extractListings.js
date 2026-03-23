@@ -148,21 +148,149 @@ export function normalizeListing(p) {
   };
 }
 
-export function extractZestimateSeries(raw) {
-  if (!raw) return [];
-  const hist =
-    raw.zestimateHistory ||
-    raw.history ||
-    raw.data?.zestimateHistory ||
-    raw.chart?.points ||
-    [];
-  if (Array.isArray(hist)) {
-    return hist
-      .map((h) => ({
-        t: h.date || h.time || h.x,
-        v: pickNum(h.value, h.price, h.y),
-      }))
-      .filter((x) => x.v != null);
+/**
+ * Normalize one history row from various Zillow / OpenWeb Ninja shapes.
+ * @param {Record<string, unknown>} h
+ * @returns {{ t: string | number; v: number } | null}
+ */
+function parseHistoryPoint(h) {
+  if (!h || typeof h !== "object") return null;
+  const t =
+    h.date ??
+    h.time ??
+    h.x ??
+    h.timestamp ??
+    h.label ??
+    (h.timeStamp != null ? String(h.timeStamp) : null);
+  const v = pickNum(h.value, h.price, h.y, h.amount, h.zestimate, h.amountUsd);
+  if (v == null) return null;
+  return { t: t ?? "", v };
+}
+
+function historyPointsFromArray(arr) {
+  if (!Array.isArray(arr) || !arr.length) return [];
+  return arr.map((h) => parseHistoryPoint(/** @type {Record<string, unknown>} */ (h))).filter(Boolean);
+}
+
+/** Collect object-arrays from JSON (for discovering nested price history). */
+function walkObjectArrays(obj, depth = 0) {
+  if (!obj || depth > 10) return [];
+  if (Array.isArray(obj)) {
+    if (obj.length > 0 && typeof obj[0] === "object" && obj[0] !== null && !Array.isArray(obj[0])) {
+      return [obj];
+    }
+    return [];
   }
+  if (typeof obj !== "object") return [];
+  const out = [];
+  for (const v of Object.values(obj)) {
+    if (Array.isArray(v) && v.length && typeof v[0] === "object" && v[0] !== null && !Array.isArray(v[0])) {
+      out.push(v);
+    } else if (v && typeof v === "object") {
+      out.push(...walkObjectArrays(v, depth + 1));
+    }
+  }
+  return out;
+}
+
+function looksLikeHistoryArray(arr) {
+  if (!Array.isArray(arr) || arr.length < 1) return false;
+  let ok = 0;
+  for (const h of arr) {
+    if (parseHistoryPoint(/** @type {Record<string, unknown>} */ (h))) ok++;
+  }
+  return ok >= Math.min(2, arr.length) || (arr.length === 1 && ok === 1);
+}
+
+function dedupeSort(points) {
+  const seen = new Set();
+  const out = [];
+  for (const p of points) {
+    const key = `${p.t}::${p.v}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push(p);
+  }
+  return out.sort((a, b) => String(a.t).localeCompare(String(b.t)));
+}
+
+/**
+ * Extract time series for Zestimate chart. Upstream payloads vary widely
+ * (`zestimateHistory`, `priceHistory`, nested `data`, `chart.points`, etc.).
+ */
+export function extractZestimateSeries(raw) {
+  if (!raw || typeof raw !== "object") return [];
+
+  const directCandidates = [
+    raw.zestimateHistory,
+    raw.history,
+    raw.priceHistory,
+    raw.taxHistory,
+    raw.data?.zestimateHistory,
+    raw.data?.history,
+    raw.data?.priceHistory,
+    raw.data?.taxHistory,
+    raw.chart?.points,
+    raw.data?.chart?.points,
+    raw.zestimate?.priceHistory,
+    raw.zestimate?.history,
+    raw.data?.zestimate?.priceHistory,
+    raw.data?.zestimate?.history,
+    raw.property?.priceHistory,
+    raw.data?.property?.priceHistory,
+    raw.listing?.priceHistory,
+    raw.data?.listing?.priceHistory,
+  ];
+
+  for (const hist of directCandidates) {
+    const pts = historyPointsFromArray(hist);
+    if (pts.length) return dedupeSort(pts);
+  }
+
+  const discovered = walkObjectArrays(raw).filter(looksLikeHistoryArray);
+  discovered.sort((a, b) => b.length - a.length);
+  const best = discovered[0];
+  if (best) {
+    const pts = historyPointsFromArray(best);
+    if (pts.length) return dedupeSort(pts);
+  }
+
   return [];
+}
+
+/**
+ * Current Zestimate / valuation when history array is missing (common for some listings).
+ * @param {unknown} raw
+ * @returns {number | null}
+ */
+export function extractCurrentZestimate(raw) {
+  if (!raw || typeof raw !== "object") return null;
+  const o = /** @type {Record<string, unknown>} */ (raw);
+
+  const tryPick = (x) => {
+    if (x == null) return null;
+    if (typeof x === "number" && Number.isFinite(x)) return x;
+    if (typeof x === "object" && !Array.isArray(x)) {
+      return pickNum(
+        /** @type {Record<string, unknown>} */ (x).amount,
+        /** @type {Record<string, unknown>} */ (x).value,
+        /** @type {Record<string, unknown>} */ (x).price
+      );
+    }
+    return null;
+  };
+
+  const candidates = [
+    pickNum(o.zestimate, o.amount, o.price),
+    tryPick(o.zestimate),
+    tryPick(o.data?.zestimate),
+    pickNum(o.data?.zestimate, o.data?.amount),
+    tryPick(o.data?.property?.zestimate),
+    pickNum(o.zestimate?.amount, o.zestimate?.value),
+  ];
+
+  for (const n of candidates) {
+    if (n != null && Number.isFinite(n) && n > 0) return n;
+  }
+  return null;
 }

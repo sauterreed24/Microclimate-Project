@@ -10,14 +10,15 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { getPropertyDetails, getZestimate } from "../api/client.js";
-import { extractZestimateSeries } from "../lib/extractListings.js";
+import { extractCurrentZestimate, extractZestimateSeries } from "../lib/extractListings.js";
 import { asText } from "../lib/formatDisplayValue.js";
 import { readableError } from "../lib/errorMessage.js";
-import { summarizePropertyDetail } from "../lib/summarizeProperty.js";
+import { summarizeFromListing, summarizePropertyDetail } from "../lib/summarizeProperty.js";
 
 export default function PropertyModal({ listing, onClose, priceSuffix = "" }) {
   const [detail, setDetail] = useState(null);
   const [zest, setZest] = useState(null);
+  const [zestErr, setZestErr] = useState(null);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState(null);
   useEffect(() => {
@@ -37,10 +38,14 @@ export default function PropertyModal({ listing, onClose, priceSuffix = "" }) {
       }
       setLoading(true);
       setErr(null);
+      setZestErr(null);
       try {
         const [d, z] = await Promise.all([
           getPropertyDetails({ zpid: listing.zpid }).catch(() => null),
-          getZestimate({ zpid: listing.zpid }).catch(() => null),
+          getZestimate({ zpid: listing.zpid }).catch((e) => {
+            if (!cancel) setZestErr(readableError(e, "Valuation unavailable"));
+            return null;
+          }),
         ]);
         if (!cancel) {
           setDetail(d);
@@ -70,12 +75,20 @@ export default function PropertyModal({ listing, onClose, priceSuffix = "" }) {
   const googleDirectionsUrl =
     lat != null && lng != null ? `https://www.google.com/maps/dir/?api=1&destination=${Number(lat)},${Number(lng)}` : null;
 
-  const summary = summarizePropertyDetail(detail);
+  const fromApi = summarizePropertyDetail(detail);
+  const fromSearch = summarizeFromListing(listing);
+  const summary =
+    fromApi || fromSearch
+      ? { ...(fromSearch || {}), ...(fromApi || {}) }
+      : null;
+
   const chartData = extractZestimateSeries(zest || {}).map((row, i) => ({
     i,
     label: String(row.t ?? i),
     value: row.v,
   }));
+  const currentZestimate = extractCurrentZestimate(zest || {});
+  const showValuationBlock = chartData.length > 0 || currentZestimate != null;
 
   return (
     <div className="fixed inset-0 z-[100] flex items-end justify-center sm:items-center sm:p-6">
@@ -173,7 +186,14 @@ export default function PropertyModal({ listing, onClose, priceSuffix = "" }) {
 
           {summary && !loading && (
             <div className="rounded-xl border border-stone-200 bg-stone-50/80 p-4">
-              <h4 className="mb-2 text-xs font-bold uppercase tracking-wide text-stone-500">From API</h4>
+              <h4 className="mb-2 text-xs font-bold uppercase tracking-wide text-stone-500">
+                At a glance
+                {!fromApi && fromSearch && (
+                  <span className="ml-2 font-normal normal-case text-stone-400">
+                    — search data fills in when the detail response is sparse
+                  </span>
+                )}
+              </h4>
               <dl className="grid grid-cols-2 gap-2 text-sm">
                 {Object.entries(summary).map(([k, v]) => (
                   <div key={k} className="flex flex-col">
@@ -185,40 +205,68 @@ export default function PropertyModal({ listing, onClose, priceSuffix = "" }) {
             </div>
           )}
 
-          {detail && (
+          {(detail || zest) && (
             <details className="rounded-xl border border-stone-200 bg-stone-50/50">
               <summary className="cursor-pointer px-4 py-3 text-xs font-medium text-stone-500 hover:text-stone-700">
                 Technical: raw API JSON (optional)
               </summary>
               <pre className="max-h-48 overflow-auto border-t border-stone-100 p-4 text-xs text-stone-600">
-                {JSON.stringify(detail, null, 2)}
+                {JSON.stringify(
+                  {
+                    ...(detail ? { propertyDetails: detail } : {}),
+                    ...(zest ? { zestimate: zest } : {}),
+                  },
+                  null,
+                  2
+                )}
               </pre>
             </details>
           )}
 
-          {chartData.length > 0 && (
-            <div>
-              <h4 className="mb-3 text-sm font-semibold uppercase tracking-wide text-stone-500">Zestimate trend</h4>
-              <div className="h-56 w-full">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={chartData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#e7e5e4" />
-                    <XAxis dataKey="label" tick={{ fill: "#78716c", fontSize: 10 }} />
-                    <YAxis tick={{ fill: "#78716c", fontSize: 10 }} />
-                    <Tooltip
-                      contentStyle={{ background: "#fff", border: "1px solid #e7e5e4", borderRadius: "8px" }}
-                      labelStyle={{ color: "#57534e" }}
-                    />
-                    <Line type="monotone" dataKey="value" stroke="#0d9488" strokeWidth={2} dot={false} />
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
+          {showValuationBlock && !loading && (
+            <div className="rounded-xl border border-teal-100 bg-gradient-to-br from-teal-50/90 to-white p-4 ring-1 ring-teal-100/80">
+              <h4 className="mb-3 text-xs font-bold uppercase tracking-wide text-teal-800">Valuation</h4>
+              {chartData.length > 0 ? (
+                <div className="h-56 w-full">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={chartData}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#e7e5e4" />
+                      <XAxis dataKey="label" tick={{ fill: "#78716c", fontSize: 10 }} />
+                      <YAxis tick={{ fill: "#78716c", fontSize: 10 }} />
+                      <Tooltip
+                        contentStyle={{ background: "#fff", border: "1px solid #e7e5e4", borderRadius: "8px" }}
+                        labelStyle={{ color: "#57534e" }}
+                      />
+                      <Line type="monotone" dataKey="value" stroke="#0d9488" strokeWidth={2} dot={false} />
+                    </LineChart>
+                  </ResponsiveContainer>
+                  <p className="mt-2 text-[11px] text-stone-500">History from Zillow valuation feed when provided by the API.</p>
+                </div>
+              ) : (
+                <div className="flex flex-wrap items-baseline gap-2">
+                  <span className="text-2xl font-semibold tabular-nums text-teal-900">
+                    ${currentZestimate.toLocaleString()}
+                  </span>
+                  <span className="text-sm text-stone-600">current Zestimate</span>
+                </div>
+              )}
             </div>
           )}
 
-          {!loading && !chartData.length && listing.zpid && (
-            <p className="text-sm text-stone-500">No chart series returned for this property — API may use a different shape.</p>
+          {zestErr && !loading && (
+            <p className="text-xs text-stone-500">
+              Valuation service: {zestErr}. Listing price and details above still apply.
+            </p>
           )}
+
+          {!loading &&
+            !showValuationBlock &&
+            listing.zpid &&
+            !zestErr && (
+              <p className="text-xs text-stone-400">
+                No historical valuation curve for this listing right now. The list price and property facts above are unchanged.
+              </p>
+            )}
         </div>
       </div>
     </div>
