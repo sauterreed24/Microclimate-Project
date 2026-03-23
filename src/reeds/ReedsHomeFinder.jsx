@@ -1,7 +1,8 @@
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import toast, { Toaster } from "react-hot-toast";
 import { Activity, Heart, Home, Keyboard, Loader2, Map as MapIcon, Menu, RefreshCw, Search } from "lucide-react";
-import { DEFAULT_LOCATION_ID, getLocationById } from "../data/reeds/locations/index.js";
+import { ALL_LOCATIONS, DEFAULT_LOCATION_ID, getLocationById } from "../data/reeds/locations/index.js";
+import { SONORA_TRAVEL_PLACES } from "../data/reeds/locations/sonoraFreeZone.js";
 import { getMicroclimateMeta } from "../data/reeds/locations/microclimateProfiles.js";
 import { useReedStore } from "./store/useReedStore.js";
 import { searchByCoordinates, searchListings } from "./api/client.js";
@@ -12,6 +13,7 @@ import ListingSkeleton from "./components/ListingSkeleton.jsx";
 import EmptyResults from "./components/EmptyResults.jsx";
 import MarketMicroclimatePanel from "./components/MarketMicroclimatePanel.jsx";
 import { getMicroclimateBundle } from "./data/microclimateBridge.js";
+import { computeClimateHubs, SOUTHWEST_US_BOUNDS } from "./data/climateHubs.js";
 
 const ListingMap = lazy(() => import("./components/ListingMap.jsx"));
 const PropertyModal = lazy(() => import("./components/PropertyModal.jsx"));
@@ -84,6 +86,8 @@ export default function ReedsHomeFinder() {
   const [libSearch, setLibSearch] = useState("");
   const [view, setView] = useState(() => (typeof localStorage !== "undefined" ? localStorage.getItem("reed-view") || "split" : "split"));
   const [apiOk, setApiOk] = useState(null);
+  /** Map-only: filter listing pin colors to a microclimate profile (toggle via hub markers). */
+  const [climateMapFilter, setClimateMapFilter] = useState(null);
 
   const favoriteZpids = useReedStore((s) => s.favoriteZpids);
   const toggleFavorite = useReedStore((s) => s.toggleFavorite);
@@ -120,6 +124,10 @@ export default function ReedsHomeFinder() {
     const p = active?.microclimateProfile;
     return p ? getMicroclimateMeta(p) : null;
   }, [active]);
+
+  const climateHubs = useMemo(() => computeClimateHubs(ALL_LOCATIONS), []);
+
+  const climateMismatchOnMap = Boolean(climateMapFilter && active?.microclimateProfile && climateMapFilter !== active.microclimateProfile);
 
   useEffect(() => {
     if (!getLocationById(locationId)) {
@@ -219,6 +227,7 @@ export default function ReedsHomeFinder() {
   ]);
 
   const selectLocation = (id) => {
+    setClimateMapFilter(null);
     setLocationId(id);
     if (typeof window !== "undefined" && window.matchMedia("(max-width: 1023px)").matches) {
       setSidebar(false);
@@ -541,11 +550,29 @@ export default function ReedsHomeFinder() {
 
             {(view === "split" || view === "map") && active && !loading && (
               <div className="min-h-[400px]">
-                <div className="mb-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-stone-500">
-                  <MapIcon className="h-3.5 w-3.5 text-teal-600" />
-                  <span>
-                    Layered basemap · <span className="font-medium text-stone-700">teal pulse</span> = search center · price chips = listings
-                  </span>
+                <div className="mb-2 space-y-2">
+                  <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-stone-500">
+                    <MapIcon className="h-3.5 w-3.5 text-teal-600" />
+                    <span>
+                      <span className="font-medium text-stone-700">Zillow</span> listings (price pins) +{" "}
+                      <span className="font-medium text-stone-700">microclimate hubs</span> (tap to match pin colors) +{" "}
+                      <span className="font-medium text-violet-800">Sonora</span> travel context ·{" "}
+                      <span className="font-medium text-teal-800">pulse</span> = active search anchor
+                      <span className="ml-1 text-stone-400">
+                        · {import.meta.env.VITE_GOOGLE_MAPS_API_KEY ? "Google Maps engine" : "Leaflet · CARTO / Esri / OSM"}
+                      </span>
+                    </span>
+                  </div>
+                  {climateMismatchOnMap && activeMcMeta && (
+                    <div
+                      className="rounded-xl border border-amber-200 bg-amber-50/95 px-3 py-2 text-[11px] leading-snug text-amber-950 shadow-sm"
+                      role="status"
+                    >
+                      <span className="font-semibold">Heads up:</span> map filter is set to a different climate than{" "}
+                      <span className="font-medium">{active.label}</span> ({activeMcMeta.emoji} {activeMcMeta.title}). Listing pins are hidden until you clear the
+                      filter or pick a matching hub — results are still for your selected market.
+                    </div>
+                  )}
                 </div>
                 <Suspense
                   fallback={
@@ -556,8 +583,15 @@ export default function ReedsHomeFinder() {
                   }
                 >
                   <ListingMap
+                    southwestBounds={SOUTHWEST_US_BOUNDS}
+                    flyToken={locationId}
                     center={{ lat: active.lat, lng: active.lng }}
                     listings={listings}
+                    listingsProfileId={active.microclimateProfile}
+                    climateFilter={climateMapFilter}
+                    onClimateFilterSelect={setClimateMapFilter}
+                    hubs={climateHubs}
+                    sonoraPlaces={SONORA_TRAVEL_PLACES}
                     onSelect={(l) => {
                       setSelectedListing(l);
                       setDetailOpen(true);

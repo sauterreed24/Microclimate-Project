@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { X, ExternalLink, Loader2 } from "lucide-react";
+import { X, ExternalLink, Loader2, MapPin } from "lucide-react";
 import {
   LineChart,
   Line,
@@ -58,6 +58,16 @@ export default function PropertyModal({ listing, onClose, priceSuffix = "" }) {
 
   if (!listing) return null;
 
+  const lat = listing.latitude ?? listing.lat;
+  const lng = listing.longitude ?? listing.lng;
+  const mapsQuery =
+    lat != null && lng != null
+      ? `${Number(lat)},${Number(lng)}`
+      : [listing.address, listing.city, listing.state].filter(Boolean).join(", ");
+  const googleMapsUrl = mapsQuery ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mapsQuery)}` : null;
+  const googleDirectionsUrl =
+    lat != null && lng != null ? `https://www.google.com/maps/dir/?api=1&destination=${Number(lat)},${Number(lng)}` : null;
+
   const summary = summarizePropertyDetail(detail);
   const chartData = extractZestimateSeries(zest || {}).map((row, i) => ({
     i,
@@ -107,17 +117,42 @@ export default function PropertyModal({ listing, onClose, priceSuffix = "" }) {
             {listing.livingArea != null && <span className="text-stone-700">{listing.livingArea.toLocaleString()} sqft</span>}
           </div>
 
-          {listing.url && (
-            <a
-              href={listing.url}
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex items-center gap-2 rounded-xl bg-amber-50 px-4 py-2.5 text-sm font-medium text-amber-900 ring-1 ring-amber-100 hover:bg-amber-100/80"
-            >
-              Open on Zillow
-              <ExternalLink className="h-4 w-4" />
-            </a>
-          )}
+          <div className="flex flex-wrap gap-2">
+            {listing.url && (
+              <a
+                href={listing.url}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-2 rounded-xl bg-amber-50 px-4 py-2.5 text-sm font-medium text-amber-900 ring-1 ring-amber-100 hover:bg-amber-100/80"
+              >
+                Open on Zillow
+                <ExternalLink className="h-4 w-4" />
+              </a>
+            )}
+            {googleMapsUrl && (
+              <a
+                href={googleMapsUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-2 rounded-xl bg-sky-50 px-4 py-2.5 text-sm font-medium text-sky-900 ring-1 ring-sky-100 hover:bg-sky-100/80"
+              >
+                <MapPin className="h-4 w-4 shrink-0" />
+                Open in Google Maps
+                <ExternalLink className="h-4 w-4" />
+              </a>
+            )}
+            {googleDirectionsUrl && (
+              <a
+                href={googleDirectionsUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-2 rounded-xl border border-sky-200 bg-white px-4 py-2.5 text-sm font-medium text-sky-800 hover:bg-sky-50/80"
+              >
+                Directions (Google)
+                <ExternalLink className="h-4 w-4" />
+              </a>
+            )}
+          </div>
 
           {loading && (
             <div className="flex items-center gap-2 text-stone-500">
