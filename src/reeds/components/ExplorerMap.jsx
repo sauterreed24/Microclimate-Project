@@ -8,6 +8,7 @@ import { MapContainer, TileLayer, Marker, Popup, useMap, LayersControl, ScaleCon
 import "leaflet/dist/leaflet.css";
 import { APIProvider, Map, Marker as GMarker, useMap as useGMap } from "@vis.gl/react-google-maps";
 import { getMicroclimateMeta, getProfileMapStyle } from "../../data/reeds/locations/microclimateProfiles.js";
+import { asText } from "../lib/formatDisplayValue.js";
 
 const CARTO_URL = "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png";
 const CARTO_ATTR =
@@ -292,7 +293,7 @@ function LeafletExplorer({
             >
               <Popup>
                 <div className="min-w-[180px] text-xs">
-                  <div className="font-semibold text-slate-900">{p.label}</div>
+                  <div className="font-semibold text-slate-900">{asText(p.label, "Listing")}</div>
                   {p.price != null && (
                     <div className="mt-1 font-bold text-teal-700">${Number(p.price).toLocaleString()}</div>
                   )}
@@ -309,14 +310,14 @@ function SonoraPopup({ pl }) {
   return (
     <div className="text-[13px] text-slate-800">
       <p className="flex items-center gap-2 font-display text-base font-semibold text-slate-900">
-        <span>{pl.flag}</span>
-        {pl.label}
+        <span>{asText(pl.flag, "🇲🇽")}</span>
+        {asText(pl.label, "Place")}
       </p>
-      <p className="text-[11px] text-violet-700">{pl.region}</p>
+      <p className="text-[11px] text-violet-700">{asText(pl.region)}</p>
       {pl.feelsLike && (
         <p className="mt-2 rounded-lg bg-violet-50 px-2 py-1.5 text-xs text-slate-700">
           <span className="font-semibold text-violet-800">Feels like: </span>
-          {pl.feelsLike}
+          {asText(pl.feelsLike)}
         </p>
       )}
       {pl.climateFactors?.length > 0 && (

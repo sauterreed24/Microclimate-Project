@@ -1,4 +1,5 @@
 import { Heart } from "lucide-react";
+import { asText } from "../lib/formatDisplayValue.js";
 
 export default function ListingCard({ listing, priceSuffix = "", onOpen, isFavorite, onToggleFavorite }) {
   const zpid = listing.zpid;
@@ -15,17 +16,24 @@ export default function ListingCard({ listing, priceSuffix = "", onOpen, isFavor
         )}
         <div className="space-y-1 p-3.5">
           <p className="font-display text-lg font-semibold text-teal-800">
-            {listing.price != null ? `$${listing.price.toLocaleString()}${priceSuffix}` : "—"}
+            {listing.price != null
+              ? `$${Number.isFinite(Number(listing.price)) ? Number(listing.price).toLocaleString() : asText(listing.price)}${priceSuffix}`
+              : "—"}
           </p>
-          <p className="text-sm font-medium text-stone-900">{listing.address}</p>
+          <p className="text-sm font-medium text-stone-900">{asText(listing.address, "Address on Zillow")}</p>
           <p className="text-xs text-stone-500">
-            {listing.city}
-            {listing.state ? `, ${listing.state}` : ""}
+            {[asText(listing.city), asText(listing.state)].filter(Boolean).join(", ") || "—"}
           </p>
           <p className="text-xs text-stone-600">
-            {listing.beds != null ? `${listing.beds} bd` : ""}
-            {listing.baths != null ? ` · ${listing.baths} ba` : ""}
-            {listing.livingArea != null ? ` · ${listing.livingArea.toLocaleString()} sqft` : ""}
+            {listing.beds != null ? `${asText(listing.beds)} bd` : ""}
+            {listing.baths != null ? ` · ${asText(listing.baths)} ba` : ""}
+            {listing.livingArea != null
+              ? ` · ${
+                  Number.isFinite(Number(listing.livingArea))
+                    ? Number(listing.livingArea).toLocaleString()
+                    : asText(listing.livingArea)
+                } sqft`
+              : ""}
           </p>
         </div>
       </button>

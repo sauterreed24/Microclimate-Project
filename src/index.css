@@ -24,11 +24,44 @@
   button {
     font-family: inherit;
   }
+  a:focus-visible,
+  button:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  textarea:focus-visible {
+    outline: 2px solid rgb(13 148 136 / 0.55);
+    outline-offset: 2px;
+  }
 }
 
 /* Reed's Home Finder — display headings */
 .font-display {
   font-family: var(--font-family-display);
+}
+
+/* Skip link + visible focus — keyboard & ADHD-friendly navigation */
+.reed-skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 100000;
+  padding: 0.65rem 1.15rem;
+  border-radius: 0.75rem;
+  background: linear-gradient(135deg, #0d9488, #0f766e);
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.875rem;
+  box-shadow: 0 8px 28px rgba(15, 118, 110, 0.35);
+  text-decoration: none;
+  transition: transform 0.15s ease;
+}
+.reed-skip-link:focus {
+  left: 1rem;
+  top: 1rem;
+  outline: none;
+}
+.reed-skip-link:focus-visible {
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.95), 0 8px 28px rgba(15, 118, 110, 0.45);
 }
 
 /* Leaflet — match light UI */

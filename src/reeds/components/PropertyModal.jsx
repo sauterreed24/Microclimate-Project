@@ -11,6 +11,7 @@ import {
 } from "recharts";
 import { getPropertyDetails, getZestimate } from "../api/client.js";
 import { extractZestimateSeries } from "../lib/extractListings.js";
+import { asText } from "../lib/formatDisplayValue.js";
 import { summarizePropertyDetail } from "../lib/summarizeProperty.js";
 
 export default function PropertyModal({ listing, onClose, priceSuffix = "" }) {
@@ -88,11 +89,10 @@ export default function PropertyModal({ listing, onClose, priceSuffix = "" }) {
           <div>
             <p className="text-xs font-semibold uppercase tracking-widest text-teal-600">Listing</p>
             <h3 id="reed-modal-title" className="font-display mt-1 text-xl font-semibold text-stone-900">
-              {listing.address || "Property"}
+              {asText(listing.address, "Property")}
             </h3>
             <p className="text-sm text-stone-500">
-              {listing.city}
-              {listing.state ? `, ${listing.state}` : ""}
+              {[asText(listing.city), asText(listing.state)].filter(Boolean).join(", ") || "—"}
             </p>
           </div>
           <button type="button" onClick={onClose} className="rounded-xl p-2 text-stone-400 hover:bg-stone-100 hover:text-stone-800">
@@ -108,13 +108,21 @@ export default function PropertyModal({ listing, onClose, priceSuffix = "" }) {
           <div className="flex flex-wrap gap-3 text-sm">
             {listing.price != null && (
               <span className="rounded-lg bg-teal-50 px-3 py-1.5 font-semibold text-teal-800 ring-1 ring-teal-100">
-                ${listing.price.toLocaleString()}
+                $
+                {Number.isFinite(Number(listing.price)) ? Number(listing.price).toLocaleString() : asText(listing.price)}
                 {priceSuffix}
               </span>
             )}
-            {listing.beds != null && <span className="text-stone-700">{listing.beds} bd</span>}
-            {listing.baths != null && <span className="text-stone-700">{listing.baths} ba</span>}
-            {listing.livingArea != null && <span className="text-stone-700">{listing.livingArea.toLocaleString()} sqft</span>}
+            {listing.beds != null && <span className="text-stone-700">{asText(listing.beds)} bd</span>}
+            {listing.baths != null && <span className="text-stone-700">{asText(listing.baths)} ba</span>}
+            {listing.livingArea != null && (
+              <span className="text-stone-700">
+                {Number.isFinite(Number(listing.livingArea))
+                  ? Number(listing.livingArea).toLocaleString()
+                  : asText(listing.livingArea)}{" "}
+                sqft
+              </span>
+            )}
           </div>
 
           <div className="flex flex-wrap gap-2">
@@ -169,7 +177,7 @@ export default function PropertyModal({ listing, onClose, priceSuffix = "" }) {
                 {Object.entries(summary).map(([k, v]) => (
                   <div key={k} className="flex flex-col">
                     <dt className="text-[10px] uppercase text-stone-500">{k.replace(/([A-Z])/g, " $1")}</dt>
-                    <dd className="text-stone-800">{typeof v === "object" ? JSON.stringify(v) : String(v)}</dd>
+                    <dd className="text-stone-800">{asText(v, "—")}</dd>
                   </div>
                 ))}
               </dl>

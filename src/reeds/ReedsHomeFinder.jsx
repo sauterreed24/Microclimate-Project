@@ -278,6 +278,9 @@ export default function ReedsHomeFinder() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-stone-100 via-stone-50 to-white text-stone-800">
+      <a href="#reed-main" className="reed-skip-link">
+        Skip to main content
+      </a>
       <Toaster
         position="top-center"
         toastOptions={{ className: "bg-white text-stone-800 border border-stone-200 shadow-lg", duration: 3000 }}
@@ -378,7 +381,7 @@ export default function ReedsHomeFinder() {
           <button type="button" className="fixed inset-0 z-30 bg-stone-900/40 backdrop-blur-[1px] lg:hidden" aria-label="Close menu" onClick={() => setSidebar(false)} />
         )}
 
-        <main className="min-w-0 flex-1 space-y-4 px-4 py-4">
+        <main id="reed-main" tabIndex={-1} className="min-w-0 flex-1 space-y-4 px-4 py-4 outline-none focus-visible:ring-2 focus-visible:ring-teal-400/80 focus-visible:ring-offset-2">
           <div className="rounded-2xl border border-stone-200/90 bg-white p-4 shadow-lg shadow-stone-200/40 ring-1 ring-stone-100">
             <div className="flex flex-wrap items-end gap-3">
               <div className="min-w-[200px] flex-1">

@@ -1,13 +1,18 @@
 import { useState } from "react";
 import { ChevronDown, ChevronUp, Leaf, Mountain, Sparkles } from "lucide-react";
+import { asText } from "../lib/formatDisplayValue.js";
 
 function Stat({ k, v, sub }) {
   if (v == null || v === "") return null;
+  const main = asText(v, "");
+  if (!main) return null;
   return (
     <div className="rounded-xl border border-stone-100 bg-stone-50/80 px-3 py-2">
       <p className="text-[9px] font-bold uppercase tracking-wider text-stone-400">{k}</p>
-      <p className="mt-0.5 text-sm font-semibold text-stone-900">{v}</p>
-      {sub && <p className="mt-0.5 text-[10px] leading-snug text-stone-500">{sub}</p>}
+      <p className="mt-0.5 text-sm font-semibold text-stone-900">{main}</p>
+      {sub != null && asText(sub, "") !== "" && (
+        <p className="mt-0.5 text-[10px] leading-snug text-stone-500">{asText(sub)}</p>
+      )}
     </div>
   );
 }
