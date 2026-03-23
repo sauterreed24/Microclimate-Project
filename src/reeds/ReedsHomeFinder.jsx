@@ -1,6 +1,6 @@
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import toast, { Toaster } from "react-hot-toast";
-import { Activity, Heart, Home, Keyboard, Loader2, Map as MapIcon, Menu, RefreshCw, Search } from "lucide-react";
+import { Activity, AlertTriangle, Heart, Home, Keyboard, Loader2, Map as MapIcon, Menu, RefreshCw, Search } from "lucide-react";
 import { ALL_LOCATIONS, DEFAULT_LOCATION_ID, getLocationById } from "../data/reeds/locations/index.js";
 import { SONORA_TRAVEL_PLACES } from "../data/reeds/locations/sonoraFreeZone.js";
 import { getMicroclimateMeta } from "../data/reeds/locations/microclimateProfiles.js";
@@ -68,19 +68,41 @@ function buildSearchRequest(state) {
     sort: state.sort,
     limit: "40",
   };
-  const num = (v) => (v === "" || v == null ? undefined : String(v));
-  const add = (k, v) => {
-    const n = num(v);
-    if (n !== undefined) p[k] = n;
+  const toNumber = (value, opts = { allowDecimal: false, min: 0 }) => {
+    if (value === "" || value == null) return undefined;
+    const cleaned = String(value).trim().replace(/[,$\s]/g, "");
+    if (!cleaned) return undefined;
+    const raw = opts.allowDecimal ? Number.parseFloat(cleaned) : Number.parseInt(cleaned, 10);
+    if (!Number.isFinite(raw)) return undefined;
+    if (raw < opts.min) return undefined;
+    return opts.allowDecimal ? raw : Math.round(raw);
   };
-  add("min_price", state.minPrice);
-  add("max_price", state.maxPrice);
-  add("min_bedrooms", state.minBedrooms);
-  add("max_bedrooms", state.maxBedrooms);
-  add("min_bathrooms", state.minBathrooms);
-  add("max_bathrooms", state.maxBathrooms);
-  add("min_sqft", state.minSqft);
-  add("max_sqft", state.maxSqft);
+
+  const normalizeRange = (minV, maxV, opts) => {
+    const min = toNumber(minV, opts);
+    const max = toNumber(maxV, opts);
+    if (min == null && max == null) return [undefined, undefined];
+    if (min != null && max != null && min > max) return [max, min];
+    return [min, max];
+  };
+
+  const [minPrice, maxPrice] = normalizeRange(state.minPrice, state.maxPrice, { allowDecimal: false, min: 0 });
+  const [minBeds, maxBeds] = normalizeRange(state.minBedrooms, state.maxBedrooms, { allowDecimal: false, min: 0 });
+  const [minBaths, maxBaths] = normalizeRange(state.minBathrooms, state.maxBathrooms, { allowDecimal: true, min: 0 });
+  const [minSqft, maxSqft] = normalizeRange(state.minSqft, state.maxSqft, { allowDecimal: false, min: 0 });
+
+  const addNum = (key, value) => {
+    if (value == null) return;
+    p[key] = String(value);
+  };
+  addNum("min_price", minPrice);
+  addNum("max_price", maxPrice);
+  addNum("min_bedrooms", minBeds);
+  addNum("max_bedrooms", maxBeds);
+  addNum("min_bathrooms", minBaths);
+  addNum("max_bathrooms", maxBaths);
+  addNum("min_sqft", minSqft);
+  addNum("max_sqft", maxSqft);
 
   if (loc.searchMode === "coordinates" && loc.coordRadiusMiles) {
     return {
@@ -140,6 +162,7 @@ export default function ReedsHomeFinder() {
     maxBathrooms,
     minSqft,
     maxSqft,
+    error,
   } = useReedStore();
 
   const active = useMemo(() => getLocationById(locationId), [locationId]);
@@ -319,6 +342,13 @@ export default function ReedsHomeFinder() {
               </div>
             </div>
           </div>
+
+          {error && (
+            <div className="mt-3 flex items-start gap-2 rounded-xl border border-red-200 bg-red-50/90 px-3 py-2 text-xs text-red-900 shadow-sm">
+              <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-red-600" />
+              <span>{error}</span>
+            </div>
+          )}
           <div className="flex flex-wrap items-center justify-end gap-2 sm:gap-3">
             <div
               className="hidden items-center gap-1.5 rounded-full border border-stone-200 bg-stone-50/90 px-2.5 py-1 text-[10px] text-stone-500 sm:flex"
