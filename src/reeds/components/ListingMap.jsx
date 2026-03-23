@@ -14,6 +14,8 @@ export default function ListingMap({
   onClimateFilterSelect,
   hubs,
   sonoraPlaces,
+  referencePoints,
+  onSelectReference,
   flyToken,
 }) {
   return (
@@ -27,6 +29,8 @@ export default function ListingMap({
       onClimateFilterSelect={onClimateFilterSelect}
       hubs={hubs}
       sonoraPlaces={sonoraPlaces}
+      referencePoints={referencePoints}
+      onSelectReference={onSelectReference}
       onSelectListing={onSelect}
     />
   );

@@ -3,6 +3,7 @@ import toast, { Toaster } from "react-hot-toast";
 import { Activity, AlertTriangle, Heart, Home, Keyboard, Loader2, Map as MapIcon, Menu, RefreshCw, Search } from "lucide-react";
 import { ALL_LOCATIONS, DEFAULT_LOCATION_ID, getLocationById } from "../data/reeds/locations/index.js";
 import { SONORA_TRAVEL_PLACES } from "../data/reeds/locations/sonoraFreeZone.js";
+import { SONORA_MEXICO } from "../data/reeds/locations/mexico.js";
 import { getMicroclimateMeta } from "../data/reeds/locations/microclimateProfiles.js";
 import { useReedStore } from "./store/useReedStore.js";
 import { searchByCoordinates, searchListings } from "./api/client.js";
@@ -186,6 +187,29 @@ export default function ReedsHomeFinder() {
   }, [active]);
 
   const climateHubs = useMemo(() => computeClimateHubs(ALL_LOCATIONS), []);
+  const mapReferencePoints = useMemo(() => {
+    const us = ALL_LOCATIONS.map((l) => ({
+      id: l.id,
+      label: l.label,
+      region: l.region,
+      state: l.state,
+      country: "US",
+      lat: l.lat,
+      lng: l.lng,
+      isActiveMarket: l.id === locationId,
+    }));
+    const mx = SONORA_MEXICO.map((l) => ({
+      id: l.id,
+      label: l.label,
+      region: l.region,
+      state: l.state,
+      country: "MX",
+      lat: l.lat,
+      lng: l.lng,
+      isActiveMarket: false,
+    }));
+    return [...us, ...mx];
+  }, [locationId]);
 
   const climateMismatchOnMap = Boolean(climateMapFilter && active?.microclimateProfile && climateMapFilter !== active.microclimateProfile);
 
@@ -281,9 +305,54 @@ export default function ReedsHomeFinder() {
     }
     useReedStore.setState({ loading: true, error: null });
     try {
-      const raw =
-        req.kind === "coordinates" ? await searchByCoordinates(req.params) : await searchListings(req.params);
-      const list = extractListings(raw);
+      const stripUndefined = (obj) => {
+        const out = {};
+        for (const [k, v] of Object.entries(obj || {})) {
+          if (v !== undefined && v !== null && v !== "") out[k] = v;
+        }
+        return out;
+      };
+      const withRelaxedHousingFilters = (params) => {
+        const p = { ...params, sort: "DEFAULT" };
+        delete p.home_type;
+        return stripUndefined(p);
+      };
+
+      let raw = req.kind === "coordinates" ? await searchByCoordinates(req.params) : await searchListings(req.params);
+      let list = extractListings(raw);
+
+      // Zillow upstream can be inconsistent by endpoint/shape — on empty, retry with relaxed params.
+      if (list.length === 0) {
+        if (req.kind === "coordinates") {
+          const coordRetry = withRelaxedHousingFilters(req.params);
+          raw = await searchByCoordinates(coordRetry);
+          list = extractListings(raw);
+
+          if (list.length === 0) {
+            const loc = getLocationById(snap.locationId);
+            if (loc?.searchQuery) {
+              const locationRetry = withRelaxedHousingFilters({
+                ...coordRetry,
+                location: loc.searchQuery,
+              });
+              delete locationRetry.latitude;
+              delete locationRetry.longitude;
+              delete locationRetry.long;
+              delete locationRetry.lat;
+              delete locationRetry.lng;
+              delete locationRetry.longtitude;
+              delete locationRetry.radius;
+              raw = await searchListings(locationRetry);
+              list = extractListings(raw);
+            }
+          }
+        } else {
+          const locationRetry = withRelaxedHousingFilters(req.params);
+          raw = await searchListings(locationRetry);
+          list = extractListings(raw);
+        }
+      }
+
       useReedStore.setState({ rawResponse: raw, listings: list, loading: false });
     } catch (e) {
       console.error(e);
@@ -695,6 +764,10 @@ export default function ReedsHomeFinder() {
                       onClimateFilterSelect={setClimateMapFilter}
                       hubs={climateHubs}
                       sonoraPlaces={SONORA_TRAVEL_PLACES}
+                      referencePoints={mapReferencePoints}
+                      onSelectReference={(ref) => {
+                        if (ref?.country === "US") selectLocation(ref.id);
+                      }}
                       onSelect={(l) => {
                         setSelectedListing(l);
                         setDetailOpen(true);

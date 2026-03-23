@@ -95,6 +95,16 @@ function sonoraSvg() {
 </svg>`);
 }
 
+function townSvg(country = "US", active = false) {
+  const fill = country === "MX" ? "#7c3aed" : "#0ea5e9";
+  const stroke = active ? "#022c22" : "#ffffff";
+  const ring = active ? "rgba(20,184,166,0.6)" : "rgba(15,23,42,0.22)";
+  return svgDataUrl(`
+<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20">
+  <circle cx="10" cy="10" r="8" fill="${fill}" stroke="${stroke}" stroke-width="2" style="filter:drop-shadow(0 0 0 2px ${ring})"/>
+</svg>`);
+}
+
 /* ——— Leaflet internals ——— */
 function LeafFitSouthwest({ bounds, maxZoom = 6.35 }) {
   const map = useMap();
@@ -167,6 +177,8 @@ function LeafletExplorer({
   onClimateFilterSelect,
   hubs,
   sonoraPlaces,
+  referencePoints,
+  onSelectReference,
   onSelectListing,
 }) {
   const centerDefault = useMemo(() => {
@@ -269,6 +281,43 @@ function LeafletExplorer({
             </Popup>
           </Marker>
         ))}
+
+        {(referencePoints || [])
+          .filter((p) => toFiniteCoord(p.lat) != null && toFiniteCoord(p.lng) != null)
+          .map((p) => (
+            <Marker
+              key={`town-${p.id}`}
+              position={[toFiniteCoord(p.lat), toFiniteCoord(p.lng)]}
+              icon={L.icon({
+                iconUrl: townSvg(p.country, p.isActiveMarket),
+                iconSize: [20, 20],
+                iconAnchor: [10, 10],
+                popupAnchor: [0, -10],
+              })}
+              eventHandlers={{
+                click: () => onSelectReference?.(p),
+              }}
+            >
+              <Popup maxWidth={320}>
+                <div className="text-[12px] text-slate-800">
+                  <p className="font-semibold text-slate-900">{asText(p.label, "Town")}</p>
+                  <p className="mt-1 text-slate-600">
+                    {asText(p.region)}
+                    {p.state ? ` · ${asText(p.state)}` : ""} · {p.country === "MX" ? "Sonora MX" : "US"}
+                  </p>
+                  {p.country === "US" && (
+                    <button
+                      type="button"
+                      className="mt-2 rounded-lg border border-teal-200 bg-teal-50 px-2.5 py-1.5 text-[11px] font-semibold text-teal-900"
+                      onClick={() => onSelectReference?.(p)}
+                    >
+                      Search homes here
+                    </button>
+                  )}
+                </div>
+              </Popup>
+            </Marker>
+          ))}
 
         {toFiniteCoord(activeCenter?.lat) != null && toFiniteCoord(activeCenter?.lng) != null && (
           <Marker
@@ -445,6 +494,8 @@ function GoogleExplorer({
   onClimateFilterSelect,
   hubs,
   sonoraPlaces,
+  referencePoints,
+  onSelectReference,
   onSelectListing,
 }) {
   const pts = useMemo(() => {
@@ -524,6 +575,22 @@ function GoogleExplorer({
               title={pl.label}
             />
           ))}
+
+          {(referencePoints || [])
+            .filter((p) => toFiniteCoord(p.lat) != null && toFiniteCoord(p.lng) != null)
+            .map((p) => (
+              <GMarker
+                key={`town-${p.id}`}
+                position={{ lat: toFiniteCoord(p.lat), lng: toFiniteCoord(p.lng) }}
+                onClick={() => onSelectReference?.(p)}
+                icon={{
+                  url: townSvg(p.country, p.isActiveMarket),
+                  scaledSize: { width: 20, height: 20 },
+                  anchor: { x: 10, y: 10 },
+                }}
+                title={`${p.label} — ${p.region}`}
+              />
+            ))}
 
           {toFiniteCoord(activeCenter?.lat) != null && toFiniteCoord(activeCenter?.lng) != null && (
             <GMarker
