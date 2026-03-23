@@ -12,6 +12,7 @@ import {
 import { getPropertyDetails, getZestimate } from "../api/client.js";
 import { extractZestimateSeries } from "../lib/extractListings.js";
 import { asText } from "../lib/formatDisplayValue.js";
+import { readableError } from "../lib/errorMessage.js";
 import { summarizePropertyDetail } from "../lib/summarizeProperty.js";
 
 export default function PropertyModal({ listing, onClose, priceSuffix = "" }) {
@@ -46,7 +47,7 @@ export default function PropertyModal({ listing, onClose, priceSuffix = "" }) {
           setZest(z);
         }
       } catch (e) {
-        if (!cancel) setErr(e.message || "Failed to load");
+        if (!cancel) setErr(readableError(e, "Failed to load"));
       } finally {
         if (!cancel) setLoading(false);
       }
@@ -168,7 +169,7 @@ export default function PropertyModal({ listing, onClose, priceSuffix = "" }) {
               Loading property details…
             </div>
           )}
-          {err && <p className="text-sm text-red-600">{err}</p>}
+          {err && <p className="text-sm text-red-600">{readableError(err, "")}</p>}
 
           {summary && !loading && (
             <div className="rounded-xl border border-stone-200 bg-stone-50/80 p-4">

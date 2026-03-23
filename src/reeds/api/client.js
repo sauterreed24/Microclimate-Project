@@ -1,4 +1,5 @@
 import axios from "axios";
+import { readableError } from "../lib/errorMessage.js";
 
 const api = axios.create({
   baseURL: "",
@@ -75,12 +76,18 @@ export async function searchByCoordinates(params) {
 
 export async function getPropertyDetails(params) {
   const res = await api.get("/api/zillow/property-details", { params, validateStatus: () => true });
-  if (res.status >= 400) throw new Error(res.data?.error || res.statusText);
+  if (res.status >= 400) {
+    const raw = res.data?.error;
+    throw new Error(raw != null ? readableError(raw, res.statusText || "Request failed") : res.statusText || "Request failed");
+  }
   return res.data;
 }
 
 export async function getZestimate(params) {
   const res = await api.get("/api/zillow/zestimate", { params, validateStatus: () => true });
-  if (res.status >= 400) throw new Error(res.data?.error || res.statusText);
+  if (res.status >= 400) {
+    const raw = res.data?.error;
+    throw new Error(raw != null ? readableError(raw, res.statusText || "Request failed") : res.statusText || "Request failed");
+  }
   return res.data;
 }

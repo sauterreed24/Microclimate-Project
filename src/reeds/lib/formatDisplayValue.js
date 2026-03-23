@@ -10,6 +10,7 @@
  */
 export function asText(v, fallback = "") {
   if (v == null) return fallback;
+  if (v instanceof Error) return v.message?.trim() || fallback;
   const t = typeof v;
   if (t === "string") return v.trim() || fallback;
   if (t === "number" && Number.isFinite(v)) return String(v);
@@ -21,6 +22,7 @@ export function asText(v, fallback = "") {
   }
   if (t === "object") {
     const o = /** @type {Record<string, unknown>} */ (v);
+    if (typeof o.message === "string" || typeof o.message === "number") return String(o.message);
     if (o.streetAddress != null) return asText(o.streetAddress, fallback);
     if (o.line1 != null) return asText(o.line1, fallback);
     if (o.full != null) return asText(o.full, fallback);

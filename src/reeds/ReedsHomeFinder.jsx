@@ -14,6 +14,7 @@ import EmptyResults from "./components/EmptyResults.jsx";
 import MarketMicroclimatePanel from "./components/MarketMicroclimatePanel.jsx";
 import { getMicroclimateBundle } from "./data/microclimateBridge.js";
 import { computeClimateHubs, SOUTHWEST_US_BOUNDS } from "./data/climateHubs.js";
+import { readableApiError } from "./lib/errorMessage.js";
 
 const ListingMap = lazy(() => import("./components/ListingMap.jsx"));
 const PropertyModal = lazy(() => import("./components/PropertyModal.jsx"));
@@ -37,6 +38,24 @@ const RENT_HOME_TYPES = [
 /** localStorage timestamp for throttling API health checks (at most ~daily when tab regains focus) */
 const API_HEALTH_LAST_KEY = "reed-api-health-check-ts";
 const ONE_DAY_MS = 24 * 60 * 60 * 1000;
+
+function safeLocalStorageGet(key, fallback = null) {
+  try {
+    if (typeof window === "undefined" || !window.localStorage) return fallback;
+    return window.localStorage.getItem(key) ?? fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+function safeLocalStorageSet(key, value) {
+  try {
+    if (typeof window === "undefined" || !window.localStorage) return;
+    window.localStorage.setItem(key, value);
+  } catch {
+    /* private mode / quota / policy */
+  }
+}
 
 /** @returns {{ kind: "location", params: Record<string, string> } | { kind: "coordinates", params: Record<string, string> } | null} */
 function buildSearchRequest(state) {
@@ -88,7 +107,7 @@ export default function ReedsHomeFinder() {
   const locFilterRef = useRef(null);
   const [sidebar, setSidebar] = useState(true);
   const [libSearch, setLibSearch] = useState("");
-  const [view, setView] = useState(() => (typeof localStorage !== "undefined" ? localStorage.getItem("reed-view") || "split" : "split"));
+  const [view, setView] = useState(() => safeLocalStorageGet("reed-view", "split") || "split");
   const [apiOk, setApiOk] = useState(null);
   /** Map-only: filter listing pin colors to a microclimate profile (toggle via hub markers). */
   const [climateMapFilter, setClimateMapFilter] = useState(null);
@@ -142,7 +161,7 @@ export default function ReedsHomeFinder() {
   }, [locationId, setLocationId]);
 
   useEffect(() => {
-    localStorage.setItem("reed-view", view);
+    safeLocalStorageSet("reed-view", view);
   }, [view]);
 
   useEffect(() => {
@@ -169,11 +188,7 @@ export default function ReedsHomeFinder() {
         const r = await fetch("/api/health");
         const d = await r.json();
         if (!cancelled) setApiOk(!!(d.ok && d.hasKey));
-        try {
-          localStorage.setItem(API_HEALTH_LAST_KEY, String(Date.now()));
-        } catch {
-          /* private mode / quota */
-        }
+        safeLocalStorageSet(API_HEALTH_LAST_KEY, String(Date.now()));
       } catch {
         if (!cancelled) setApiOk(false);
       }
@@ -182,12 +197,7 @@ export default function ReedsHomeFinder() {
 
     function maybePingOnReturn() {
       if (document.visibilityState !== "visible" || cancelled) return;
-      let last = 0;
-      try {
-        last = parseInt(localStorage.getItem(API_HEALTH_LAST_KEY) || "0", 10) || 0;
-      } catch {
-        last = 0;
-      }
+      const last = parseInt(safeLocalStorageGet(API_HEALTH_LAST_KEY, "0") || "0", 10) || 0;
       if (Date.now() - last < ONE_DAY_MS) return;
       ping();
     }
@@ -205,11 +215,13 @@ export default function ReedsHomeFinder() {
     const go = () => {
       if (!cancelled) setMapMountReady(true);
     };
-    const useIdle = typeof requestIdleCallback !== "undefined";
-    const id = useIdle ? requestIdleCallback(go, { timeout: 1400 }) : window.setTimeout(go, 600);
+    const ric = typeof window !== "undefined" ? window.requestIdleCallback : undefined;
+    const cic = typeof window !== "undefined" ? window.cancelIdleCallback : undefined;
+    const useIdle = typeof ric === "function";
+    const id = useIdle ? ric(go, { timeout: 1400 }) : window.setTimeout(go, 600);
     return () => {
       cancelled = true;
-      if (useIdle) cancelIdleCallback(id);
+      if (useIdle && typeof cic === "function") cic(id);
       else clearTimeout(id);
     };
   }, []);
@@ -240,8 +252,9 @@ export default function ReedsHomeFinder() {
       useReedStore.setState({ rawResponse: raw, listings: list, loading: false });
     } catch (e) {
       console.error(e);
-      useReedStore.setState({ listings: [], loading: false, error: e.message });
-      toast.error(e.response?.data?.error || e.message || "Search failed");
+      const userMsg = readableApiError(e, "Search failed");
+      useReedStore.setState({ listings: [], loading: false, error: userMsg });
+      toast.error(userMsg);
     }
   }, []);
 
