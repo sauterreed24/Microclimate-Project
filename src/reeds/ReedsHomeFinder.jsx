@@ -105,12 +105,24 @@ function buildSearchRequest(state) {
   addNum("max_sqft", maxSqft);
 
   if (loc.searchMode === "coordinates" && loc.coordRadiusMiles) {
+    const latitude = loc.lat ?? loc.latitude;
+    const longitude = loc.lng ?? loc.longitude ?? loc.long;
+    if (!Number.isFinite(Number(latitude)) || !Number.isFinite(Number(longitude))) {
+      return {
+        kind: "location",
+        params: {
+          ...p,
+          location: loc.searchQuery,
+        },
+      };
+    }
     return {
       kind: "coordinates",
       params: {
         ...p,
-        latitude: String(loc.lat),
-        longitude: String(loc.lng),
+        latitude: String(latitude),
+        longitude: String(longitude),
+        long: String(longitude),
         radius: String(loc.coordRadiusMiles),
       },
     };
@@ -129,7 +141,7 @@ export default function ReedsHomeFinder() {
   const locFilterRef = useRef(null);
   const [sidebar, setSidebar] = useState(true);
   const [libSearch, setLibSearch] = useState("");
-  const [view, setView] = useState(() => safeLocalStorageGet("reed-view", "split") || "split");
+  const [view, setView] = useState(() => safeLocalStorageGet("reed-view", "map") || "map");
   const [apiOk, setApiOk] = useState(null);
   /** Map-only: filter listing pin colors to a microclimate profile (toggle via hub markers). */
   const [climateMapFilter, setClimateMapFilter] = useState(null);
@@ -367,27 +379,27 @@ export default function ReedsHomeFinder() {
               <Keyboard className="h-3 w-3" />
               <kbd className="rounded border border-stone-200 bg-white px-1 font-sans text-stone-600 shadow-sm">/</kbd> filter
             </span>
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1 rounded-lg border border-stone-200 bg-stone-50 p-1">
+              <button
+                type="button"
+                onClick={() => setView("map")}
+                className={`rounded-md px-2.5 py-1.5 text-xs font-semibold ${view === "map" ? "bg-white text-teal-900 ring-1 ring-teal-200 shadow-sm" : "text-stone-500 hover:bg-stone-100 hover:text-stone-800"}`}
+              >
+                Map
+              </button>
               <button
                 type="button"
                 onClick={() => setView("split")}
-                className={`rounded-lg px-2.5 py-1.5 text-xs font-medium ${view === "split" ? "bg-teal-100 text-teal-900 ring-1 ring-teal-200" : "text-stone-500 hover:bg-stone-100 hover:text-stone-800"}`}
+                className={`rounded-md px-2.5 py-1.5 text-xs font-semibold ${view === "split" ? "bg-white text-teal-900 ring-1 ring-teal-200 shadow-sm" : "text-stone-500 hover:bg-stone-100 hover:text-stone-800"}`}
               >
                 Split
               </button>
               <button
                 type="button"
                 onClick={() => setView("list")}
-                className={`rounded-lg px-2.5 py-1.5 text-xs font-medium ${view === "list" ? "bg-teal-100 text-teal-900 ring-1 ring-teal-200" : "text-stone-500 hover:bg-stone-100 hover:text-stone-800"}`}
+                className={`rounded-md px-2.5 py-1.5 text-xs font-semibold ${view === "list" ? "bg-white text-teal-900 ring-1 ring-teal-200 shadow-sm" : "text-stone-500 hover:bg-stone-100 hover:text-stone-800"}`}
               >
                 List
-              </button>
-              <button
-                type="button"
-                onClick={() => setView("map")}
-                className={`rounded-lg px-2.5 py-1.5 text-xs font-medium ${view === "map" ? "bg-teal-100 text-teal-900 ring-1 ring-teal-200" : "text-stone-500 hover:bg-stone-100 hover:text-stone-800"}`}
-              >
-                Map
               </button>
             </div>
             <button
@@ -589,7 +601,7 @@ export default function ReedsHomeFinder() {
 
           {!loading && listings.length === 0 && <EmptyResults loading={loading} />}
 
-          <div className={`grid gap-4 ${view === "split" ? "lg:grid-cols-2" : view === "map" ? "grid-cols-1" : "grid-cols-1"}`}>
+          <div className={`grid gap-4 ${view === "split" ? "lg:grid-cols-[1.35fr_1fr]" : "grid-cols-1"}`}>
             {(view === "split" || view === "list") && !loading && (
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
@@ -614,12 +626,13 @@ export default function ReedsHomeFinder() {
                     </button>
                   </div>
                 </div>
-                <div className="grid gap-3 sm:grid-cols-2">
+                <div className={`grid gap-3 ${view === "list" ? "grid-cols-1" : "sm:grid-cols-2"}`}>
                   {listings.map((li) => (
                     <ListingCard
                       key={li.zpid || li.address}
                       listing={li}
                       priceSuffix={priceSuffix}
+                      variant={view === "list" ? "row" : "card"}
                       onOpen={(l) => {
                         setSelectedListing(l);
                         setDetailOpen(true);
@@ -633,7 +646,7 @@ export default function ReedsHomeFinder() {
             )}
 
             {(view === "split" || view === "map") && active && !loading && (
-              <div className="min-h-[400px]">
+              <div className="min-h-[460px]">
                 <div className="mb-2 space-y-2">
                   <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-stone-500">
                     <MapIcon className="h-3.5 w-3.5 text-teal-600" />
@@ -659,14 +672,14 @@ export default function ReedsHomeFinder() {
                   )}
                 </div>
                 {!mapMountReady ? (
-                  <div className="flex h-[min(50vh,420px)] items-center justify-center rounded-2xl border border-stone-200 bg-white text-sm text-stone-500 shadow-sm">
+                  <div className="flex h-[min(64vh,640px)] items-center justify-center rounded-2xl border border-stone-200 bg-white text-sm text-stone-500 shadow-sm">
                     <Loader2 className="mr-2 h-5 w-5 animate-spin text-teal-600" />
                     Preparing map (lighter first load)…
                   </div>
                 ) : (
                   <Suspense
                     fallback={
-                      <div className="flex h-[min(50vh,420px)] items-center justify-center rounded-2xl border border-stone-200 bg-white text-sm text-stone-500 shadow-sm">
+                      <div className="flex h-[min(64vh,640px)] items-center justify-center rounded-2xl border border-stone-200 bg-white text-sm text-stone-500 shadow-sm">
                         <Loader2 className="mr-2 h-5 w-5 animate-spin text-teal-600" />
                         Loading map…
                       </div>

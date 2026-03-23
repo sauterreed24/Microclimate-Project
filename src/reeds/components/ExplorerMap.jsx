@@ -23,6 +23,11 @@ const ESRI_ATTR =
 const GOOGLE_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || "";
 const GOOGLE_MAP_ID = import.meta.env.VITE_GOOGLE_MAP_MAP_ID || "";
 
+function toFiniteCoord(v) {
+  const n = Number(v);
+  return Number.isFinite(n) ? n : null;
+}
+
 /** If Google Maps throws at runtime (bad key, WebGL, etc.), fall back to Leaflet instead of white-screening. */
 class GoogleToLeafletFallback extends Component {
   state = { failed: false };
@@ -110,15 +115,17 @@ function LeafFlyToActive({ center, flyToken }) {
   const map = useMap();
   const prev = useRef(null);
   useEffect(() => {
-    if (!center?.lat || !center?.lng || flyToken == null) return;
+    const lat = toFiniteCoord(center?.lat);
+    const lng = toFiniteCoord(center?.lng);
+    if (lat == null || lng == null || flyToken == null) return;
     if (prev.current === flyToken) return;
     prev.current = flyToken;
     try {
-      map.flyTo([center.lat, center.lng], 10, { duration: 0.7 });
+      map.flyTo([lat, lng], 10, { duration: 0.7 });
     } catch {
       /* ignore */
     }
-  }, [map, center?.lat, center?.lng, flyToken]);
+  }, [map, center, flyToken]);
   return null;
 }
 
@@ -172,12 +179,12 @@ function LeafletExplorer({
     return (listings || [])
       .map((l) => ({
         id: l.zpid || l.address,
-        lat: l.latitude,
-        lng: l.longitude,
+        lat: toFiniteCoord(l.latitude ?? l.lat),
+        lng: toFiniteCoord(l.longitude ?? l.lng ?? l.long),
         label: l.address,
         price: l.price,
       }))
-      .filter((p) => p.lat != null && p.lng != null);
+      .filter((p) => p.id && p.lat != null && p.lng != null);
   }, [listings]);
 
   const showListings = !climateFilter || (listingsProfileId && listingsProfileId === climateFilter);
@@ -219,12 +226,14 @@ function LeafletExplorer({
         <LeafFitSouthwest bounds={southwestBounds} />
         <LeafFlyToActive center={activeCenter} flyToken={flyToken} />
 
-        {hubs.map((h) => {
+        {hubs
+          .filter((h) => toFiniteCoord(h.lat) != null && toFiniteCoord(h.lng) != null)
+          .map((h) => {
           const meta = getMicroclimateMeta(h.profile);
           return (
             <Marker
               key={h.profile}
-              position={[h.lat, h.lng]}
+              position={[toFiniteCoord(h.lat), toFiniteCoord(h.lng)]}
               icon={hubLeafIcon(h.profile, climateFilter)}
               eventHandlers={{
                 click: () => onClimateFilterSelect?.(climateFilter === h.profile ? null : h.profile),
@@ -251,17 +260,19 @@ function LeafletExplorer({
           );
         })}
 
-        {(sonoraPlaces || []).map((pl) => (
-          <Marker key={pl.id} position={[pl.lat, pl.lng]} icon={L.icon({ iconUrl: sonoraSvg(), iconSize: [40, 44], iconAnchor: [20, 44], popupAnchor: [0, -36] })}>
+        {(sonoraPlaces || [])
+          .filter((pl) => toFiniteCoord(pl.lat) != null && toFiniteCoord(pl.lng) != null)
+          .map((pl) => (
+          <Marker key={pl.id} position={[toFiniteCoord(pl.lat), toFiniteCoord(pl.lng)]} icon={L.icon({ iconUrl: sonoraSvg(), iconSize: [40, 44], iconAnchor: [20, 44], popupAnchor: [0, -36] })}>
             <Popup maxWidth={300}>
               <SonoraPopup pl={pl} />
             </Popup>
           </Marker>
         ))}
 
-        {activeCenter?.lat != null && (
+        {toFiniteCoord(activeCenter?.lat) != null && toFiniteCoord(activeCenter?.lng) != null && (
           <Marker
-            position={[activeCenter.lat, activeCenter.lng]}
+            position={[toFiniteCoord(activeCenter.lat), toFiniteCoord(activeCenter.lng)]}
             icon={L.divIcon({
               className: "reed-zillow-hub-wrap",
               html: `<div class="reed-zillow-hub"><span class="reed-zillow-hub__ring"></span><span class="reed-zillow-hub__core"></span></div>`,
@@ -363,12 +374,14 @@ function GFlyToActive({ center, flyToken }) {
   const prev = useRef(null);
   useEffect(() => {
     const g = globalThis.google;
-    if (!map || !g?.maps || !center?.lat || !center?.lng || flyToken == null) return;
+    const lat = toFiniteCoord(center?.lat);
+    const lng = toFiniteCoord(center?.lng);
+    if (!map || !g?.maps || lat == null || lng == null || flyToken == null) return;
     if (prev.current === flyToken) return;
     prev.current = flyToken;
-    map.panTo({ lat: center.lat, lng: center.lng });
+    map.panTo({ lat, lng });
     map.setZoom(10);
-  }, [map, center?.lat, center?.lng, flyToken]);
+  }, [map, center, flyToken]);
   return null;
 }
 
@@ -388,12 +401,12 @@ function GoogleExplorer({
     return (listings || [])
       .map((l) => ({
         id: l.zpid || l.address,
-        lat: l.latitude,
-        lng: l.longitude,
+        lat: toFiniteCoord(l.latitude ?? l.lat),
+        lng: toFiniteCoord(l.longitude ?? l.lng ?? l.long),
         label: l.address,
         price: l.price,
       }))
-      .filter((p) => p.lat != null && p.lng != null);
+      .filter((p) => p.id && p.lat != null && p.lng != null);
   }, [listings]);
 
   const showListings = !climateFilter || (listingsProfileId && listingsProfileId === climateFilter);
@@ -425,14 +438,16 @@ function GoogleExplorer({
           <GFitSouthwest bounds={southwestBounds} />
           <GFlyToActive center={activeCenter} flyToken={flyToken} />
 
-          {hubs.map((h) => {
+          {hubs
+            .filter((h) => toFiniteCoord(h.lat) != null && toFiniteCoord(h.lng) != null)
+            .map((h) => {
             const meta = getMicroclimateMeta(h.profile);
             const dim = climateFilter && climateFilter !== h.profile;
             const selected = climateFilter === h.profile;
             return (
               <GMarker
                 key={h.profile}
-                position={{ lat: h.lat, lng: h.lng }}
+                position={{ lat: toFiniteCoord(h.lat), lng: toFiniteCoord(h.lng) }}
                 onClick={() => onClimateFilterSelect?.(climateFilter === h.profile ? null : h.profile)}
                 icon={{
                   url: hubSvg(h.profile, meta.emoji, dim, selected),
@@ -444,10 +459,12 @@ function GoogleExplorer({
             );
           })}
 
-          {(sonoraPlaces || []).map((pl) => (
+          {(sonoraPlaces || [])
+            .filter((pl) => toFiniteCoord(pl.lat) != null && toFiniteCoord(pl.lng) != null)
+            .map((pl) => (
             <GMarker
               key={pl.id}
-              position={{ lat: pl.lat, lng: pl.lng }}
+              position={{ lat: toFiniteCoord(pl.lat), lng: toFiniteCoord(pl.lng) }}
               icon={{
                 url: sonoraSvg(),
                 scaledSize: { width: 40, height: 44 },
@@ -457,9 +474,9 @@ function GoogleExplorer({
             />
           ))}
 
-          {activeCenter?.lat != null && (
+          {toFiniteCoord(activeCenter?.lat) != null && toFiniteCoord(activeCenter?.lng) != null && (
             <GMarker
-              position={{ lat: activeCenter.lat, lng: activeCenter.lng }}
+              position={{ lat: toFiniteCoord(activeCenter.lat), lng: toFiniteCoord(activeCenter.lng) }}
               icon={{
                 url: pinSvg("#14b8a6", "#0f766e", "Z"),
                 scaledSize: { width: 52, height: 40 },
