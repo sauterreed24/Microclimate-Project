@@ -385,6 +385,56 @@ function GFlyToActive({ center, flyToken }) {
   return null;
 }
 
+/** Terrain / hybrid / satellite + scale — geographic detail. Vector `mapId` uses lighter controls. */
+function GMapVisualPolish() {
+  const map = useGMap();
+  useEffect(() => {
+    const g = globalThis.google?.maps;
+    if (!map || !g) return;
+    try {
+      if (GOOGLE_MAP_ID) {
+        map.setOptions({
+          mapTypeControl: true,
+          mapTypeControlOptions: {
+            style: g.MapTypeControlStyle.HORIZONTAL_BAR,
+            position: g.ControlPosition.TOP_LEFT,
+          },
+          zoomControl: true,
+          zoomControlOptions: { position: g.ControlPosition.RIGHT_CENTER },
+          scaleControl: true,
+          fullscreenControl: true,
+          fullscreenControlOptions: { position: g.ControlPosition.RIGHT_TOP },
+        });
+        return;
+      }
+      map.setOptions({
+        mapTypeId: g.MapTypeId.TERRAIN,
+        mapTypeControl: true,
+        mapTypeControlOptions: {
+          style: g.MapTypeControlStyle.HORIZONTAL_BAR,
+          position: g.ControlPosition.TOP_LEFT,
+          mapTypeIds: [
+            g.MapTypeId.ROADMAP,
+            g.MapTypeId.TERRAIN,
+            g.MapTypeId.HYBRID,
+            g.MapTypeId.SATELLITE,
+          ],
+        },
+        zoomControl: true,
+        zoomControlOptions: { position: g.ControlPosition.RIGHT_CENTER },
+        scaleControl: true,
+        scaleControlOptions: { style: g.ScaleControlStyle.DEFAULT },
+        fullscreenControl: true,
+        fullscreenControlOptions: { position: g.ControlPosition.RIGHT_TOP },
+        streetViewControl: false,
+      });
+    } catch (e) {
+      console.warn("[ExplorerMap] map polish:", e);
+    }
+  }, [map]);
+  return null;
+}
+
 function GoogleExplorer({
   southwestBounds,
   activeCenter,
@@ -437,6 +487,7 @@ function GoogleExplorer({
         >
           <GFitSouthwest bounds={southwestBounds} />
           <GFlyToActive center={activeCenter} flyToken={flyToken} />
+          <GMapVisualPolish />
 
           {hubs
             .filter((h) => toFiniteCoord(h.lat) != null && toFiniteCoord(h.lng) != null)
@@ -519,7 +570,7 @@ export default function ExplorerMap(props) {
   return (
     <APIProvider
       apiKey={GOOGLE_KEY}
-      libraries={["marker"]}
+      libraries={["marker", "geometry"]}
       onError={(e) => {
         console.warn("[ExplorerMap] Google Maps API provider error — falling back to Leaflet:", e);
         setGoogleFailed(true);

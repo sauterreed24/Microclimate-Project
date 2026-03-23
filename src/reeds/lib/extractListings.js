@@ -3,7 +3,11 @@
  */
 function walkForArrays(obj, depth = 0) {
   if (!obj || depth > 8) return [];
-  if (Array.isArray(obj)) return obj;
+  // Do not return primitive arrays (numbers/strings) — parent would spread them into mixed `nested`.
+  if (Array.isArray(obj)) {
+    if (obj.length > 0 && typeof obj[0] === "object" && obj[0] !== null) return obj;
+    return [];
+  }
   if (typeof obj !== "object") return [];
   const out = [];
   for (const v of Object.values(obj)) {
@@ -60,6 +64,17 @@ function scalarStr(v, depth = 0) {
   return "";
 }
 
+/** Only treat as listing arrays — avoids strings / primitives (walkForArrays can spread string chars into nested). */
+function isListingObjectArray(arr) {
+  return (
+    Array.isArray(arr) &&
+    arr.length > 0 &&
+    typeof arr[0] === "object" &&
+    arr[0] !== null &&
+    !Array.isArray(arr[0])
+  );
+}
+
 export function extractListings(raw) {
   if (!raw) return [];
   if (Array.isArray(raw)) return raw.map(normalizeListing).filter(Boolean);
@@ -68,16 +83,20 @@ export function extractListings(raw) {
     raw.results,
     raw.properties,
     raw.props,
+    Array.isArray(raw.data) ? raw.data : null,
     raw.data?.listings,
     raw.data?.results,
     raw.data?.properties,
+    raw.data?.items,
   ].filter(Boolean);
   for (const c of candidates) {
     if (Array.isArray(c)) return c.map(normalizeListing).filter(Boolean);
   }
-  const nested = walkForArrays(raw);
+  const nested = walkForArrays(raw).filter(isListingObjectArray);
   const best = nested.sort((a, b) => b.length - a.length)[0];
-  if (best?.length) return best.map(normalizeListing).filter(Boolean);
+  if (best && Array.isArray(best) && typeof best.map === "function") {
+    return best.map(normalizeListing).filter(Boolean);
+  }
   return [];
 }
 
