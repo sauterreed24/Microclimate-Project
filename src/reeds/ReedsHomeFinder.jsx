@@ -34,6 +34,10 @@ const RENT_HOME_TYPES = [
   ["TOWNHOMES", "Townhomes"],
 ];
 
+/** localStorage timestamp for throttling API health checks (at most ~daily when tab regains focus) */
+const API_HEALTH_LAST_KEY = "reed-api-health-check-ts";
+const ONE_DAY_MS = 24 * 60 * 60 * 1000;
+
 /** @returns {{ kind: "location", params: Record<string, string> } | { kind: "coordinates", params: Record<string, string> } | null} */
 function buildSearchRequest(state) {
   const loc = getLocationById(state.locationId);
@@ -88,6 +92,8 @@ export default function ReedsHomeFinder() {
   const [apiOk, setApiOk] = useState(null);
   /** Map-only: filter listing pin colors to a microclimate profile (toggle via hub markers). */
   const [climateMapFilter, setClimateMapFilter] = useState(null);
+  /** Defer mounting Leaflet/Google map until the browser is idle — avoids blocking first paint on low-end hardware. */
+  const [mapMountReady, setMapMountReady] = useState(false);
 
   const favoriteZpids = useReedStore((s) => s.favoriteZpids);
   const toggleFavorite = useReedStore((s) => s.toggleFavorite);
@@ -158,21 +164,53 @@ export default function ReedsHomeFinder() {
 
   useEffect(() => {
     let cancelled = false;
-    let interval;
     async function ping() {
       try {
         const r = await fetch("/api/health");
         const d = await r.json();
         if (!cancelled) setApiOk(!!(d.ok && d.hasKey));
+        try {
+          localStorage.setItem(API_HEALTH_LAST_KEY, String(Date.now()));
+        } catch {
+          /* private mode / quota */
+        }
       } catch {
         if (!cancelled) setApiOk(false);
       }
     }
     ping();
-    interval = setInterval(ping, 45_000);
+
+    function maybePingOnReturn() {
+      if (document.visibilityState !== "visible" || cancelled) return;
+      let last = 0;
+      try {
+        last = parseInt(localStorage.getItem(API_HEALTH_LAST_KEY) || "0", 10) || 0;
+      } catch {
+        last = 0;
+      }
+      if (Date.now() - last < ONE_DAY_MS) return;
+      ping();
+    }
+
+    document.addEventListener("visibilitychange", maybePingOnReturn);
     return () => {
       cancelled = true;
-      clearInterval(interval);
+      document.removeEventListener("visibilitychange", maybePingOnReturn);
+    };
+  }, []);
+
+  /** After first paint, wait for idle time before loading the heavy map chunk (better on Surface-class devices). */
+  useEffect(() => {
+    let cancelled = false;
+    const go = () => {
+      if (!cancelled) setMapMountReady(true);
+    };
+    const useIdle = typeof requestIdleCallback !== "undefined";
+    const id = useIdle ? requestIdleCallback(go, { timeout: 1400 }) : window.setTimeout(go, 600);
+    return () => {
+      cancelled = true;
+      if (useIdle) cancelIdleCallback(id);
+      else clearTimeout(id);
     };
   }, []);
 
@@ -268,7 +306,7 @@ export default function ReedsHomeFinder() {
           <div className="flex flex-wrap items-center justify-end gap-2 sm:gap-3">
             <div
               className="hidden items-center gap-1.5 rounded-full border border-stone-200 bg-stone-50/90 px-2.5 py-1 text-[10px] text-stone-500 sm:flex"
-              title="API proxy"
+              title="Zillow proxy status — rechecked on load and at most once per day when you return to this tab"
             >
               <Activity className={`h-3.5 w-3.5 ${apiOk ? "text-emerald-600" : apiOk === false ? "text-red-500" : "text-stone-400"}`} />
               <span>{apiOk == null ? "API…" : apiOk ? "API live" : "API down"}</span>
@@ -574,30 +612,37 @@ export default function ReedsHomeFinder() {
                     </div>
                   )}
                 </div>
-                <Suspense
-                  fallback={
-                    <div className="flex h-[min(50vh,420px)] items-center justify-center rounded-2xl border border-stone-200 bg-white text-sm text-stone-500 shadow-sm">
-                      <Loader2 className="mr-2 h-5 w-5 animate-spin text-teal-600" />
-                      Loading map…
-                    </div>
-                  }
-                >
-                  <ListingMap
-                    southwestBounds={SOUTHWEST_US_BOUNDS}
-                    flyToken={locationId}
-                    center={{ lat: active.lat, lng: active.lng }}
-                    listings={listings}
-                    listingsProfileId={active.microclimateProfile}
-                    climateFilter={climateMapFilter}
-                    onClimateFilterSelect={setClimateMapFilter}
-                    hubs={climateHubs}
-                    sonoraPlaces={SONORA_TRAVEL_PLACES}
-                    onSelect={(l) => {
-                      setSelectedListing(l);
-                      setDetailOpen(true);
-                    }}
-                  />
-                </Suspense>
+                {!mapMountReady ? (
+                  <div className="flex h-[min(50vh,420px)] items-center justify-center rounded-2xl border border-stone-200 bg-white text-sm text-stone-500 shadow-sm">
+                    <Loader2 className="mr-2 h-5 w-5 animate-spin text-teal-600" />
+                    Preparing map (lighter first load)…
+                  </div>
+                ) : (
+                  <Suspense
+                    fallback={
+                      <div className="flex h-[min(50vh,420px)] items-center justify-center rounded-2xl border border-stone-200 bg-white text-sm text-stone-500 shadow-sm">
+                        <Loader2 className="mr-2 h-5 w-5 animate-spin text-teal-600" />
+                        Loading map…
+                      </div>
+                    }
+                  >
+                    <ListingMap
+                      southwestBounds={SOUTHWEST_US_BOUNDS}
+                      flyToken={locationId}
+                      center={{ lat: active.lat, lng: active.lng }}
+                      listings={listings}
+                      listingsProfileId={active.microclimateProfile}
+                      climateFilter={climateMapFilter}
+                      onClimateFilterSelect={setClimateMapFilter}
+                      hubs={climateHubs}
+                      sonoraPlaces={SONORA_TRAVEL_PLACES}
+                      onSelect={(l) => {
+                        setSelectedListing(l);
+                        setDetailOpen(true);
+                      }}
+                    />
+                  </Suspense>
+                )}
               </div>
             )}
           </div>

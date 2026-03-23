@@ -1,10 +1,6 @@
-import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.jsx'
 
-createRoot(document.getElementById('root')).render(
-  <StrictMode>
-    <App />
-  </StrictMode>,
-)
+/* StrictMode disabled: double-mounting breaks some map SDKs and doubles work on low-end devices (e.g. Surface). */
+createRoot(document.getElementById('root')).render(<App />)

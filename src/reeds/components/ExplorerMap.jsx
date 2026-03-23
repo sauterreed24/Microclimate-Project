@@ -2,7 +2,7 @@
  * Unified map: Google Maps JS when VITE_GOOGLE_MAPS_API_KEY is set, else Leaflet.
  * Layers: climate-profile hubs (click = filter), Sonora travel pins, Zillow listing pins (color = active market profile).
  */
-import { useEffect, useMemo, useRef } from "react";
+import { Component, useEffect, useMemo, useRef, useState } from "react";
 import L from "leaflet";
 import { MapContainer, TileLayer, Marker, Popup, useMap, LayersControl, ScaleControl } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
@@ -21,6 +21,24 @@ const ESRI_ATTR =
 
 const GOOGLE_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || "";
 const GOOGLE_MAP_ID = import.meta.env.VITE_GOOGLE_MAP_MAP_ID || "";
+
+/** If Google Maps throws at runtime (bad key, WebGL, etc.), fall back to Leaflet instead of white-screening. */
+class GoogleToLeafletFallback extends Component {
+  state = { failed: false };
+
+  static getDerivedStateFromError() {
+    return { failed: true };
+  }
+
+  componentDidCatch(err) {
+    console.warn("[ExplorerMap] Google Maps error — using Leaflet:", err);
+  }
+
+  render() {
+    if (this.state.failed) return <LeafletExplorer {...this.props.fallbackProps} />;
+    return this.props.children;
+  }
+}
 
 function escapeHtml(s) {
   return String(s)
@@ -397,9 +415,8 @@ function GoogleExplorer({
   }, []);
 
   return (
-    <APIProvider apiKey={GOOGLE_KEY} libraries={["marker"]}>
-      <div className="reed-explorer-google relative h-full min-h-[300px] w-full overflow-hidden rounded-2xl ring-1 ring-white/25">
-        <Map
+    <div className="reed-explorer-google relative h-full min-h-[300px] w-full overflow-hidden rounded-2xl ring-1 ring-white/25">
+      <Map
           className="reed-explorer-canvas h-[min(68vh,600px)] w-full md:h-[min(78vh,calc(100vh-5.5rem))]"
           defaultBounds={defaultBounds}
           {...mapOpts}
@@ -470,14 +487,29 @@ function GoogleExplorer({
               );
             })}
         </Map>
-      </div>
-    </APIProvider>
+    </div>
   );
 }
 
 export default function ExplorerMap(props) {
-  if (GOOGLE_KEY) {
-    return <GoogleExplorer {...props} />;
+  const [googleFailed, setGoogleFailed] = useState(false);
+
+  if (!GOOGLE_KEY || googleFailed) {
+    return <LeafletExplorer {...props} />;
   }
-  return <LeafletExplorer {...props} />;
+
+  return (
+    <APIProvider
+      apiKey={GOOGLE_KEY}
+      libraries={["marker"]}
+      onError={(e) => {
+        console.warn("[ExplorerMap] Google Maps API provider error — falling back to Leaflet:", e);
+        setGoogleFailed(true);
+      }}
+    >
+      <GoogleToLeafletFallback fallbackProps={props}>
+        <GoogleExplorer {...props} />
+      </GoogleToLeafletFallback>
+    </APIProvider>
+  );
 }
