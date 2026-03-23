@@ -12,6 +12,7 @@ import LocationLibrary from "./components/LocationLibrary.jsx";
 import ListingCard from "./components/ListingCard.jsx";
 import ListingSkeleton from "./components/ListingSkeleton.jsx";
 import EmptyResults from "./components/EmptyResults.jsx";
+import ExploreListRail from "./components/ExploreListRail.jsx";
 import MarketMicroclimatePanel from "./components/MarketMicroclimatePanel.jsx";
 import { getMicroclimateBundle } from "./data/microclimateBridge.js";
 import { computeClimateHubs, SOUTHWEST_US_BOUNDS } from "./data/climateHubs.js";
@@ -142,7 +143,7 @@ export default function ReedsHomeFinder() {
   const locFilterRef = useRef(null);
   const [sidebar, setSidebar] = useState(true);
   const [libSearch, setLibSearch] = useState("");
-  const [view, setView] = useState(() => safeLocalStorageGet("reed-view", "map") || "map");
+  const [view, setView] = useState(() => safeLocalStorageGet("reed-view", "split") || "split");
   const [apiOk, setApiOk] = useState(null);
   /** Map-only: filter listing pin colors to a microclimate profile (toggle via hub markers). */
   const [climateMapFilter, setClimateMapFilter] = useState(null);
@@ -212,6 +213,15 @@ export default function ReedsHomeFinder() {
   }, [locationId]);
 
   const climateMismatchOnMap = Boolean(climateMapFilter && active?.microclimateProfile && climateMapFilter !== active.microclimateProfile);
+
+  /** One scannable line: climate + water/rain + air context — pairs with map terrain & microclimate panel */
+  const marketContextLine = useMemo(() => {
+    const parts = [];
+    if (activeMcMeta?.title) parts.push(`${activeMcMeta.emoji} ${activeMcMeta.title}`);
+    if (microBundle?.loc?.ra != null) parts.push(`~${microBundle.loc.ra}" rain/yr`);
+    if (microBundle?.loc?.nr) parts.push(String(microBundle.loc.nr));
+    return parts.length ? parts.join(" · ") : activeMcMeta?.blurb?.slice(0, 140) || "";
+  }, [activeMcMeta, microBundle]);
 
   useEffect(() => {
     if (!getLocationById(locationId)) {
@@ -459,9 +469,10 @@ export default function ReedsHomeFinder() {
               <button
                 type="button"
                 onClick={() => setView("split")}
+                title="Map + scrollable listings — geography first"
                 className={`rounded-md px-2.5 py-1.5 text-xs font-semibold ${view === "split" ? "bg-white text-teal-900 ring-1 ring-teal-200 shadow-sm" : "text-stone-500 hover:bg-stone-100 hover:text-stone-800"}`}
               >
-                Split
+                Explore
               </button>
               <button
                 type="button"
@@ -670,62 +681,17 @@ export default function ReedsHomeFinder() {
 
           {!loading && listings.length === 0 && <EmptyResults loading={loading} />}
 
-          <div className={`grid gap-4 ${view === "split" ? "lg:grid-cols-[1.35fr_1fr]" : "grid-cols-1"}`}>
-            {(view === "split" || view === "list") && !loading && (
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <p className="text-sm text-stone-600">
-                    {listings.length} results · page {page}
-                  </p>
-                  <div className="flex gap-2">
-                    <button
-                      type="button"
-                      disabled={page <= 1}
-                      onClick={() => setPage(page - 1)}
-                      className="rounded-lg border border-stone-200 bg-white px-3 py-1 text-xs font-medium text-stone-700 shadow-sm disabled:opacity-40"
-                    >
-                      Prev
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setPage(page + 1)}
-                      className="rounded-lg border border-stone-200 bg-white px-3 py-1 text-xs font-medium text-stone-700 shadow-sm"
-                    >
-                      Next
-                    </button>
-                  </div>
-                </div>
-                <div className={`grid gap-3 ${view === "list" ? "grid-cols-1" : "sm:grid-cols-2"}`}>
-                  {listings.map((li) => (
-                    <ListingCard
-                      key={li.zpid || li.address}
-                      listing={li}
-                      priceSuffix={priceSuffix}
-                      variant={view === "list" ? "row" : "card"}
-                      onOpen={(l) => {
-                        setSelectedListing(l);
-                        setDetailOpen(true);
-                      }}
-                      isFavorite={(z) => favoriteZpids.includes(z)}
-                      onToggleFavorite={toggleFavorite}
-                    />
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {(view === "split" || view === "map") && active && !loading && (
-              <div className="min-h-[460px]">
+          {view === "split" && active && !loading && (
+            <div className="grid gap-4 lg:grid-cols-[minmax(0,1.55fr)_minmax(300px,420px)] lg:items-start">
+              <div className="min-h-[min(64vh,720px)] lg:sticky lg:top-[4.5rem] lg:self-start">
                 <div className="mb-2 space-y-2">
                   <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-stone-500">
                     <MapIcon className="h-3.5 w-3.5 text-teal-600" />
                     <span>
-                      <span className="font-medium text-stone-700">Zillow</span> listings (price pins) +{" "}
-                      <span className="font-medium text-stone-700">microclimate hubs</span> (tap to match pin colors) +{" "}
-                      <span className="font-medium text-violet-800">Sonora</span> travel context ·{" "}
-                      <span className="font-medium text-teal-800">pulse</span> = active search anchor
+                      <span className="font-medium text-stone-700">Terrain + geography</span> — Zillow pins, climate hubs, town anchors, Sonora travel ·{" "}
+                      <span className="font-medium text-teal-800">pulse</span> = active search
                       <span className="ml-1 text-stone-400">
-                        · {import.meta.env.VITE_GOOGLE_MAPS_API_KEY ? "Google Maps engine" : "Leaflet · CARTO / Esri / OSM"}
+                        · {import.meta.env.VITE_GOOGLE_MAPS_API_KEY ? "Google Maps" : "Leaflet / CARTO"}
                       </span>
                     </span>
                   </div>
@@ -743,7 +709,7 @@ export default function ReedsHomeFinder() {
                 {!mapMountReady ? (
                   <div className="flex h-[min(64vh,640px)] items-center justify-center rounded-2xl border border-stone-200 bg-white text-sm text-stone-500 shadow-sm">
                     <Loader2 className="mr-2 h-5 w-5 animate-spin text-teal-600" />
-                    Preparing map (lighter first load)…
+                    Preparing map…
                   </div>
                 ) : (
                   <Suspense
@@ -776,8 +742,140 @@ export default function ReedsHomeFinder() {
                   </Suspense>
                 )}
               </div>
-            )}
-          </div>
+              <div className="lg:sticky lg:top-[4.75rem] lg:self-start">
+                <ExploreListRail
+                  listings={listings}
+                  page={page}
+                  setPage={setPage}
+                  priceSuffix={priceSuffix}
+                  favoriteZpids={favoriteZpids}
+                  toggleFavorite={toggleFavorite}
+                  onOpenListing={(l) => {
+                    setSelectedListing(l);
+                    setDetailOpen(true);
+                  }}
+                  activeState={active?.state}
+                  marketContextLine={marketContextLine}
+                />
+              </div>
+            </div>
+          )}
+
+          {view === "map" && active && !loading && (
+            <div className="min-h-[460px]">
+              <div className="mb-2 space-y-2">
+                <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-stone-500">
+                  <MapIcon className="h-3.5 w-3.5 text-teal-600" />
+                  <span>
+                    <span className="font-medium text-stone-700">Zillow</span> listings + hubs + Sonora context ·{" "}
+                    <span className="font-medium text-teal-800">pulse</span> = active search
+                    <span className="ml-1 text-stone-400">
+                      · {import.meta.env.VITE_GOOGLE_MAPS_API_KEY ? "Google Maps" : "Leaflet"}
+                    </span>
+                  </span>
+                </div>
+                {climateMismatchOnMap && activeMcMeta && (
+                  <div
+                    className="rounded-xl border border-amber-200 bg-amber-50/95 px-3 py-2 text-[11px] leading-snug text-amber-950 shadow-sm"
+                    role="status"
+                  >
+                    <span className="font-semibold">Heads up:</span> map filter climate ≠ {active.label}. Pins may hide; results still match market.
+                  </div>
+                )}
+              </div>
+              {!mapMountReady ? (
+                <div className="flex h-[min(64vh,640px)] items-center justify-center rounded-2xl border border-stone-200 bg-white text-sm text-stone-500 shadow-sm">
+                  <Loader2 className="mr-2 h-5 w-5 animate-spin text-teal-600" />
+                  Preparing map…
+                </div>
+              ) : (
+                <Suspense
+                  fallback={
+                    <div className="flex h-[min(64vh,640px)] items-center justify-center rounded-2xl border border-stone-200 bg-white text-sm text-stone-500 shadow-sm">
+                      <Loader2 className="mr-2 h-5 w-5 animate-spin text-teal-600" />
+                      Loading map…
+                    </div>
+                  }
+                >
+                  <ListingMap
+                    southwestBounds={SOUTHWEST_US_BOUNDS}
+                    flyToken={locationId}
+                    center={{ lat: active.lat, lng: active.lng }}
+                    listings={listings}
+                    listingsProfileId={active.microclimateProfile}
+                    climateFilter={climateMapFilter}
+                    onClimateFilterSelect={setClimateMapFilter}
+                    hubs={climateHubs}
+                    sonoraPlaces={SONORA_TRAVEL_PLACES}
+                    referencePoints={mapReferencePoints}
+                    onSelectReference={(ref) => {
+                      if (ref?.country === "US") selectLocation(ref.id);
+                    }}
+                    onSelect={(l) => {
+                      setSelectedListing(l);
+                      setDetailOpen(true);
+                    }}
+                  />
+                </Suspense>
+              )}
+            </div>
+          )}
+
+          {view === "list" && !loading && (
+            <div className="space-y-3">
+              <div className="rounded-xl border border-stone-200 bg-white p-3 shadow-sm">
+                <p className="text-[11px] leading-relaxed text-stone-600">
+                  <strong className="text-stone-800">Full-width list</strong> — best for comparing many cards. Use{" "}
+                  <strong>Explore</strong> to keep terrain + water context beside results.
+                </p>
+                {marketContextLine && (
+                  <p className="mt-2 text-[11px] text-teal-900/85">
+                    <span className="font-semibold">Context: </span>
+                    {marketContextLine}
+                  </p>
+                )}
+              </div>
+              <div className="flex items-center justify-between">
+                <p className="text-sm text-stone-600">
+                  {listings.length} results · page {page}
+                </p>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    disabled={page <= 1}
+                    onClick={() => setPage(page - 1)}
+                    className="rounded-lg border border-stone-200 bg-white px-3 py-1 text-xs font-medium text-stone-700 shadow-sm disabled:opacity-40"
+                  >
+                    Prev
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPage(page + 1)}
+                    className="rounded-lg border border-stone-200 bg-white px-3 py-1 text-xs font-medium text-stone-700 shadow-sm"
+                  >
+                    Next
+                  </button>
+                </div>
+              </div>
+              <div className="grid gap-3 grid-cols-1">
+                {listings.map((li) => (
+                  <ListingCard
+                    key={li.zpid || li.address}
+                    listing={li}
+                    priceSuffix={priceSuffix}
+                    variant="row"
+                    marketContextLine={marketContextLine}
+                    onOpen={(l) => {
+                      setSelectedListing(l);
+                      setDetailOpen(true);
+                    }}
+                    isFavorite={(z) => favoriteZpids.includes(z)}
+                    onToggleFavorite={toggleFavorite}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
         </main>
       </div>
 

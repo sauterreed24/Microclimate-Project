@@ -124,6 +124,9 @@ export function normalizeListing(p) {
   const city = scalarStr(p.city) || (nestedAddr ? scalarStr(nestedAddr.city) : "") || "";
   const state = scalarStr(p.state) || (nestedAddr ? scalarStr(nestedAddr.state ?? nestedAddr.stateCode) : "") || "";
   const url = pickStr(p.detailUrl, p.url, p.hdpUrl);
+  const lotAreaValue = pickNum(p.lotAreaValue, p.lotSize, p.lotArea);
+  const lotAreaUnit = pickStr(p.lotAreaUnit, p.lotSizeUnit) || "";
+  const homeTypeLabel = pickStr(p.homeType, p.propertyType, p.listing?.homeType);
   return {
     zpid,
     address: addr,
@@ -138,6 +141,9 @@ export function normalizeListing(p) {
     image: img,
     url,
     daysOnMarket: pickNum(p.daysOnZillow, p.daysOnMarket),
+    lotAreaValue,
+    lotAreaUnit,
+    homeTypeLabel,
     raw: p,
   };
 }

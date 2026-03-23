@@ -107,6 +107,19 @@
   box-shadow: inset 0 0 100px rgba(13, 148, 136, 0.07);
 }
 
+/* Explore split — list rail scrollbar */
+.reed-explore-rail-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(13, 148, 136, 0.45) transparent;
+}
+.reed-explore-rail-scroll::-webkit-scrollbar {
+  width: 7px;
+}
+.reed-explore-rail-scroll::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, rgba(13, 148, 136, 0.45), rgba(14, 165, 233, 0.35));
+  border-radius: 9999px;
+}
+
 .reed-explorer-leaflet .leaflet-control-layers {
   border-radius: 12px !important;
   border: 1px solid #e7e5e4 !important;

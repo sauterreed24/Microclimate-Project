@@ -188,7 +188,7 @@ export default function PropertyModal({ listing, onClose, priceSuffix = "" }) {
           {detail && (
             <details className="rounded-xl border border-stone-200 bg-stone-50/50">
               <summary className="cursor-pointer px-4 py-3 text-xs font-medium text-stone-500 hover:text-stone-700">
-                Raw API response (debug)
+                Technical: raw API JSON (optional)
               </summary>
               <pre className="max-h-48 overflow-auto border-t border-stone-100 p-4 text-xs text-stone-600">
                 {JSON.stringify(detail, null, 2)}
