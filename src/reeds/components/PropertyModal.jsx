@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { X, ExternalLink, Loader2, MapPin } from "lucide-react";
+import { X, ExternalLink, Loader2, MapPin, Camera, Sparkles } from "lucide-react";
 import {
   LineChart,
   Line,
@@ -14,6 +14,7 @@ import { extractCurrentZestimate, extractZestimateSeries } from "../lib/extractL
 import { asText } from "../lib/formatDisplayValue.js";
 import { readableError } from "../lib/errorMessage.js";
 import { summarizeFromListing, summarizePropertyDetail } from "../lib/summarizeProperty.js";
+import { fetchWikimediaPhotoNear, googleMapsStreetViewIntentUrl, streetViewEmbedUrl } from "../lib/placeMedia.js";
 
 export default function PropertyModal({ listing, onClose, priceSuffix = "" }) {
   const [detail, setDetail] = useState(null);
@@ -63,6 +64,29 @@ export default function PropertyModal({ listing, onClose, priceSuffix = "" }) {
     };
   }, [listing?.zpid]);
 
+  useEffect(() => {
+    let cancel = false;
+    if (!listing) return undefined;
+    const la = Number(listing.latitude ?? listing.lat);
+    const ln = Number(listing.longitude ?? listing.lng);
+    if (!Number.isFinite(la) || !Number.isFinite(ln)) {
+      setWikiPhoto(null);
+      setWikiLoading(false);
+      return undefined;
+    }
+    setWikiLoading(true);
+    setWikiPhoto(null);
+    fetchWikimediaPhotoNear(la, ln).then((w) => {
+      if (!cancel) {
+        setWikiPhoto(w);
+        setWikiLoading(false);
+      }
+    });
+    return () => {
+      cancel = true;
+    };
+  }, [listing?.zpid, listing?.latitude, listing?.longitude, listing?.lat, listing?.lng]);
+
   if (!listing) return null;
 
   const lat = listing.latitude ?? listing.lat;
@@ -90,16 +114,23 @@ export default function PropertyModal({ listing, onClose, priceSuffix = "" }) {
   const currentZestimate = extractCurrentZestimate(zest || {});
   const showValuationBlock = chartData.length > 0 || currentZestimate != null;
 
+  const laN = Number(lat);
+  const lnN = Number(lng);
+  const streetEmbed =
+    Number.isFinite(laN) && Number.isFinite(lnN) ? streetViewEmbedUrl(laN, lnN, { heading: 40, pitch: 8, fov: 80 }) : null;
+  const streetIntent =
+    Number.isFinite(laN) && Number.isFinite(lnN) ? googleMapsStreetViewIntentUrl(laN, lnN) : null;
+
   return (
     <div className="fixed inset-0 z-[100] flex items-end justify-center sm:items-center sm:p-6">
-      <button type="button" className="absolute inset-0 bg-stone-900/40 backdrop-blur-[2px]" aria-label="Close" onClick={onClose} />
+      <button type="button" className="absolute inset-0 bg-stone-900/50 backdrop-blur-[3px]" aria-label="Close" onClick={onClose} />
       <div
         role="dialog"
         aria-modal="true"
         aria-labelledby="reed-modal-title"
-        className="relative z-10 max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-t-3xl border border-stone-200 bg-white shadow-2xl ring-1 ring-stone-100 sm:rounded-3xl"
+        className="relative z-10 max-h-[92vh] w-full max-w-3xl overflow-y-auto rounded-t-3xl border border-stone-200/90 bg-gradient-to-b from-sky-50/40 via-white to-white shadow-2xl ring-1 ring-stone-100/80 sm:rounded-3xl"
       >
-        <div className="sticky top-0 flex items-start justify-between gap-4 border-b border-stone-100 bg-white/95 p-5 backdrop-blur">
+        <div className="sticky top-0 z-[1] flex items-start justify-between gap-4 border-b border-stone-100/90 bg-white/90 p-5 backdrop-blur-md">
           <div>
             <p className="text-xs font-semibold uppercase tracking-widest text-teal-600">Listing</p>
             <h3 id="reed-modal-title" className="font-display mt-1 text-xl font-semibold text-stone-900">
@@ -115,8 +146,77 @@ export default function PropertyModal({ listing, onClose, priceSuffix = "" }) {
         </div>
 
         <div className="space-y-6 p-5">
-          {listing.image && (
-            <img src={listing.image} alt="" className="h-52 w-full rounded-2xl object-cover ring-1 ring-stone-200" loading="lazy" />
+          {(streetEmbed || streetIntent || wikiPhoto || wikiLoading || listing.image) && (
+            <section className="overflow-hidden rounded-2xl border border-sky-100/80 bg-gradient-to-br from-sky-100/50 via-white to-teal-50/40 p-4 shadow-inner ring-1 ring-sky-100/60">
+              <div className="mb-3 flex items-center gap-2 text-sky-950">
+                <Sparkles className="h-4 w-4 text-sky-600" />
+                <h4 className="text-xs font-bold uppercase tracking-wide text-sky-900">Place & perspective</h4>
+              </div>
+              <p className="mb-4 text-[11px] leading-relaxed text-sky-900/75">
+                Street View + Commons photos are official APIs (not scraped social feeds). Enable <strong>Maps Embed API</strong> on the same Google Cloud key as
+                your map for the live panorama strip.
+              </p>
+              <div className="grid gap-3 md:grid-cols-2">
+                {streetEmbed ? (
+                  <div className="overflow-hidden rounded-xl ring-1 ring-sky-200/80">
+                    <iframe
+                      title="Street View near listing"
+                      className="h-52 w-full border-0 bg-black/5"
+                      loading="lazy"
+                      referrerPolicy="no-referrer-when-downgrade"
+                      allowFullScreen
+                      src={streetEmbed}
+                    />
+                  </div>
+                ) : streetIntent ? (
+                  <a
+                    href={streetIntent}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex h-52 flex-col items-center justify-center rounded-xl bg-sky-950/5 px-4 text-center text-sm font-medium text-sky-900 ring-1 ring-sky-200/80 hover:bg-sky-100/40"
+                  >
+                    <Camera className="mb-2 h-8 w-8 text-sky-600" />
+                    Open immersive Street View in Google Maps
+                    <span className="mt-2 text-[11px] font-normal text-sky-800/80">(Add VITE_GOOGLE_MAPS_API_KEY + Embed API for inline panorama)</span>
+                  </a>
+                ) : null}
+
+                <div className="space-y-2">
+                  {listing.image && (
+                    <img
+                      src={listing.image}
+                      alt=""
+                      className="h-40 w-full rounded-xl object-cover ring-1 ring-stone-200/80"
+                      loading="lazy"
+                    />
+                  )}
+                  {wikiLoading && (
+                    <p className="flex items-center gap-2 text-[11px] text-stone-500">
+                      <Loader2 className="h-3.5 w-3.5 animate-spin text-teal-600" />
+                      Finding a nearby Commons photo…
+                    </p>
+                  )}
+                  {wikiPhoto && (
+                    <a
+                      href={wikiPhoto.pageUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="group block overflow-hidden rounded-xl ring-1 ring-amber-200/80 transition hover:ring-amber-300"
+                    >
+                      <img
+                        src={wikiPhoto.thumbUrl}
+                        alt=""
+                        className="h-40 w-full object-cover transition group-hover:opacity-95"
+                        loading="lazy"
+                      />
+                      <p className="bg-amber-50/95 px-2 py-1.5 text-[10px] text-amber-950/90">
+                        Wikimedia Commons · {wikiPhoto.title.replace(/^File:/, "")} · CC community license — tap for attribution
+                      </p>
+                    </a>
+                  )}
+                </div>
+              </div>
+            </section>
           )}
 
           <div className="flex flex-wrap gap-3 text-sm">

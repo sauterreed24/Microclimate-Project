@@ -199,7 +199,8 @@ function LeafletExplorer({
       .filter((p) => p.id && p.lat != null && p.lng != null);
   }, [listings]);
 
-  const showListings = !climateFilter || (listingsProfileId && listingsProfileId === climateFilter);
+  /** Always plot Zillow pins; hub filter only dims other hubs — hiding pins felt like “missing listings”. */
+  const showListings = true;
 
   const listingIcons = useMemo(() => {
     const m = new Map();
@@ -510,7 +511,7 @@ function GoogleExplorer({
       .filter((p) => p.id && p.lat != null && p.lng != null);
   }, [listings]);
 
-  const showListings = !climateFilter || (listingsProfileId && listingsProfileId === climateFilter);
+  const showListings = true;
   const pid = listingsProfileId || "hot-desert-basin";
 
   const defaultBounds = useMemo(() => {

@@ -39,7 +39,8 @@ export default function ExploreListRail({
 
       <div className="flex shrink-0 items-center justify-between gap-2 rounded-lg bg-stone-100/80 px-2 py-1.5">
         <p className="text-[11px] font-medium text-stone-600">
-          {listings.length} on page · page {page}
+          {listings.length} results loaded · API page {page}
+          {page === 1 && listings.length > 40 ? " · merged pages when available" : ""}
         </p>
         <div className="flex gap-1">
           <button

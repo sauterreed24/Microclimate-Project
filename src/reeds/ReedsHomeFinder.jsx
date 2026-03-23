@@ -41,6 +41,19 @@ const RENT_HOME_TYPES = [
 const API_HEALTH_LAST_KEY = "reed-api-health-check-ts";
 const ONE_DAY_MS = 24 * 60 * 60 * 1000;
 
+/** Zillow proxy page size (OpenWeb Ninja / upstream caps vary — tune via env). */
+const ZILLOW_PAGE_LIMIT = String(import.meta.env.VITE_ZILLOW_PAGE_LIMIT || "80");
+/** When UI page is 1, merge this many API pages for denser map + list (deduped by zpid). */
+const ZILLOW_MAX_PAGES = Math.min(8, Math.max(1, Number(import.meta.env.VITE_ZILLOW_MAX_PAGES || 4) || 4));
+
+function stripUndefined(obj) {
+  const out = {};
+  for (const [k, v] of Object.entries(obj || {})) {
+    if (v !== undefined && v !== null && v !== "") out[k] = v;
+  }
+  return out;
+}
+
 function safeLocalStorageGet(key, fallback = null) {
   try {
     if (typeof window === "undefined" || !window.localStorage) return fallback;
@@ -68,7 +81,7 @@ function buildSearchRequest(state) {
     home_status: state.homeStatus,
     home_type: state.homeType,
     sort: state.sort,
-    limit: "40",
+    limit: ZILLOW_PAGE_LIMIT,
   };
   const toNumber = (value, opts = { allowDecimal: false, min: 0 }) => {
     if (value === "" || value == null) return undefined;
@@ -229,6 +242,11 @@ export default function ReedsHomeFinder() {
     }
   }, [locationId, setLocationId]);
 
+  /** New market → clear hub filter so listing pins are never “mystery hidden”. */
+  useEffect(() => {
+    setClimateMapFilter(null);
+  }, [locationId]);
+
   useEffect(() => {
     safeLocalStorageSet("reed-view", view);
   }, [view]);
@@ -315,27 +333,27 @@ export default function ReedsHomeFinder() {
     }
     useReedStore.setState({ loading: true, error: null });
     try {
-      const stripUndefined = (obj) => {
-        const out = {};
-        for (const [k, v] of Object.entries(obj || {})) {
-          if (v !== undefined && v !== null && v !== "") out[k] = v;
-        }
-        return out;
-      };
       const withRelaxedHousingFilters = (params) => {
         const p = { ...params, sort: "DEFAULT" };
         delete p.home_type;
         return stripUndefined(p);
       };
 
-      let raw = req.kind === "coordinates" ? await searchByCoordinates(req.params) : await searchListings(req.params);
+      /** @type {(p: Record<string, string>) => Promise<unknown>} */
+      let fetchListings = (p) =>
+        req.kind === "coordinates" ? searchByCoordinates(p) : searchListings(p);
+      let params = stripUndefined(req.params);
+
+      let raw = await fetchListings(params);
       let list = extractListings(raw);
 
       // Zillow upstream can be inconsistent by endpoint/shape — on empty, retry with relaxed params.
       if (list.length === 0) {
         if (req.kind === "coordinates") {
           const coordRetry = withRelaxedHousingFilters(req.params);
-          raw = await searchByCoordinates(coordRetry);
+          params = coordRetry;
+          fetchListings = (p) => searchByCoordinates(p);
+          raw = await fetchListings(coordRetry);
           list = extractListings(raw);
 
           if (list.length === 0) {
@@ -352,14 +370,42 @@ export default function ReedsHomeFinder() {
               delete locationRetry.lng;
               delete locationRetry.longtitude;
               delete locationRetry.radius;
-              raw = await searchListings(locationRetry);
+              params = locationRetry;
+              fetchListings = (p) => searchListings(p);
+              raw = await fetchListings(locationRetry);
               list = extractListings(raw);
             }
           }
         } else {
           const locationRetry = withRelaxedHousingFilters(req.params);
-          raw = await searchListings(locationRetry);
+          params = locationRetry;
+          fetchListings = (p) => searchListings(p);
+          raw = await fetchListings(locationRetry);
           list = extractListings(raw);
+        }
+      }
+
+      if (snap.page === 1 && list.length > 0) {
+        const seen = new Set(
+          list.map((l) => String(l.zpid || l.address || "").trim()).filter(Boolean)
+        );
+        const limitNum = Number(ZILLOW_PAGE_LIMIT) || 80;
+        for (let pageNum = 2; pageNum <= ZILLOW_MAX_PAGES; pageNum++) {
+          const nextParams = stripUndefined({
+            ...params,
+            page: String(pageNum),
+            limit: ZILLOW_PAGE_LIMIT,
+          });
+          const rawP = await fetchListings(nextParams);
+          const listP = extractListings(rawP);
+          if (listP.length === 0) break;
+          for (const l of listP) {
+            const id = String(l.zpid || l.address || "").trim();
+            if (!id || seen.has(id)) continue;
+            seen.add(id);
+            list.push(l);
+          }
+          if (listP.length < limitNum) break;
         }
       }
 
@@ -414,7 +460,8 @@ export default function ReedsHomeFinder() {
       />
 
       <header className="sticky top-0 z-50 border-b border-stone-200/90 bg-white/90 shadow-sm backdrop-blur-md">
-        <div className="mx-auto flex max-w-[1600px] items-center justify-between gap-4 px-4 py-3">
+        <div className="mx-auto flex max-w-[1600px] flex-col gap-2 px-4 py-3">
+          <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <button
               type="button"
@@ -434,12 +481,6 @@ export default function ReedsHomeFinder() {
             </div>
           </div>
 
-          {error && (
-            <div className="mt-3 flex items-start gap-2 rounded-xl border border-red-200 bg-red-50/90 px-3 py-2 text-xs text-red-900 shadow-sm">
-              <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-red-600" />
-              <span>{error}</span>
-            </div>
-          )}
           <div className="flex flex-wrap items-center justify-end gap-2 sm:gap-3">
             <div
               className="hidden items-center gap-1.5 rounded-full border border-stone-200 bg-stone-50/90 px-2.5 py-1 text-[10px] text-stone-500 sm:flex"
@@ -491,6 +532,13 @@ export default function ReedsHomeFinder() {
               Refresh
             </button>
           </div>
+          </div>
+          {error && (
+            <div className="flex items-start gap-2 rounded-xl border border-red-200 bg-red-50/90 px-3 py-2 text-xs text-red-900 shadow-sm">
+              <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-red-600" />
+              <span>{error}</span>
+            </div>
+          )}
         </div>
       </header>
 

@@ -36,12 +36,41 @@ export function readableError(value, fallback = "Something went wrong") {
  * @param {unknown} e
  * @param {string} [fallback]
  */
+/**
+ * Map terse upstream Zillow/OpenWeb Ninja messages to actionable copy.
+ * @param {string} msg
+ */
+export function humanizeZillowProviderMessage(msg) {
+  const s = String(msg || "").trim();
+  if (!s) return s;
+  const lower = s.toLowerCase();
+  if (
+    lower.includes("authentication") ||
+    lower.includes("unauthorized") ||
+    lower.includes("invalid api key") ||
+    (lower.includes("api key") && (lower.includes("invalid") || lower.includes("missing")))
+  ) {
+    return "Zillow data provider rejected the request — set a valid ZILLOW_API_KEY in backend/.env (OpenWeb Ninja), save, then restart npm run dev. Check quota/billing on your provider dashboard.";
+  }
+  if (lower.includes("rate limit") || lower.includes("too many requests")) {
+    return "Too many requests to the Zillow provider — wait a minute and tap Refresh, or reduce how often you change markets.";
+  }
+  if (lower.includes("credit") || lower.includes("quota") || lower.includes("subscription")) {
+    return "Zillow provider quota or subscription issue — check your OpenWeb Ninja plan and billing.";
+  }
+  return s;
+}
+
 export function readableApiError(e, fallback = "Request failed") {
   if (e == null) return fallback;
   if (typeof e === "object" && e !== null && "response" in e) {
     const res = /** @type {{ response?: { data?: { error?: unknown } } } }} */ (e);
     const body = res.response?.data?.error;
-    if (body != null) return readableError(body, fallback);
+    if (body != null) {
+      const raw = readableError(body, fallback);
+      return humanizeZillowProviderMessage(raw) || raw;
+    }
   }
-  return readableError(e, fallback);
+  const base = readableError(e, fallback);
+  return humanizeZillowProviderMessage(base) || base;
 }
