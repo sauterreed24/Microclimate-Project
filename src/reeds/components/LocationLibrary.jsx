@@ -25,6 +25,7 @@ function LocationGroupList({ groups, browseMode, locationId, onSelect, search })
             asText(l.label).toLowerCase().includes(q) ||
             asText(l.region).toLowerCase().includes(q) ||
             asText(l.state).toLowerCase().includes(q) ||
+            asText(l.notes).toLowerCase().includes(q) ||
             mc.includes(q) ||
             l.tags.some((t) => t.includes(q))
           );
@@ -73,6 +74,11 @@ function LocationGroupList({ groups, browseMode, locationId, onSelect, search })
                           ? `${asText(l.state)} · ${asText(l.region)}`
                           : asText(l.region)}
                       </span>
+                      {asText(l.notes) ? (
+                        <span className="mt-1 block line-clamp-3 text-[10px] leading-snug text-violet-900/85">
+                          {asText(l.notes)}
+                        </span>
+                      ) : null}
                     </span>
                     {active && <MapPin className="mt-0.5 h-3.5 w-3.5 shrink-0 text-teal-600" />}
                   </button>

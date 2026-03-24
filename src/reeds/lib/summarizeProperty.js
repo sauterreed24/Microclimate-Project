@@ -1,3 +1,31 @@
+function stripHtmlish(s) {
+  if (!s || typeof s !== "string") return "";
+  return s
+    .replace(/<[^>]*>/g, " ")
+    .replace(/&nbsp;/gi, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function pickDescriptionFromObject(o) {
+  if (!o || typeof o !== "object") return "";
+  const keys = [
+    "description",
+    "homeDescription",
+    "publicRemarks",
+    "richTextDescription",
+    "remarks",
+    "marketingRemarks",
+  ];
+  for (const k of keys) {
+    const v = o[k];
+    if (typeof v === "string" && v.replace(/<[^>]*>/g, "").trim().length > 24) {
+      return stripHtmlish(v);
+    }
+  }
+  return "";
+}
+
 /**
  * Pull human-readable fields from messy nested API JSON.
  * Handles wrappers like `{ status: "OK", data: { ...property } }` and minimal `{ status, parameters }`.
@@ -49,6 +77,22 @@ export function summarizePropertyDetail(raw) {
     if (rf.homeType != null) a.homeType = rf.homeType;
   }
 
+  let longDescription = "";
+  for (const layer of layers) {
+    longDescription = pickDescriptionFromObject(layer);
+    if (longDescription) break;
+  }
+  if (!longDescription && rf && typeof rf === "object") {
+    longDescription = pickDescriptionFromObject(rf);
+    if (!longDescription) {
+      const ar = rf.atPublicRemarks ?? rf.attributionInfo?.listingAgentRemarks;
+      if (typeof ar === "string" && ar.replace(/<[^>]*>/g, "").trim().length > 24) {
+        longDescription = stripHtmlish(ar);
+      }
+    }
+  }
+  if (longDescription) a.description = longDescription;
+
   delete a.resoFacts;
 
   const entries = Object.entries(a).filter(([, v]) => v != null && v !== "");
@@ -72,6 +116,9 @@ export function summarizeFromListing(listing) {
   }
   if (listing.homeTypeLabel) out.homeType = listing.homeTypeLabel;
   if (listing.daysOnMarket != null) out.daysOnMarket = listing.daysOnMarket;
+  if (listing.description && String(listing.description).trim().length > 24) {
+    out.description = stripHtmlish(String(listing.description));
+  }
   const entries = Object.entries(out).filter(([, v]) => v != null && v !== "");
   return entries.length ? Object.fromEntries(entries) : null;
 }

@@ -115,4 +115,116 @@ const NEW_MEXICO_CORE = [
 
 const NEW_MEXICO_EXTRA = NEW_MEXICO_EXTRA_ROWS.map(([id, label, q, rg, la, ln]) => N(id, label, q, rg, la, ln, [], ""));
 
-export const NEW_MEXICO = mergeByIdPreferFirst(NEW_MEXICO_CORE, NEW_MEXICO_EXTRA);
+/** Buyer-research lenses: climate mechanics, water, and terrain — not legal advice. */
+const NM_LENS = {
+  abqCore:
+    "High-desert metro near 5,000′: huge day/night temperature swings, sparse winter snow, Jul–Sep monsoon slots. Roof drainage, swamp coolers vs refrigerated air, and east-mesa wind exposure matter as much as square footage.",
+  rioRancho:
+    "West of the Sandías: often windier and drier than the valley floor; watch dust, caliche, and longer drives to care hubs. Great dark-sky pockets if you avoid sodium glare corridors.",
+  valleyBosque:
+    "Closer to the Río Grande cottonwood belt: slightly milder nights and higher humidity than mesa sites — but groundwater, septic vs sewer, and floodplain maps deserve a hard look.",
+  eastMountain:
+    "Cibola/Sandía east slope: cooler summers, heavier winter snow risk, and fire-evacuation awareness. Narrow roads and steep driveways affect insurance and everyday winter life.",
+  santaFe:
+    "7000′+ capital climate: crisp nights even in summer, real winter, and strong UV. Adobe maintenance, flat roofs, and passive-solar orientation are shopping categories here.",
+  losAlamos:
+    "Cool mesa-top town: short growing season, heavy snow some years, premium on efficient heat. Commute switchbacks and lab-related housing demand can move inventory fast.",
+  taosSangre:
+    "High valley + mountain shadowing: deep snow possible, big recreation demand. Short-term rental rules, well permits, and acequia proximity are common diligence items.",
+  lasCruces:
+    "Mesilla Valley sun: hotter than Albuquerque on average, milder winters, big pecan/wind/dust days. Border-adjacent parcels: check flood history along the Río Grande.",
+  silverMadrean:
+    "Sky-island edge: cooler summers than the low deserts, summer storms, and varied geology. Mining heritage can mean legacy waste — review environmental disclosures.",
+  permian:
+    "Basin oil/gas economy: employment-linked housing cycles. Water tables and truck traffic on rural roads can dominate quality-of-life tradeoffs.",
+  highPlains:
+    "Eastern NM High Plains: hail, wind, blizzards, and wide-open exposure. Metal roofs and rural water (well depth, quality) are core shopping questions.",
+  fourCorners:
+    "High-desert plateau: cold winters, hot dry Junes, localized Jul–Aug storms. Navajo Nation adjacency and tribal lands add jurisdictional homework for some commutes.",
+  default:
+    "New Mexico deed research: acequias, tribal/allotted land, mineral rights, and domestic well rules vary sharply by county — pair climate homework with a local title pro.",
+};
+
+/** Per-market notes (ids) — merged onto locations for sidebar + research strip. */
+const NM_MARKET_NOTES = {
+  "albuquerque-nm": NM_LENS.abqCore,
+  "rio-rancho-nm": NM_LENS.rioRancho,
+  "bernalillo-nm": NM_LENS.valleyBosque,
+  "corrales-nm": "Village orchards + horse country on the west bank: higher property expectations, irrigation ditches, and floodplain nuance. Quieter nights than the core city but still ABQ-wind days.",
+  "los-lunas-nm": "Valencia County growth corridor: more sun, lower elevation heat than ABQ core, and commuter distance tradeoffs. Check Volcano Cliffs area wind and rural water on ranchettes.",
+  "belen-nm": "Historic rail town south of ABQ: affordable land, strong sun, and I-25 access. Rural fringe parcels: domestic wells and septic dominate total cost of ownership.",
+  "bosque-farms-nm": NM_LENS.valleyBosque,
+  "placitas-nm": "Foothill community between Sandía spine and plains: fire-wise landscaping is not optional; views and night skies reward the maintenance.",
+  "edgewood-nm": "East plains gateway: wind, hail, and longer drives to ABQ services. Good dark-sky potential; verify well depth and propane vs natural gas.",
+  "tijeras-nm": NM_LENS.eastMountain,
+  "cedar-crest-nm": NM_LENS.eastMountain,
+  "moriarty-nm": "High-plains crossroads: aviation culture, wind, and wide-open exposure. Cheaper acreage; water and winter road treatment are the usual gating factors.",
+  "santa-fe-nm": NM_LENS.santaFe,
+  "espanola-nm": "Río Grande trough: hotter summer days than Santa Fe, cold inversions in winter, strong Hispano farming heritage. Affordable pockets — diligence on flood paths and legacy industrial sites.",
+  "los-alamos-nm": NM_LENS.losAlamos,
+  "pojoaque-nm": "Corridor between SF and Española: commuter convenience, casino-adjacent services, and mixed elevation microclimates in a short drive.",
+  "taos-nm": NM_LENS.taosSangre,
+  "angel-fire-nm": "Ski/second-home economy at 8,000′+: real snow, short rental seasons, and HOAs that may restrict STRs — read covenants before falling in love.",
+  "raton-nm": "Raton Pass gateway: mountain-plains blend, wind, and a smaller inventory pool. Great for I-25 logistics to Colorado; verify heating costs on older stock.",
+  "cimarron-nm": "Sangre de Cristo foothill ranch country: summer afternoon storms, elk migration corridors, and rural fire response times.",
+  "mora-nm": "Mountain valley agriculture: colder nights, shorter season, acequia culture. Beautiful isolation — broadband and winter access are practical filters.",
+  "pecos-nm": "Gateway to the Pecos Wilderness: recreation demand, weekend traffic, and wildfire evacuation awareness on forest-edge lots.",
+  "glorieta-nm": "I-25 mountain pass pocket: cooler than Santa Fe floor, wind channels, and mixed full-time vs weekend housing.",
+  "las-cruces-nm": NM_LENS.lasCruces,
+  "mesilla-nm": "Historic plaza town wrapped by LC growth: walkable core, higher charm premium, still Mesilla Valley sun and wind.",
+  "sunland-park-nm": "Borderplex edge: verify school districts, cross-border commute patterns, and dust on windy spring days.",
+  "anthony-nm": "Tri-city farm/desert blend: affordable entry, strong sun, and I-10 / border logistics.",
+  "deming-nm": "Bootheel connector town: relentless summer sun, mild winters, and big-sky country. Water rights homework on any acreage.",
+  "silver-city-nm": NM_LENS.silverMadrean,
+  "bayard-nm": "Copper-mining district neighbor to Silver City: quieter inventory, similar sky-island storms, legacy mining disclosure awareness.",
+  "truth-or-consequences-nm": "Río Grande hot-springs town: mild winters, summer heat, and a mix of retirees and remote workers. Check well quality outside city water.",
+  "elephant-butte-nm": "Reservoir recreation housing: boating seasonality, short-term rental competition, and summer monsoon arroyo flash risk near washes.",
+  "alamogordo-nm": "Tularosa Basin: hot dry summers, mild winters, White Sands dust on windy days. Military flyover noise is part of daily life near Holloman.",
+  "ruidoso-nm": "Mountain resort town: monsoon green-up, pine beetle history in surrounding forest, STR regulation churn — read current ordinances.",
+  "ruidoso-downs-nm": "Adjacent to Ruidoso racing economy: slightly lower elevation, still pines, and shared fire/evacuation planning with upstream forest health.",
+  "cloudcroft-nm": "High-elevation pines: coolest summers in southern NM, real snow, and tourist-weekend traffic swings.",
+  "tularosa-nm": "Basin town between Sacramento Mountains and White Sands: wind, dust, and big temperature spreads.",
+  "carrizozo-nm": "Valley of Fires edge: sparse services, dark skies, and rural fire/EMS timelines — paradise with logistics homework.",
+  "corona-nm": "Remote ranch country east of mountains: wide-open grazing aesthetic, wind, and deep well costs.",
+  "roswell-nm": "Pecos River irrigation pockets vs surrounding scrub: summer heat, mild winters, stable small-city services. UFO tourism is real seasonal noise downtown.",
+  "artesia-nm": NM_LENS.permian,
+  "carlsbad-nm": "Caverns + Permian crossroads: recreation draw, oil cycles, and summer heat. Check sinkhole/ karst awareness on some rural parcels.",
+  "hobbs-nm": NM_LENS.permian,
+  "lovington-nm": NM_LENS.permian,
+  "clovis-nm": "High Plains dairy/ag hub: wind, hail, and winter storms. Cannon AFB drives rental demand cycles.",
+  "portales-nm": "University town + ag: similar Plains weather to Clovis with a younger rental skew.",
+  "tucumcari-nm": "Route 66 mesa town: big sky, wind, and aquifer stress stories — verify city vs rural water on older homes.",
+  "santa-rosa-nm": "Blue Hole + I-40 crossroads: summer road-trip economy, hot dry Junes, localized storm runoff in arroyos.",
+  "las-vegas-nm": "Northeast plains at elevation: four-season mountain-plains mix, historic plaza housing stock, and cold winter spells.",
+  "springer-nm": `High-plains ranch gateway: wind, sparse inventory, dark nights — ${NM_LENS.default}`,
+  "farmington-nm": NM_LENS.fourCorners,
+  "aztec-nm": "San Juan River recreation + energy-economy town: cold winter inversions possible, big summer UV. Oil/gas proximity on some rural roads.",
+  "bloomfield-nm": "Retail/services node near Aztec/Farmington: commuter convenience, same plateau climate notes.",
+  "gallup-nm": "High-desert trade town on I-40: wind, red-rock dust, and strong Navajo Nation commercial ties — respect jurisdictional boundaries on searches.",
+  "grants-nm": "Malpais lava-country gateway: summer storms, mining legacy soils in places, and dark-sky pockets off US-40.",
+  "zuni-nm": "Pueblo-adjacent community: honor tribal sovereignty on nearby land; climate similar to Gallup–Grants corridor.",
+  "cuba-nm": "Sandstone-country gateway to San Pedros: cooler nights than ABQ, summer storm buildup, and tourist traffic to Chaco corridor.",
+  "tierra-amarilla-nm": "Northern ranch county seat: cold winters, hay economy, and smaller inventory — verify heating fuel and road maintenance on snow days.",
+  "socorro-nm": "Bosque del Apache + NM Tech town: milder winters than ABQ myth suggests, strong spring winds, Jul–Aug monsoon slots. Great birding economy; check rural ditch water rights.",
+  "magdalena-nm": "West-central sky-island toe: quiet ranching + astronomy culture, summer afternoon storms, and long drives to tertiary care.",
+  "hatch-nm": "Chile capital floodplain: verify FEMA maps — irrigated fields mean humidity and mosquitoes near the river; blazing sun just blocks away.",
+  "lordsburg-nm": "I-10 bootheel crossroads: hottest NM summers, mild winters, and border-adjacent logistics. Water is always the story on acreage.",
+  "jal-nm": NM_LENS.permian,
+  "kirtland-nm": "Four Corners bedroom community: plateau winters, UV, and Farmington commute patterns — check methane/coal-bed methane disclosures on some tracts.",
+  "shiprock-nm": "Sacred peak landmark region: respect Navajo Nation boundaries; dust, wind, and summer storm cells on the plateau.",
+  "chama-nm": "Rocky Mountain transition: cold winters, summer greenery, vacation-home competition. Well and septic norms differ from Rio Grande cities.",
+  "eunice-nm": NM_LENS.permian,
+};
+
+function attachNmNotes(loc) {
+  const idNote = NM_MARKET_NOTES[loc.id];
+  if (idNote) return { ...loc, notes: idNote };
+  if (loc.region === "Albuquerque Metro") return { ...loc, notes: NM_LENS.abqCore };
+  if (loc.region === "Santa Fe / North") return { ...loc, notes: NM_LENS.santaFe };
+  if (loc.region === "South New Mexico") return { ...loc, notes: NM_LENS.lasCruces };
+  if (loc.region === "East / High Plains") return { ...loc, notes: NM_LENS.highPlains };
+  if (loc.region === "Northwest NM") return { ...loc, notes: NM_LENS.fourCorners };
+  return { ...loc, notes: NM_LENS.default };
+}
+
+export const NEW_MEXICO = mergeByIdPreferFirst(NEW_MEXICO_CORE, NEW_MEXICO_EXTRA).map(attachNmNotes);

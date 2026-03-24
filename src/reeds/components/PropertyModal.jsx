@@ -117,6 +117,15 @@ export default function PropertyModal({ listing, onClose, priceSuffix = "" }) {
       ? { ...(fromSearch || {}), ...(fromApi || {}) }
       : null;
 
+  const descriptionText =
+    (summary && typeof summary.description === "string" && summary.description.trim()) ||
+    (listing.description && String(listing.description).trim()) ||
+    null;
+  const summaryFacts =
+    summary && typeof summary === "object"
+      ? Object.fromEntries(Object.entries(summary).filter(([k]) => k !== "description"))
+      : null;
+
   const chartData = extractZestimateSeries(zest || {}).map((row, i) => ({
     i,
     label: String(row.t ?? i),
@@ -297,7 +306,20 @@ export default function PropertyModal({ listing, onClose, priceSuffix = "" }) {
           )}
           {err && <p className="text-sm text-red-600">{readableError(err, "")}</p>}
 
-          {summary && !loading && (
+          {descriptionText && !loading && (
+            <section className="rounded-2xl border border-violet-200/90 bg-gradient-to-br from-violet-50/95 via-white to-fuchsia-50/50 p-4 ring-1 ring-violet-100/80">
+              <h4 className="mb-2 flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-violet-900">
+                <Sparkles className="h-3.5 w-3.5 text-violet-600" />
+                Listing story
+              </h4>
+              <p className="text-sm leading-relaxed text-stone-800">{descriptionText}</p>
+              <p className="mt-2 text-[10px] text-violet-900/60">
+                Sourced from the live detail feed when available; wording belongs to the listing agent/broker.
+              </p>
+            </section>
+          )}
+
+          {summaryFacts && !loading && Object.keys(summaryFacts).length > 0 && (
             <div className="rounded-xl border border-stone-200 bg-stone-50/80 p-4">
               <h4 className="mb-2 text-xs font-bold uppercase tracking-wide text-stone-500">
                 At a glance
@@ -308,7 +330,7 @@ export default function PropertyModal({ listing, onClose, priceSuffix = "" }) {
                 )}
               </h4>
               <dl className="grid grid-cols-2 gap-2 text-sm">
-                {Object.entries(summary).map(([k, v]) => (
+                {Object.entries(summaryFacts).map(([k, v]) => (
                   <div key={k} className="flex flex-col">
                     <dt className="text-[10px] uppercase text-stone-500">{k.replace(/([A-Z])/g, " $1")}</dt>
                     <dd className="text-stone-800">{asText(v, "—")}</dd>

@@ -2,7 +2,7 @@ import fetch from "node-fetch";
 
 /** In-memory cache: key -> { at, data } */
 const cache = new Map();
-const TTL_MS = 15 * 60 * 1000; // 15 min — keeps free-tier usage minimal
+const TTL_MS = 5 * 60 * 1000; // 5 min — fresher search snapshots; still easy on free-tier quotas
 
 function getApiKey() {
   const k = process.env.RAPIDAPI_KEY || process.env.OPENWEB_NINJA_KEY;

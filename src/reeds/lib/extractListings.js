@@ -127,6 +127,14 @@ export function normalizeListing(p) {
   const lotAreaValue = pickNum(p.lotAreaValue, p.lotSize, p.lotArea);
   const lotAreaUnit = pickStr(p.lotAreaUnit, p.lotSizeUnit) || "";
   const homeTypeLabel = pickStr(p.homeType, p.propertyType, p.listing?.homeType);
+  const description = pickStr(
+    p.description,
+    p.publicRemarks,
+    p.marketingRemarks,
+    p.remark,
+    p.listing?.description,
+    p.listing?.publicRemarks
+  );
   return {
     zpid,
     address: addr,
@@ -144,6 +152,7 @@ export function normalizeListing(p) {
     lotAreaValue,
     lotAreaUnit,
     homeTypeLabel,
+    description: description || undefined,
     raw: p,
   };
 }
