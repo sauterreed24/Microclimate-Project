@@ -80,6 +80,15 @@ app.get("/api/zillow/property-details", (req, res) => forwardGet("/property-deta
 app.get("/api/zillow/property-details-address", (req, res) => forwardGet("/property-details-address", req, res));
 app.get("/api/zillow/zestimate", (req, res) => forwardGet("/zestimate", req, res));
 
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`[reed-home-finder-api] http://localhost:${PORT}`);
+});
+
+server.on("error", (err) => {
+  if (err && err.code === "EADDRINUSE") {
+    console.error(`[reed-home-finder-api] Port ${PORT} is already in use — stop the other API (or set PORT in backend/.env).`);
+    process.exit(1);
+  }
+  console.error("[reed-home-finder-api] server error:", err);
+  process.exit(1);
 });
