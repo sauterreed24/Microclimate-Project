@@ -63,6 +63,17 @@ const ZILLOW_MAX_PAGES = Math.min(
   Math.max(1, Number.isFinite(Number(import.meta.env.VITE_ZILLOW_MAX_PAGES)) ? Number(import.meta.env.VITE_ZILLOW_MAX_PAGES) : 8)
 );
 
+/** Client-side list rail / list view page size (merged API results are sliced; map keeps all pins). */
+const LISTINGS_UI_PAGE_SIZE = Math.min(
+  200,
+  Math.max(
+    12,
+    Number.isFinite(Number(import.meta.env.VITE_LISTINGS_UI_PAGE_SIZE))
+      ? Number(import.meta.env.VITE_LISTINGS_UI_PAGE_SIZE)
+      : Number(ZILLOW_PAGE_LIMIT) || 80
+  )
+);
+
 function stripUndefined(obj) {
   const out = {};
   for (const [k, v] of Object.entries(obj || {})) {
@@ -254,6 +265,21 @@ export default function ReedsHomeFinder() {
     return `Inventory pull ${d.toLocaleString()} · up to ${ZILLOW_MAX_PAGES} API pages merged · auto re-pull ~every ${hrs}h for this exact search (tab open or when you return)`;
   }, [listingsFetchedAt]);
 
+  const listingsPageSlice = useMemo(() => {
+    const p = Math.max(1, page);
+    const start = (p - 1) * LISTINGS_UI_PAGE_SIZE;
+    return listings.slice(start, start + LISTINGS_UI_PAGE_SIZE);
+  }, [listings, page]);
+
+  const listUiTotalPages = Math.max(1, Math.ceil(listings.length / LISTINGS_UI_PAGE_SIZE) || 1);
+  const canListNext = page < listUiTotalPages;
+
+  useEffect(() => {
+    if (page > listUiTotalPages) {
+      setPage(listUiTotalPages);
+    }
+  }, [listUiTotalPages, page, setPage]);
+
   /** One scannable line: climate + water/rain + air context — pairs with map terrain & microclimate panel */
   const marketContextLine = useMemo(() => {
     const parts = [];
@@ -369,7 +395,8 @@ export default function ReedsHomeFinder() {
       /** @type {(p: Record<string, string>) => Promise<unknown>} */
       let fetchListings = (p) =>
         req.kind === "coordinates" ? searchByCoordinates(p) : searchListings(p);
-      let params = stripUndefined(req.params);
+      /** Always merge upstream pages 1…N so inventory is stable; UI `page` only slices client-side. */
+      let params = { ...stripUndefined(req.params), page: "1" };
 
       let raw = await fetchListings(params);
       let list = extractListings(raw);
@@ -377,7 +404,7 @@ export default function ReedsHomeFinder() {
       // Zillow upstream can be inconsistent by endpoint/shape — on empty, retry with relaxed params.
       if (list.length === 0) {
         if (req.kind === "coordinates") {
-          const coordRetry = withRelaxedHousingFilters(req.params);
+          const coordRetry = { ...withRelaxedHousingFilters(req.params), page: "1" };
           params = coordRetry;
           fetchListings = (p) => searchByCoordinates(p);
           raw = await fetchListings(coordRetry);
@@ -397,14 +424,14 @@ export default function ReedsHomeFinder() {
               delete locationRetry.lng;
               delete locationRetry.longtitude;
               delete locationRetry.radius;
-              params = locationRetry;
+              params = { ...stripUndefined(locationRetry), page: "1" };
               fetchListings = (p) => searchListings(p);
-              raw = await fetchListings(locationRetry);
+              raw = await fetchListings(params);
               list = extractListings(raw);
             }
           }
         } else {
-          const locationRetry = withRelaxedHousingFilters(req.params);
+          const locationRetry = { ...withRelaxedHousingFilters(req.params), page: "1" };
           params = locationRetry;
           fetchListings = (p) => searchListings(p);
           raw = await fetchListings(locationRetry);
@@ -413,13 +440,11 @@ export default function ReedsHomeFinder() {
       }
 
       if (list.length > 0) {
-        const startPage = Number(snap.page) || 1;
         const seen = new Set(
           list.map((l) => String(l.zpid || l.address || "").trim()).filter(Boolean)
         );
         const limitNum = Number(ZILLOW_PAGE_LIMIT) || 100;
-        for (let offset = 1; offset < ZILLOW_MAX_PAGES; offset++) {
-          const pageNum = startPage + offset;
+        for (let pageNum = 2; pageNum <= ZILLOW_MAX_PAGES; pageNum++) {
           const nextParams = stripUndefined({
             ...params,
             page: String(pageNum),
@@ -495,7 +520,6 @@ export default function ReedsHomeFinder() {
     demoMode,
     runSearch,
     locationId,
-    page,
     homeStatus,
     homeType,
     sort,
@@ -508,6 +532,13 @@ export default function ReedsHomeFinder() {
     minSqft,
     maxSqft,
   ]);
+
+  const listRangeLabel = useMemo(() => {
+    if (listings.length === 0) return "";
+    const start = (Math.max(1, page) - 1) * LISTINGS_UI_PAGE_SIZE + 1;
+    const end = Math.min(listings.length, Math.max(1, page) * LISTINGS_UI_PAGE_SIZE);
+    return `${start}–${end} of ${listings.length}`;
+  }, [listings.length, page]);
 
   const selectLocation = (id) => {
     setClimateMapFilter(null);
@@ -910,9 +941,12 @@ export default function ReedsHomeFinder() {
               </div>
               <div className="lg:sticky lg:top-[4.75rem] lg:self-start">
                 <ExploreListRail
-                  listings={listings}
+                  listings={listingsPageSlice}
+                  totalListings={listings.length}
                   page={page}
+                  totalPages={listUiTotalPages}
                   setPage={setPage}
+                  canGoNext={canListNext}
                   priceSuffix={priceSuffix}
                   favoriteZpids={favoriteZpids}
                   toggleFavorite={toggleFavorite}
@@ -1008,7 +1042,7 @@ export default function ReedsHomeFinder() {
               </div>
               <div className="flex items-center justify-between">
                 <p className="text-sm text-stone-600">
-                  {listings.length} results · UI page {page} · up to {ZILLOW_MAX_PAGES} API pages merged
+                  {listRangeLabel || "0 results"} · list page {page} / {listUiTotalPages} · up to {ZILLOW_MAX_PAGES} API pages merged
                 </p>
                 <div className="flex gap-2">
                   <button
@@ -1021,15 +1055,16 @@ export default function ReedsHomeFinder() {
                   </button>
                   <button
                     type="button"
+                    disabled={!canListNext}
                     onClick={() => setPage(page + 1)}
-                    className="rounded-lg border border-stone-200 bg-white px-3 py-1 text-xs font-medium text-stone-700 shadow-sm"
+                    className="rounded-lg border border-stone-200 bg-white px-3 py-1 text-xs font-medium text-stone-700 shadow-sm disabled:opacity-40"
                   >
                     Next
                   </button>
                 </div>
               </div>
               <div className="grid gap-3 grid-cols-1">
-                {listings.map((li) => (
+                {listingsPageSlice.map((li) => (
                   <ListingCard
                     key={li.zpid || li.address}
                     listing={li}

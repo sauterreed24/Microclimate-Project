@@ -137,6 +137,16 @@ export function normalizeListing(p) {
   const lotAreaValue = pickNum(p.lotAreaValue, p.lotSize, p.lotArea);
   const lotAreaUnit = pickStr(p.lotAreaUnit, p.lotSizeUnit) || "";
   const homeTypeLabel = pickStr(p.homeType, p.propertyType, p.listing?.homeType);
+  const zestimate = pickNum(p.zestimate, p.zestimateValue, p.listing?.zestimate);
+  const brokerageName = pickStr(
+    p.attributionInfo?.brokerName,
+    p.attributionInfo?.buyerBrokerName,
+    p.brokerageName,
+    p.listing?.brokerageName
+  );
+  const listingStatus = pickStr(p.homeStatus, p.listingStatus, p.status, p.listing?.homeStatus);
+  const hoaMonthly = pickNum(p.monthlyHoaFee, p.hoaFee, p.resoFacts?.hoaFee);
+  const photoCount = pickNum(p.photoCount, p.imgCount, p.pictureCount);
   const description = pickStr(
     p.description,
     p.publicRemarks,

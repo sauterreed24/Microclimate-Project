@@ -29,7 +29,6 @@ export function getBackgroundPollIntervalMs() {
 export function searchFingerprint(state) {
   return [
     state.locationId,
-    state.page,
     state.homeStatus,
     state.homeType,
     state.sort,
