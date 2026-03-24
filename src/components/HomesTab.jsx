@@ -1,5 +1,6 @@
-import { useEffect, useState, useMemo, useCallback } from "react";
+import { useEffect, useState, useMemo, useCallback, useRef } from "react";
 import { fetchHomesListings, fetchHomesMarkets } from "../api/homesApi.js";
+import { getAutoRefreshIntervalMs } from "../reeds/lib/listingFreshness.js";
 
 function fmtPrice(n) {
   if (n == null || Number.isNaN(n)) return "—";
@@ -16,6 +17,8 @@ export default function HomesTab({ mcList, rdById, onOpenMicroclimate, bcm }) {
   const [payload, setPayload] = useState(null);
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState(null);
+  const [lastSyncedAt, setLastSyncedAt] = useState(null);
+  const lastFetchRef = useRef(0);
 
   const mc = useMemo(
     () => mcList.find((m) => m.id === mcId) || null,
@@ -44,8 +47,11 @@ export default function HomesTab({ mcList, rdById, onOpenMicroclimate, bcm }) {
     setLoading(true);
     setErr(null);
     try {
-      const data = await fetchHomesListings(mcId, 1, 8);
+      const data = await fetchHomesListings(mcId, 1, 20);
       setPayload(data);
+      const t = Date.now();
+      lastFetchRef.current = t;
+      setLastSyncedAt(t);
     } catch (e) {
       setErr(e.message || String(e));
       setPayload(null);
@@ -56,6 +62,17 @@ export default function HomesTab({ mcList, rdById, onOpenMicroclimate, bcm }) {
 
   useEffect(() => {
     load();
+  }, [load]);
+
+  useEffect(() => {
+    const staleMs = getAutoRefreshIntervalMs();
+    const onVis = () => {
+      if (document.visibilityState !== "visible") return;
+      if (lastFetchRef.current === 0) return;
+      if (Date.now() - lastFetchRef.current >= staleMs) load();
+    };
+    document.addEventListener("visibilitychange", onVis);
+    return () => document.removeEventListener("visibilitychange", onVis);
   }, [load]);
 
   const bc = mc ? bcm[mc.ty] || "#0f766e" : "#0f766e";
@@ -75,8 +92,9 @@ export default function HomesTab({ mcList, rdById, onOpenMicroclimate, bcm }) {
         </div>
         <p className="mc-read" style={{ fontSize: 14, margin: 0, color: "var(--mc-ink-muted)" }}>
           Zillow-sourced data via{" "}
-          <strong style={{ color: "var(--mc-ink)" }}>OpenWeb Ninja</strong> (RapidAPI). Results cached{" "}
-          <strong>15 minutes</strong> server-side to stay on the free tier. Tap a place card to open the full microclimate guide.
+          <strong style={{ color: "var(--mc-ink)" }}>OpenWeb Ninja</strong> (RapidAPI). Identical searches are cached a few minutes server-side (override with{" "}
+          <code style={{ background: "rgba(0,0,0,.06)", padding: "2px 6px", borderRadius: 6 }}>ZILLOW_SEARCH_CACHE_TTL_MS</code>
+          ). When you return after ~{Math.round(getAutoRefreshIntervalMs() / (24 * 60 * 60 * 1000))} days with this tab, listings reload automatically. Tap a card for the full microclimate guide.
         </p>
       </div>
 
@@ -207,6 +225,17 @@ export default function HomesTab({ mcList, rdById, onOpenMicroclimate, bcm }) {
             <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 10, fontSize: 12.5, color: "var(--mc-ink-muted)" }}>
               {[L.bedrooms != null && `${L.bedrooms} bd`, L.bathrooms != null && `${L.bathrooms} ba`, L.livingArea != null && `${Number(L.livingArea).toLocaleString()} sqft`, L.homeType && String(L.homeType).replace(/_/g, " ")].filter(Boolean).join(" · ")}
             </div>
+            {(L.zestimate != null || L.brokerageName || L.photoCount != null) && (
+              <p style={{ fontSize: 11, color: "var(--mc-ink-muted)", margin: "0 0 10px", lineHeight: 1.45 }}>
+                {[
+                  L.zestimate != null && Number.isFinite(Number(L.zestimate)) ? `Zestimate ~${fmtPrice(L.zestimate)}` : null,
+                  L.photoCount != null && Number(L.photoCount) > 0 ? `${L.photoCount} photos` : null,
+                  L.brokerageName ? String(L.brokerageName) : null,
+                ]
+                  .filter(Boolean)
+                  .join(" · ")}
+              </p>
+            )}
 
             {mc && (
               <div
@@ -254,7 +283,8 @@ export default function HomesTab({ mcList, rdById, onOpenMicroclimate, bcm }) {
 
       {payload && !loading && !err && (
         <p style={{ fontSize: 11, color: "var(--mc-ink-muted)", textAlign: "center", marginTop: 4 }}>
-          {payload.cached ? "Served from cache · " : "Fresh fetch · "}
+          {payload.cached ? "Served from short server cache · " : "Fresh fetch · "}
+          {lastSyncedAt != null && <>Pulled {new Date(lastSyncedAt).toLocaleString()} · </>}
           Data © Zillow / listing sources. Not financial advice.
         </p>
       )}

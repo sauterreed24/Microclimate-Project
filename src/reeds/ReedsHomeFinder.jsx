@@ -19,6 +19,13 @@ import { getMicroclimateBundle } from "./data/microclimateBridge.js";
 import { computeClimateHubs, SOUTHWEST_US_BOUNDS } from "./data/climateHubs.js";
 import { readableApiError } from "./lib/errorMessage.js";
 import { buildDemoListingsForLocation } from "./lib/demoListings.js";
+import {
+  getAutoRefreshIntervalMs,
+  getBackgroundPollIntervalMs,
+  searchFingerprint,
+  shouldAutoRefresh,
+  writeIngestionMeta,
+} from "./lib/listingFreshness.js";
 
 const ListingMap = lazy(() => import("./components/ListingMap.jsx"));
 const PropertyModal = lazy(() => import("./components/PropertyModal.jsx"));
@@ -44,9 +51,17 @@ const API_HEALTH_LAST_KEY = "reed-api-health-check-ts";
 const ONE_DAY_MS = 24 * 60 * 60 * 1000;
 
 /** Zillow proxy page size (OpenWeb Ninja / upstream caps vary — tune via env). */
-const ZILLOW_PAGE_LIMIT = String(import.meta.env.VITE_ZILLOW_PAGE_LIMIT || "80");
-/** When UI page is 1, merge this many API pages for denser map + list (deduped by zpid). */
-const ZILLOW_MAX_PAGES = Math.min(8, Math.max(1, Number(import.meta.env.VITE_ZILLOW_MAX_PAGES || 4) || 4));
+const ZILLOW_PAGE_LIMIT = String(
+  Math.min(
+    200,
+    Math.max(20, Number.isFinite(Number(import.meta.env.VITE_ZILLOW_PAGE_LIMIT)) ? Number(import.meta.env.VITE_ZILLOW_PAGE_LIMIT) : 100)
+  )
+);
+/** Merge this many consecutive API pages per search (deduped by zpid). */
+const ZILLOW_MAX_PAGES = Math.min(
+  12,
+  Math.max(1, Number.isFinite(Number(import.meta.env.VITE_ZILLOW_MAX_PAGES)) ? Number(import.meta.env.VITE_ZILLOW_MAX_PAGES) : 8)
+);
 
 function stripUndefined(obj) {
   const out = {};
@@ -194,6 +209,7 @@ export default function ReedsHomeFinder() {
     minSqft,
     maxSqft,
     error,
+    listingsFetchedAt,
   } = useReedStore();
 
   const active = useMemo(() => getLocationById(locationId), [locationId]);
@@ -230,6 +246,13 @@ export default function ReedsHomeFinder() {
   }, [locationId]);
 
   const climateMismatchOnMap = Boolean(climateMapFilter && active?.microclimateProfile && climateMapFilter !== active.microclimateProfile);
+
+  const listingsSyncHint = useMemo(() => {
+    if (!listingsFetchedAt) return null;
+    const d = new Date(listingsFetchedAt);
+    const hrs = Math.round(getAutoRefreshIntervalMs() / (60 * 60 * 1000));
+    return `Inventory pull ${d.toLocaleString()} · up to ${ZILLOW_MAX_PAGES} API pages merged · auto re-pull ~every ${hrs}h for this exact search (tab open or when you return)`;
+  }, [listingsFetchedAt]);
 
   /** One scannable line: climate + water/rain + air context — pairs with map terrain & microclimate panel */
   const marketContextLine = useMemo(() => {
@@ -332,7 +355,7 @@ export default function ReedsHomeFinder() {
     const snap = useReedStore.getState();
     const req = buildSearchRequest(snap);
     if (!req) {
-      useReedStore.setState({ listings: [], rawResponse: null, loading: false, error: null });
+      useReedStore.setState({ listings: [], rawResponse: null, loading: false, error: null, listingsFetchedAt: null });
       return;
     }
     useReedStore.setState({ loading: true, error: null });
@@ -389,12 +412,14 @@ export default function ReedsHomeFinder() {
         }
       }
 
-      if (snap.page === 1 && list.length > 0) {
+      if (list.length > 0) {
+        const startPage = Number(snap.page) || 1;
         const seen = new Set(
           list.map((l) => String(l.zpid || l.address || "").trim()).filter(Boolean)
         );
-        const limitNum = Number(ZILLOW_PAGE_LIMIT) || 80;
-        for (let pageNum = 2; pageNum <= ZILLOW_MAX_PAGES; pageNum++) {
+        const limitNum = Number(ZILLOW_PAGE_LIMIT) || 100;
+        for (let offset = 1; offset < ZILLOW_MAX_PAGES; offset++) {
+          const pageNum = startPage + offset;
           const nextParams = stripUndefined({
             ...params,
             page: String(pageNum),
@@ -413,7 +438,17 @@ export default function ReedsHomeFinder() {
         }
       }
 
-      useReedStore.setState({ rawResponse: raw, listings: list, loading: false, demoMode: false, error: null });
+      const now = Date.now();
+      const fp = searchFingerprint(snap);
+      writeIngestionMeta(now, fp);
+      useReedStore.setState({
+        rawResponse: raw,
+        listings: list,
+        loading: false,
+        demoMode: false,
+        error: null,
+        listingsFetchedAt: now,
+      });
     } catch (e) {
       console.error(e);
       const userMsg = readableApiError(e, "Search failed");
@@ -421,6 +456,26 @@ export default function ReedsHomeFinder() {
       toast.error(userMsg);
     }
   }, []);
+
+  /** Long-lived tab: re-pull inventory when the same search is older than VITE_LISTINGS_AUTO_REFRESH_HOURS (default 72). */
+  useEffect(() => {
+    if (demoMode) return undefined;
+    const tick = () => {
+      const snap = useReedStore.getState();
+      if (snap.loading || snap.demoMode) return;
+      const fp = searchFingerprint(snap);
+      if (shouldAutoRefresh(fp)) runSearch();
+    };
+    const id = window.setInterval(tick, getBackgroundPollIntervalMs());
+    const onVis = () => {
+      if (document.visibilityState === "visible") tick();
+    };
+    document.addEventListener("visibilitychange", onVis);
+    return () => {
+      window.clearInterval(id);
+      document.removeEventListener("visibilitychange", onVis);
+    };
+  }, [demoMode, runSearch]);
 
   useEffect(() => {
     if (demoMode) {
@@ -431,6 +486,7 @@ export default function ReedsHomeFinder() {
         loading: false,
         error: null,
         rawResponse: { demo: true, locationId },
+        listingsFetchedAt: null,
       });
       return;
     }
@@ -866,6 +922,8 @@ export default function ReedsHomeFinder() {
                   }}
                   activeState={active?.state}
                   marketContextLine={marketContextLine}
+                  syncHint={listingsSyncHint}
+                  mergedPageCount={ZILLOW_MAX_PAGES}
                 />
               </div>
             </div>
@@ -944,10 +1002,13 @@ export default function ReedsHomeFinder() {
                     {marketContextLine}
                   </p>
                 )}
+                {listingsSyncHint && (
+                  <p className="mt-2 text-[10px] leading-snug text-violet-900/80">{listingsSyncHint}</p>
+                )}
               </div>
               <div className="flex items-center justify-between">
                 <p className="text-sm text-stone-600">
-                  {listings.length} results · page {page}
+                  {listings.length} results · UI page {page} · up to {ZILLOW_MAX_PAGES} API pages merged
                 </p>
                 <div className="flex gap-2">
                   <button

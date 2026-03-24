@@ -2,7 +2,11 @@ import fetch from "node-fetch";
 
 /** In-memory cache: key -> { at, data } */
 const cache = new Map();
-const TTL_MS = 5 * 60 * 1000; // 5 min — fresher search snapshots; still easy on free-tier quotas
+const TTL_MS = (() => {
+  const n = Number(process.env.ZILLOW_SEARCH_CACHE_TTL_MS);
+  if (Number.isFinite(n) && n >= 30_000 && n <= 3_600_000) return n;
+  return 5 * 60 * 1000; // default 5 min
+})();
 
 function getApiKey() {
   const k = process.env.RAPIDAPI_KEY || process.env.OPENWEB_NINJA_KEY;
@@ -65,6 +69,14 @@ export function normalizeListing(raw) {
     raw.hdpUrl ||
     (zpid ? `https://www.zillow.com/homedetails/${zpid}_zpid/` : null);
 
+  const zRaw = raw.zestimate;
+  const zestimate =
+    typeof zRaw === "number"
+      ? zRaw
+      : zRaw && typeof zRaw === "object"
+        ? zRaw.value ?? zRaw.amount ?? null
+        : null;
+
   return {
     zpid,
     price: raw.price ?? raw.unformattedPrice ?? null,
@@ -83,6 +95,9 @@ export function normalizeListing(raw) {
     photoUrl: photo,
     zillowUrl,
     listingSource: raw.listingDataSource ?? null,
+    brokerageName: raw.attributionInfo?.brokerName ?? raw.brokerageName ?? null,
+    zestimate: zestimate != null && Number.isFinite(Number(zestimate)) ? Number(zestimate) : null,
+    photoCount: raw.photoCount ?? raw.imgCount ?? null,
   };
 }
 
@@ -99,7 +114,7 @@ export async function searchListings(opts) {
 
   const location = opts.location;
   const page = opts.page ?? 1;
-  const limit = Math.min(Math.max(opts.limit ?? 8, 1), 20);
+  const limit = Math.min(Math.max(opts.limit ?? 8, 1), 40);
 
   const cacheKey = `${location}|p${page}|n${limit}`;
   const hit = cache.get(cacheKey);

@@ -1,10 +1,12 @@
 import { Compass, HeartHandshake, MapPin, Sun } from "lucide-react";
+import { getAutoRefreshIntervalMs } from "../lib/listingFreshness.js";
 
 /**
  * “4D” research framing: place, seasonal time, climate depth, decision path.
  * Not literal 4D graphics — intentional spatial + temporal + context + action narrative.
  */
 export default function ImmersiveResearchStrip({ marketLabel, marketNotes, contextLine }) {
+  const refreshDays = Math.max(1, Math.round(getAutoRefreshIntervalMs() / (24 * 60 * 60 * 1000)));
   const pillars = [
     {
       icon: MapPin,
@@ -61,7 +63,8 @@ export default function ImmersiveResearchStrip({ marketLabel, marketNotes, conte
             )}
           </div>
           <p className="max-w-xs text-[10px] leading-snug text-violet-200/70">
-            Listing copy refreshes when you open a home (detail API). Search results follow upstream Zillow-shaped feeds — not every broker MLS.
+            Listing copy refreshes when you open a home (detail API). Search inventory re-pulls on filter changes, manual refresh, and automatically after ~{refreshDays}{" "}
+            {refreshDays === 1 ? "day" : "days"} for the same search (tab open or when you come back).
           </p>
         </div>
 

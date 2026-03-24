@@ -16,6 +16,9 @@ export default function ExploreListRail({
   onOpenListing,
   activeState,
   marketContextLine,
+  /** Human-readable freshness line from parent (timestamp + auto-refresh policy). */
+  syncHint = null,
+  mergedPageCount = 8,
 }) {
   return (
     <div className="flex min-h-[min(72vh,780px)] flex-col gap-3 rounded-2xl border border-stone-200/95 bg-gradient-to-b from-white to-stone-50/50 p-3 shadow-lg shadow-stone-200/30 ring-1 ring-stone-100 lg:max-h-[min(85vh,calc(100vh-8rem))]">
@@ -37,10 +40,15 @@ export default function ExploreListRail({
         </p>
       )}
 
+      {syncHint && (
+        <p className="rounded-lg border border-violet-200/90 bg-violet-50/90 px-2.5 py-2 text-[10px] leading-snug text-violet-950 ring-1 ring-violet-100/80">
+          {syncHint}
+        </p>
+      )}
+
       <div className="flex shrink-0 items-center justify-between gap-2 rounded-lg bg-stone-100/80 px-2 py-1.5">
         <p className="text-[11px] font-medium text-stone-600">
-          {listings.length} results loaded · API page {page}
-          {page === 1 && listings.length > 40 ? " · merged pages when available" : ""}
+          {listings.length} homes in canvas · UI page {page} · up to {mergedPageCount} upstream pages merged
         </p>
         <div className="flex gap-1">
           <button

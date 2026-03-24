@@ -15,6 +15,8 @@ export const useReedStore = create(
       error: null,
       /** When true, skip live API and show synthetic listings (provider outage / UI preview). */
       demoMode: false,
+      /** Last successful live search completion (ms); not persisted — UI “synced at” clock. */
+      listingsFetchedAt: null,
 
       homeStatus: "FOR_SALE",
       homeType: "HOUSES",

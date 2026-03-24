@@ -25,6 +25,9 @@ export default function ListingCard({
   const fav = isFavorite?.(zpid);
   const lot = formatLot(listing);
   const typeShort = listing.homeTypeLabel ? String(listing.homeTypeLabel).replace(/_/g, " ") : "";
+  const broker = listing.brokerageName ? String(listing.brokerageName).trim() : "";
+  const zest = listing.zestimate != null && Number.isFinite(Number(listing.zestimate)) ? Number(listing.zestimate) : null;
+  const photos = listing.photoCount != null && Number.isFinite(Number(listing.photoCount)) ? Number(listing.photoCount) : null;
 
   if (variant === "split") {
     return (
@@ -68,10 +71,19 @@ export default function ListingCard({
                 <span className="rounded-md bg-teal-50 px-1.5 py-0.5 text-[10px] font-medium text-teal-900 line-clamp-1 max-w-[8rem]">{typeShort}</span>
               )}
             </div>
-            {listing.daysOnMarket != null && (
-              <p className="text-[10px] text-stone-400">
-                {Number.isFinite(Number(listing.daysOnMarket)) ? `${Number(listing.daysOnMarket)}d on Zillow` : asText(listing.daysOnMarket)}
-              </p>
+            {(listing.daysOnMarket != null || zest != null || photos != null || broker) && (
+              <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[10px] text-stone-400">
+                {listing.daysOnMarket != null && (
+                  <span>
+                    {Number.isFinite(Number(listing.daysOnMarket)) ? `${Number(listing.daysOnMarket)}d on mkt` : asText(listing.daysOnMarket)}
+                  </span>
+                )}
+                {zest != null && (
+                  <span className="font-medium text-teal-700/90">Zest ~${zest.toLocaleString()}</span>
+                )}
+                {photos != null && photos > 0 && <span>{photos} photos</span>}
+                {broker && <span className="line-clamp-1 max-w-[14rem] text-violet-800/90">{broker}</span>}
+              </div>
             )}
           </div>
         </button>
@@ -127,9 +139,20 @@ export default function ListingCard({
             {lot ? ` · ${lot}` : ""}
           </p>
           {typeShort && <p className="text-[11px] text-stone-500">{typeShort}</p>}
-          {listing.daysOnMarket != null && (
+          {(listing.daysOnMarket != null || zest != null || photos != null || broker) && (
             <p className="text-xs text-stone-500">
-              {Number.isFinite(Number(listing.daysOnMarket)) ? `${Number(listing.daysOnMarket)} days on Zillow` : asText(listing.daysOnMarket)}
+              {[
+                listing.daysOnMarket != null
+                  ? Number.isFinite(Number(listing.daysOnMarket))
+                    ? `${Number(listing.daysOnMarket)}d on market`
+                    : asText(listing.daysOnMarket)
+                  : null,
+                zest != null ? `Zestimate ~$${zest.toLocaleString()}` : null,
+                photos != null && photos > 0 ? `${photos} photos` : null,
+                broker ? broker : null,
+              ]
+                .filter(Boolean)
+                .join(" · ")}
             </p>
           )}
           {marketContextLine && variant === "row" && (

@@ -83,11 +83,21 @@ export function extractListings(raw) {
     raw.results,
     raw.properties,
     raw.props,
+    raw.homes,
+    raw.searchResults,
+    raw.searchResults?.results,
+    raw.searchResults?.listings,
+    raw.searchResults?.properties,
     Array.isArray(raw.data) ? raw.data : null,
     raw.data?.listings,
     raw.data?.results,
     raw.data?.properties,
+    raw.data?.props,
     raw.data?.items,
+    raw.data?.homes,
+    raw.data?.searchResults,
+    raw.data?.searchResults?.results,
+    raw.data?.mapResults,
   ].filter(Boolean);
   for (const c of candidates) {
     if (Array.isArray(c)) return c.map(normalizeListing).filter(Boolean);
@@ -153,6 +163,11 @@ export function normalizeListing(p) {
     lotAreaUnit,
     homeTypeLabel,
     description: description || undefined,
+    zestimate: zestimate ?? undefined,
+    brokerageName: brokerageName || undefined,
+    listingStatus: listingStatus || undefined,
+    hoaMonthly: hoaMonthly ?? undefined,
+    photoCount: photoCount ?? undefined,
     raw: p,
   };
 }
