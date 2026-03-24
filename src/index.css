@@ -310,3 +310,15 @@
     transition-duration: 0.01ms !important;
   }
 }
+
+/* Reed Home Finder — soft “4D” ambient wash (non-interactive, behind content) */
+.reed-app-shell::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    radial-gradient(ellipse 120% 70% at 50% -15%, rgb(45 212 191 / 0.14), transparent 52%),
+    radial-gradient(ellipse 60% 50% at 100% 10%, rgb(59 130 246 / 0.06), transparent 45%);
+}

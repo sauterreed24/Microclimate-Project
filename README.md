@@ -10,6 +10,8 @@ npm run dev
 
 Use **`npm run dev:web`** if you only want the frontend (listings will fail until `npm run api` runs separately). Details: **`docs/REED_HOME_FINDER.md`**. Restore the old microclimate UI by pointing `src/App.jsx` at `App.microclimate.backup.jsx`.
 
+**Listing data (important):** There is **no legal public API** that exposes *every* Zillow listing nationwide. Third-party “Zillow” APIs aggregate what their agreements allow and often hit auth/quota limits. This app supports **either** `ZILLOW_API_KEY` (OpenWeb Ninja direct) **or** `RAPIDAPI_KEY` / `OPENWEB_NINJA_KEY` (same shapes via RapidAPI) in **`backend/.env`**. If the provider rejects your key, use **Try immersive demo** in the UI for a full map/list preview with synthetic pins.
+
 ---
 
 # Microclimates — field guide + map (legacy backup)

@@ -15,6 +15,7 @@ import { asText } from "../lib/formatDisplayValue.js";
 import { readableError } from "../lib/errorMessage.js";
 import { summarizeFromListing, summarizePropertyDetail } from "../lib/summarizeProperty.js";
 import { fetchWikimediaPhotoNear, googleMapsStreetViewIntentUrl, streetViewEmbedUrl } from "../lib/placeMedia.js";
+import { isDemoListing } from "../lib/demoListings.js";
 
 export default function PropertyModal({ listing, onClose, priceSuffix = "" }) {
   const [detail, setDetail] = useState(null);
@@ -22,6 +23,8 @@ export default function PropertyModal({ listing, onClose, priceSuffix = "" }) {
   const [zestErr, setZestErr] = useState(null);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState(null);
+  const [wikiPhoto, setWikiPhoto] = useState(null);
+  const [wikiLoading, setWikiLoading] = useState(false);
   useEffect(() => {
     const onKey = (e) => {
       if (e.key === "Escape") onClose();
@@ -34,6 +37,14 @@ export default function PropertyModal({ listing, onClose, priceSuffix = "" }) {
     let cancel = false;
     async function run() {
       if (!listing?.zpid) {
+        setLoading(false);
+        return;
+      }
+      if (isDemoListing(listing)) {
+        setDetail(null);
+        setZest(null);
+        setZestErr(null);
+        setErr(null);
         setLoading(false);
         return;
       }
@@ -132,7 +143,9 @@ export default function PropertyModal({ listing, onClose, priceSuffix = "" }) {
       >
         <div className="sticky top-0 z-[1] flex items-start justify-between gap-4 border-b border-stone-100/90 bg-white/90 p-5 backdrop-blur-md">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-widest text-teal-600">Listing</p>
+            <p className="text-xs font-semibold uppercase tracking-widest text-teal-600">
+              {isDemoListing(listing) ? "Demo listing (UI preview)" : "Listing"}
+            </p>
             <h3 id="reed-modal-title" className="font-display mt-1 text-xl font-semibold text-stone-900">
               {asText(listing.address, "Property")}
             </h3>

@@ -50,7 +50,7 @@ export function humanizeZillowProviderMessage(msg) {
     lower.includes("invalid api key") ||
     (lower.includes("api key") && (lower.includes("invalid") || lower.includes("missing")))
   ) {
-    return "Zillow data provider rejected the request — set a valid ZILLOW_API_KEY in backend/.env (OpenWeb Ninja), save, then restart npm run dev. Check quota/billing on your provider dashboard.";
+    return "Listing provider rejected the request — use a valid ZILLOW_API_KEY (OpenWeb direct) or RAPIDAPI_KEY / OPENWEB_NINJA_KEY (RapidAPI) in backend/.env, save, restart npm run dev, and check quota/billing. No third-party API legally mirrors 100% of Zillow’s feed.";
   }
   if (lower.includes("rate limit") || lower.includes("too many requests")) {
     return "Too many requests to the Zillow provider — wait a minute and tap Refresh, or reduce how often you change markets.";

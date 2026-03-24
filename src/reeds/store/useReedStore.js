@@ -13,6 +13,8 @@ export const useReedStore = create(
       rawResponse: null,
       listings: [],
       error: null,
+      /** When true, skip live API and show synthetic listings (provider outage / UI preview). */
+      demoMode: false,
 
       homeStatus: "FOR_SALE",
       homeType: "HOUSES",
@@ -35,6 +37,7 @@ export const useReedStore = create(
       setLocationId: (id) => set({ locationId: id, page: 1 }),
       setPage: (page) => set({ page }),
       setFilters: (patch) => set((s) => ({ ...s, ...patch })),
+      setDemoMode: (demoMode) => set({ demoMode }),
 
       setSelectedListing: (listing) => set({ selectedListing: listing, detailOpen: !!listing }),
       setDetailOpen: (detailOpen) => set({ detailOpen }),

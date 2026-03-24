@@ -1,6 +1,6 @@
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import toast, { Toaster } from "react-hot-toast";
-import { Activity, AlertTriangle, Heart, Home, Keyboard, Loader2, Map as MapIcon, Menu, RefreshCw, Search } from "lucide-react";
+import { Activity, AlertTriangle, Heart, Home, Keyboard, Loader2, Map as MapIcon, Menu, RefreshCw, Search, Sparkles } from "lucide-react";
 import { ALL_LOCATIONS, DEFAULT_LOCATION_ID, getLocationById } from "../data/reeds/locations/index.js";
 import { SONORA_TRAVEL_PLACES } from "../data/reeds/locations/sonoraFreeZone.js";
 import { SONORA_MEXICO } from "../data/reeds/locations/mexico.js";
@@ -17,6 +17,7 @@ import MarketMicroclimatePanel from "./components/MarketMicroclimatePanel.jsx";
 import { getMicroclimateBundle } from "./data/microclimateBridge.js";
 import { computeClimateHubs, SOUTHWEST_US_BOUNDS } from "./data/climateHubs.js";
 import { readableApiError } from "./lib/errorMessage.js";
+import { buildDemoListingsForLocation } from "./lib/demoListings.js";
 
 const ListingMap = lazy(() => import("./components/ListingMap.jsx"));
 const PropertyModal = lazy(() => import("./components/PropertyModal.jsx"));
@@ -165,6 +166,8 @@ export default function ReedsHomeFinder() {
 
   const favoriteZpids = useReedStore((s) => s.favoriteZpids);
   const toggleFavorite = useReedStore((s) => s.toggleFavorite);
+  const demoMode = useReedStore((s) => s.demoMode);
+  const setDemoMode = useReedStore((s) => s.setDemoMode);
 
   const {
     locationId,
@@ -409,7 +412,7 @@ export default function ReedsHomeFinder() {
         }
       }
 
-      useReedStore.setState({ rawResponse: raw, listings: list, loading: false });
+      useReedStore.setState({ rawResponse: raw, listings: list, loading: false, demoMode: false, error: null });
     } catch (e) {
       console.error(e);
       const userMsg = readableApiError(e, "Search failed");
@@ -419,8 +422,20 @@ export default function ReedsHomeFinder() {
   }, []);
 
   useEffect(() => {
+    if (demoMode) {
+      const loc = getLocationById(locationId);
+      const list = buildDemoListingsForLocation(loc);
+      useReedStore.setState({
+        listings: list,
+        loading: false,
+        error: null,
+        rawResponse: { demo: true, locationId },
+      });
+      return;
+    }
     runSearch();
   }, [
+    demoMode,
     runSearch,
     locationId,
     page,
@@ -450,7 +465,7 @@ export default function ReedsHomeFinder() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-stone-100 via-stone-50 to-white text-stone-800">
+    <div className="reed-app-shell relative min-h-screen overflow-x-hidden bg-[linear-gradient(165deg,#ecfdf5_0%,#f5f5f4_38%,#fafaf9_72%,#ffffff_100%)] text-stone-800">
       <a href="#reed-main" className="reed-skip-link">
         Skip to main content
       </a>
@@ -525,7 +540,10 @@ export default function ReedsHomeFinder() {
             </div>
             <button
               type="button"
-              onClick={() => runSearch()}
+              onClick={() => {
+                setDemoMode(false);
+                runSearch();
+              }}
               className="inline-flex items-center gap-2 rounded-xl border border-stone-200 bg-white px-3 py-2 text-xs font-semibold text-stone-800 shadow-sm hover:bg-stone-50"
             >
               <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin text-teal-600" : ""}`} />
@@ -533,16 +551,52 @@ export default function ReedsHomeFinder() {
             </button>
           </div>
           </div>
-          {error && (
-            <div className="flex items-start gap-2 rounded-xl border border-red-200 bg-red-50/90 px-3 py-2 text-xs text-red-900 shadow-sm">
-              <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-red-600" />
-              <span>{error}</span>
+          {demoMode && (
+            <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-teal-200/90 bg-gradient-to-r from-teal-50/95 via-cyan-50/80 to-sky-50/70 px-3 py-2.5 text-xs text-teal-950 shadow-md shadow-teal-900/5 ring-1 ring-teal-100/80">
+              <span className="flex min-w-0 flex-1 items-start gap-2 font-medium leading-snug">
+                <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-teal-600" />
+                <span>
+                  <strong>Demo mode</strong> — full map + list experience with sample pins (not live MLS). Use{" "}
+                  <code className="rounded bg-white/80 px-1 py-0.5 text-[10px]">ZILLOW_API_KEY</code> (direct OpenWeb) or{" "}
+                  <code className="rounded bg-white/80 px-1 py-0.5 text-[10px]">RAPIDAPI_KEY</code> (same data via RapidAPI) in{" "}
+                  <code className="rounded bg-white/80 px-1 py-0.5 text-[10px]">backend/.env</code>, then Refresh.
+                </span>
+              </span>
+              <button
+                type="button"
+                onClick={() => {
+                  setDemoMode(false);
+                  runSearch();
+                }}
+                className="shrink-0 rounded-lg border border-teal-300 bg-white px-3 py-1.5 text-[11px] font-semibold text-teal-900 shadow-sm hover:bg-teal-50"
+              >
+                Retry live data
+              </button>
+            </div>
+          )}
+          {error && !demoMode && (
+            <div className="flex flex-col gap-2 rounded-xl border border-red-200 bg-red-50/90 px-3 py-2 text-xs text-red-900 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex items-start gap-2">
+                <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-red-600" />
+                <span className="leading-snug">{error}</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setDemoMode(true);
+                  toast.success("Loading demo listings for this market…");
+                }}
+                className="inline-flex shrink-0 items-center justify-center gap-1.5 self-start rounded-lg border border-violet-200 bg-gradient-to-r from-violet-50 to-fuchsia-50 px-3 py-1.5 text-[11px] font-semibold text-violet-900 shadow-sm hover:from-violet-100 hover:to-fuchsia-100 sm:self-center"
+              >
+                <Sparkles className="h-3.5 w-3.5" />
+                Try immersive demo
+              </button>
             </div>
           )}
         </div>
       </header>
 
-      <div className="mx-auto flex max-w-[1600px] gap-0 lg:gap-4">
+      <div className="relative z-10 mx-auto flex max-w-[1600px] gap-0 lg:gap-4">
         <aside
           className={`${
             sidebar ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
