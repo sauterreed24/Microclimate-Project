@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
+import { memo, useEffect, useMemo, useState } from "react";
 import { Droplets, Globe2, Mountain, Radio, Shield, Zap } from "lucide-react";
-import { fetchEiaRetail, fetchOpenMeteoResilience } from "../api/resilienceClient.js";
+import { fetchEiaRetail, fetchOpenMeteoResilience, isAbortError } from "../api/resilienceClient.js";
 import {
   LONG_HORIZON_PLAYBOOK,
   RESILIENCE_DIMENSIONS,
@@ -16,24 +16,26 @@ const ICONS = {
   "long-horizon": Globe2,
 };
 
-export default function ResilienceIndexPanel({ location, microBundle }) {
-  const links = buildResilienceLookupUrls(location || {});
-  const cross = crossRefMicroclimateToResilience(microBundle);
+function ResilienceIndexPanel({ location, microBundle }) {
+  const links = useMemo(() => buildResilienceLookupUrls(location || {}), [location]);
+  const cross = useMemo(() => crossRefMicroclimateToResilience(microBundle), [microBundle]);
 
   const [om, setOm] = useState({ loading: false, data: null, error: null });
   const [eia, setEia] = useState({ loading: false, data: null, skipped: false, error: null });
 
   useEffect(() => {
-    if (!location?.lat || !location?.lng) {
+    const lat = location?.lat;
+    const lng = location?.lng;
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
       queueMicrotask(() => {
         setOm({ loading: false, data: null, error: null });
         setEia({ loading: false, data: null, skipped: false, error: null });
       });
       return;
     }
+    const ac = new AbortController();
+    const { signal } = ac;
     let cancelled = false;
-    const lat = location.lat;
-    const lng = location.lng;
     const st = String(location.state || "AZ").trim().slice(0, 2).toUpperCase() || "AZ";
 
     queueMicrotask(() => {
@@ -41,42 +43,50 @@ export default function ResilienceIndexPanel({ location, microBundle }) {
       setOm({ loading: true, data: null, error: null });
       setEia({ loading: true, data: null, skipped: false, error: null });
 
-      fetchOpenMeteoResilience(lat, lng)
+      fetchOpenMeteoResilience(lat, lng, { signal })
         .then((d) => {
           if (!cancelled) setOm({ loading: false, data: d, error: null });
         })
         .catch((e) => {
-          if (!cancelled) setOm({ loading: false, data: null, error: e?.message || "Open-Meteo failed" });
+          if (cancelled || isAbortError(e)) return;
+          setOm({ loading: false, data: null, error: e?.message || "Open-Meteo failed" });
         });
 
-      fetchEiaRetail(st)
+      fetchEiaRetail(st, { signal })
         .then((d) => {
           if (cancelled) return;
           if (d?.skipped) setEia({ loading: false, data: null, skipped: true, error: null });
           else setEia({ loading: false, data: d, skipped: false, error: null });
         })
         .catch((e) => {
-          if (!cancelled) setEia({ loading: false, data: null, skipped: false, error: e?.message || "EIA failed" });
+          if (cancelled || isAbortError(e)) return;
+          setEia({ loading: false, data: null, skipped: false, error: e?.message || "EIA failed" });
         });
     });
 
     return () => {
       cancelled = true;
+      ac.abort();
     };
   }, [location?.id, location?.lat, location?.lng, location?.state]);
 
-  const linkPills = [
-    { label: "FCC broadband map", href: links.fccBroadband, hint: "Street-level fixed & mobile" },
-    { label: "EIA state energy", href: links.eiaState, hint: "Retail power, fuel mix" },
-    { label: "NOAA climate normals", href: links.noaaNormals, hint: "Baseline weather" },
-    { label: "FEMA flood maps", href: links.femaFlood, hint: "NFHL layers" },
-    { label: "EPA drinking water", href: links.epaWater, hint: "Reg programs" },
-    { label: "USGS water", href: links.usgsWater, hint: "Aquifers & drought science" },
-    { label: "DSIRE incentives", href: links.dsire, hint: "Solar / storage rules" },
-    { label: "FRED (macro)", href: links.fred, hint: "Rates & prices" },
-    { label: "BLS geography", href: links.blsGeo, hint: "Local employment" },
-    { label: "Verify on map", href: links.mapsPin, hint: "Lat/lng sanity check" },
-  ];
+  const linkPills = useMemo(
+    () => [
+      { label: "FCC broadband map", href: links.fccBroadband, hint: "Street-level fixed & mobile" },
+      { label: "EIA state energy", href: links.eiaState, hint: "Retail power, fuel mix" },
+      { label: "NOAA climate normals", href: links.noaaNormals, hint: "Baseline weather" },
+      { label: "FEMA flood maps", href: links.femaFlood, hint: "NFHL layers" },
+      { label: "EPA drinking water", href: links.epaWater, hint: "Reg programs" },
+      { label: "USGS water", href: links.usgsWater, hint: "Aquifers & drought science" },
+      { label: "DSIRE incentives", href: links.dsire, hint: "Solar / storage rules" },
+      { label: "FRED (macro)", href: links.fred, hint: "Rates & prices" },
+      { label: "BLS geography", href: links.blsGeo, hint: "Local employment" },
+      { label: "Verify on map", href: links.mapsPin, hint: "Lat/lng sanity check" },
+    ],
+    [links]
+  );
+
+  const hasCoords = Number.isFinite(location?.lat) && Number.isFinite(location?.lng);
 
   return (
     <section
@@ -112,7 +122,7 @@ export default function ResilienceIndexPanel({ location, microBundle }) {
         )}
       </div>
 
-      {(location?.lat != null && location?.lng != null) && (
+      {hasCoords && (
         <div className="mt-3 rounded-xl border border-teal-200/80 bg-teal-50/40 p-3 ring-1 ring-teal-100/70">
           <h3 className="text-[10px] font-bold uppercase tracking-wider text-teal-900">Live snapshot (proxied)</h3>
           <p className="mt-1 text-[10px] leading-relaxed text-teal-950/80">
@@ -226,3 +236,5 @@ export default function ResilienceIndexPanel({ location, microBundle }) {
     </section>
   );
 }
+
+export default memo(ResilienceIndexPanel);

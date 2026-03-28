@@ -57,7 +57,10 @@ export function buildResilienceLookupUrls(loc) {
   const st = String(loc?.state || "").toUpperCase();
   const slug = EIA_STATE_SLUG[st] || "arizona";
 
-  const q = encodeURIComponent(String(loc?.label || `${lat},${lng}` || "United States"));
+  const label = typeof loc?.label === "string" ? loc.label.trim() : "";
+  const qRaw =
+    label || (Number.isFinite(lat) && Number.isFinite(lng) ? `${lat},${lng}` : "United States");
+  const q = encodeURIComponent(qRaw);
 
   return {
     /** FCC National Broadband Map — search by address */
