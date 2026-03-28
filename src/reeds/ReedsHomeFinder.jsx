@@ -5,7 +5,7 @@ import {
   AlertTriangle,
   Heart,
   HelpCircle,
-  Home,
+  Leaf,
   Keyboard,
   Loader2,
   Map as MapIcon,
@@ -27,7 +27,8 @@ import ListingSkeleton from "./components/ListingSkeleton.jsx";
 import EmptyResults from "./components/EmptyResults.jsx";
 import ExploreListRail from "./components/ExploreListRail.jsx";
 import MarketMicroclimatePanel from "./components/MarketMicroclimatePanel.jsx";
-import ImmersiveResearchStrip from "./components/ImmersiveResearchStrip.jsx";
+import ClimateFirstStrip from "./components/ClimateFirstStrip.jsx";
+import PlaceIntelligencePanel from "./components/PlaceIntelligencePanel.jsx";
 import KeyboardShortcutsDialog from "./components/KeyboardShortcutsDialog.jsx";
 import { getMicroclimateBundle } from "./data/microclimateBridge.js";
 import { computeClimateHubs, SOUTHWEST_US_BOUNDS } from "./data/climateHubs.js";
@@ -647,7 +648,7 @@ export default function ReedsHomeFinder() {
   };
 
   return (
-    <div className="reed-app-shell relative min-h-screen overflow-x-hidden bg-[linear-gradient(155deg,#ede9fe_0%,#ecfdf5_22%,#f5f5f4_52%,#fff7ed_88%,#ffffff_100%)] text-stone-900">
+    <div className="reed-app-shell relative min-h-screen overflow-x-hidden bg-[linear-gradient(160deg,#ecfdf5_0%,#f0fdf4_18%,#fafaf9_45%,#fffbeb_78%,#ffffff_100%)] text-stone-900">
       <a href="#reed-main" className="reed-skip-link">
         Skip to main content
       </a>
@@ -669,7 +670,7 @@ export default function ReedsHomeFinder() {
       />
       <KeyboardShortcutsDialog open={shortcutsOpen} onClose={() => setShortcutsOpen(false)} />
 
-      <header className="sticky top-0 z-50 border-b border-violet-200/40 bg-gradient-to-r from-white/95 via-fuchsia-50/40 to-teal-50/35 shadow-sm backdrop-blur-md">
+      <header className="sticky top-0 z-50 border-b border-stone-200/80 bg-white/95 shadow-sm backdrop-blur-md">
         <div className="mx-auto flex max-w-[1600px] flex-col gap-2 px-4 py-3">
           <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
@@ -683,13 +684,13 @@ export default function ReedsHomeFinder() {
               <Menu className="h-5 w-5" aria-hidden />
             </button>
             <div className="flex items-center gap-2">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-violet-600 via-fuchsia-600 to-teal-600 shadow-lg shadow-violet-900/25 ring-2 ring-white/60">
-                <Home className="h-5 w-5 text-white" />
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-teal-600 via-emerald-600 to-stone-700 shadow-md shadow-teal-900/20 ring-2 ring-white/70">
+                <Leaf className="h-5 w-5 text-white" aria-hidden />
               </div>
               <div>
-                <h1 className="font-display text-lg font-semibold tracking-tight text-stone-900">Reed&apos;s Home Finder</h1>
-                <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-violet-800">
-                  Place-first · Southwest US · AZ · CA · NM · CO · UT · NV · TX
+                <h1 className="font-display text-lg font-semibold tracking-tight text-stone-900">Saguaro Atlas</h1>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-teal-800">
+                  Microclimate · place intelligence · Southwest US
                 </p>
               </div>
             </div>
@@ -848,21 +849,30 @@ export default function ReedsHomeFinder() {
         )}
 
         <main id="reed-main" tabIndex={-1} className="min-w-0 flex-1 space-y-4 px-4 py-4 outline-none focus-visible:ring-2 focus-visible:ring-teal-400/80 focus-visible:ring-offset-2">
-          <ImmersiveResearchStrip
+          <ClimateFirstStrip
             marketLabel={active?.label}
             marketNotes={active?.notes || undefined}
             contextLine={marketContextLine}
-            sampleInventory={demoMode || listingProviderConfigured === false}
           />
 
-          <div className="rounded-2xl border border-violet-200/50 bg-gradient-to-br from-white via-violet-50/30 to-teal-50/25 p-4 shadow-lg shadow-violet-200/30 ring-1 ring-violet-100/80">
-            <div className="flex flex-wrap items-end gap-3">
+          {microBundle && active && <MarketMicroclimatePanel bundle={microBundle} locationLabel={active.label} />}
+
+          {active && <PlaceIntelligencePanel location={active} />}
+
+          <section className="rounded-2xl border border-stone-200/90 bg-white/95 p-4 shadow-md shadow-stone-200/35 ring-1 ring-stone-100/90" aria-label="Homes and map explorer">
+            <h2 className="font-display text-sm font-semibold text-stone-900">Homes & terrain explorer</h2>
+            <p className="mt-1 max-w-3xl text-[11px] leading-relaxed text-stone-500">
+              Supporting layer: filters, sample or live pins, and map. Use{" "}
+              <strong className="text-stone-700">Place intelligence</strong> above for how to search and what to verify; open Zillow / Redfin / Realtor from there for
+              authoritative listings.
+            </p>
+            <div className="mt-4 flex flex-wrap items-end gap-3">
               <div className="min-w-[200px] flex-1">
                 <label className="text-[10px] font-bold uppercase tracking-wider text-stone-500">Active market</label>
                 <p className="mt-1 font-display text-lg text-stone-900">{active?.label ?? "—"}</p>
                 <p className="text-xs text-stone-500">{active?.region}</p>
                 {active?.notes && (
-                  <p className="mt-2 border-l-[3px] border-violet-400 bg-violet-50/80 py-2 pl-3 pr-2 text-[11px] font-medium leading-relaxed text-violet-950">
+                  <p className="mt-2 border-l-[3px] border-teal-400 bg-teal-50/70 py-2 pl-3 pr-2 text-[11px] font-medium leading-relaxed text-teal-950">
                     {active.notes}
                   </p>
                 )}
@@ -1016,9 +1026,7 @@ export default function ReedsHomeFinder() {
                 </div>
               </Field>
             </div>
-          </div>
-
-          {microBundle && active && <MarketMicroclimatePanel bundle={microBundle} locationLabel={active.label} />}
+          </section>
 
           {loading && <ListingSkeleton layout={view === "split" ? "rail" : "grid"} count={view === "split" ? 8 : 6} />}
 
