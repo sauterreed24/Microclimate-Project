@@ -319,10 +319,15 @@ export default function ReedsHomeFinder() {
 
   /** Clear map hub microclimate filter whenever the active market changes (valid switches + stale id repair). */
   useEffect(() => {
+    let cancelled = false;
     queueMicrotask(() => {
+      if (cancelled) return;
       setClimateMapFilter(null);
     });
-  }, [locationId]);
+    return () => {
+      cancelled = true;
+    };
+  }, [locationId, setClimateMapFilter]);
 
   useEffect(() => {
     safeLocalStorageSet("reed-view", view);
