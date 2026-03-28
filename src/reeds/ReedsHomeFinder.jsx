@@ -312,13 +312,17 @@ export default function ReedsHomeFinder() {
 
   // Recover stale/removed location ids from persisted storage (valid ids always go through selectLocation).
   useEffect(() => {
-    /* eslint-disable react-hooks/set-state-in-effect -- one-shot repair when persisted id no longer exists */
     if (!getLocationById(locationId)) {
-      setClimateMapFilter(null);
       setLocationId(DEFAULT_LOCATION_ID);
     }
-    /* eslint-enable react-hooks/set-state-in-effect */
   }, [locationId, setLocationId]);
+
+  /** Clear map hub microclimate filter whenever the active market changes (valid switches + stale id repair). */
+  useEffect(() => {
+    queueMicrotask(() => {
+      setClimateMapFilter(null);
+    });
+  }, [locationId]);
 
   useEffect(() => {
     safeLocalStorageSet("reed-view", view);
