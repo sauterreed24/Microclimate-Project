@@ -38,6 +38,7 @@ export default function PropertyModal({ listing, onClose, priceSuffix = "" }) {
     if (!listing) return undefined;
     const t = window.setTimeout(() => headerCloseRef.current?.focus(), 60);
     return () => window.clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- zpid/address only; avoid re-running on parent object churn
   }, [listing?.zpid, listing?.address]);
 
   useEffect(() => {
@@ -80,6 +81,7 @@ export default function PropertyModal({ listing, onClose, priceSuffix = "" }) {
     return () => {
       cancel = true;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- zpid is the fetch key; full listing would over-fetch
   }, [listing?.zpid]);
 
   useEffect(() => {
@@ -103,6 +105,7 @@ export default function PropertyModal({ listing, onClose, priceSuffix = "" }) {
     return () => {
       cancel = true;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- coords fields cover Wikimedia lookup
   }, [listing?.zpid, listing?.latitude, listing?.longitude, listing?.lat, listing?.lng]);
 
   if (!listing) return null;

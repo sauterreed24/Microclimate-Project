@@ -22,7 +22,10 @@ app.use(
 app.use(express.json());
 
 app.get("/api/health", (_req, res) => {
-  res.json({ ok: true, hasKey: !!(process.env.RAPIDAPI_KEY || process.env.OPENWEB_NINJA_KEY) });
+  res.json({
+    ok: true,
+    hasKey: !!(process.env.RAPIDAPI_KEY || process.env.OPENWEB_NINJA_KEY || process.env.ZILLOW_API_KEY?.trim()),
+  });
 });
 
 /** Markets configured for Homes tab */

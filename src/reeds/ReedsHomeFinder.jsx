@@ -305,16 +305,15 @@ export default function ReedsHomeFinder() {
     return parts.length ? parts.join(" · ") : activeMcMeta?.blurb?.slice(0, 140) || "";
   }, [activeMcMeta, microBundle]);
 
+  // Recover stale/removed location ids from persisted storage (valid ids always go through selectLocation).
   useEffect(() => {
+    /* eslint-disable react-hooks/set-state-in-effect -- one-shot repair when persisted id no longer exists */
     if (!getLocationById(locationId)) {
+      setClimateMapFilter(null);
       setLocationId(DEFAULT_LOCATION_ID);
     }
+    /* eslint-enable react-hooks/set-state-in-effect */
   }, [locationId, setLocationId]);
-
-  /** New market → clear hub filter so listing pins are never “mystery hidden”. */
-  useEffect(() => {
-    setClimateMapFilter(null);
-  }, [locationId]);
 
   useEffect(() => {
     safeLocalStorageSet("reed-view", view);
@@ -666,7 +665,9 @@ export default function ReedsHomeFinder() {
               </div>
               <div>
                 <h1 className="font-display text-lg font-semibold tracking-tight text-stone-900">Reed&apos;s Home Finder</h1>
-                <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-violet-800">Place-first · AZ · CA · NM</p>
+                <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-violet-800">
+                  Place-first · Southwest US · AZ · CA · NM · CO · UT · NV · TX
+                </p>
               </div>
             </div>
           </div>

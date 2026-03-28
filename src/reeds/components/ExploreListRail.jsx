@@ -64,6 +64,7 @@ export default function ExploreListRail({
             type="button"
             disabled={page <= 1}
             onClick={() => setPage(page - 1)}
+            aria-label="Previous page of listings"
             className="rounded-md border border-stone-200 bg-white px-2.5 py-1 text-[11px] font-semibold text-stone-700 shadow-sm disabled:opacity-40"
           >
             Prev
@@ -72,6 +73,7 @@ export default function ExploreListRail({
             type="button"
             disabled={!canGoNext}
             onClick={() => setPage(page + 1)}
+            aria-label="Next page of listings"
             className="rounded-md border border-stone-200 bg-white px-2.5 py-1 text-[11px] font-semibold text-stone-700 shadow-sm disabled:opacity-40"
           >
             Next

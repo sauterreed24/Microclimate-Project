@@ -98,6 +98,11 @@ export function extractListings(raw) {
     raw.data?.searchResults,
     raw.data?.searchResults?.results,
     raw.data?.mapResults,
+    raw.result?.listings,
+    raw.result?.results,
+    raw.payload?.listings,
+    raw.response?.listings,
+    raw.response?.results,
   ].filter(Boolean);
   for (const c of candidates) {
     if (Array.isArray(c)) return c.map(normalizeListing).filter(Boolean);
