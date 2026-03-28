@@ -5,7 +5,7 @@ import { getAutoRefreshIntervalMs } from "../lib/listingFreshness.js";
  * “4D” research framing: place, seasonal time, climate depth, decision path.
  * Not literal 4D graphics — intentional spatial + temporal + context + action narrative.
  */
-export default function ImmersiveResearchStrip({ marketLabel, marketNotes, contextLine }) {
+export default function ImmersiveResearchStrip({ marketLabel, marketNotes, contextLine, sampleInventory = false }) {
   const refreshDays = Math.max(1, Math.round(getAutoRefreshIntervalMs() / (24 * 60 * 60 * 1000)));
   const pillars = [
     {
@@ -62,15 +62,23 @@ export default function ImmersiveResearchStrip({ marketLabel, marketNotes, conte
               </p>
             )}
           </div>
-          <p className="max-w-xs text-[11px] leading-relaxed text-violet-200/75">
-            Listing copy refreshes when you open a home (detail API). Search inventory re-pulls on filter changes, manual refresh, and automatically after ~{refreshDays}{" "}
-            {refreshDays === 1 ? "day" : "days"} for the same search (tab open or when you come back).
+          <p className="max-w-xs text-[11px] leading-relaxed text-violet-200/85">
+            {sampleInventory ? (
+              <>
+                You&apos;re viewing <span className="font-semibold text-amber-200/95">sample pins</span> tied to this market — perfect for learning the map. Hook up a listing provider on the server when you want live homes and detail text.
+              </>
+            ) : (
+              <>
+                Listing copy refreshes when you open a home (detail API). Inventory re-pulls on filter changes, refresh, and about every {refreshDays}{" "}
+                {refreshDays === 1 ? "day" : "days"} for the same search while this tab stays open.
+              </>
+            )}
           </p>
         </div>
 
         {marketNotes ? (
-          <div className="reed-read-wide mt-4 rounded-xl border border-teal-400/25 bg-teal-500/10 px-3 py-2.5 text-xs text-teal-50 ring-1 ring-teal-400/20">
-            <span className="font-bold text-teal-200">Local lens · </span>
+          <div className="reed-read-wide mt-4 rounded-xl border border-teal-400/30 bg-gradient-to-r from-teal-600/25 to-cyan-600/20 px-3 py-2.5 text-xs text-teal-50 ring-1 ring-teal-400/25">
+            <span className="font-bold text-amber-200/95">Local lens · </span>
             {marketNotes}
           </div>
         ) : null}

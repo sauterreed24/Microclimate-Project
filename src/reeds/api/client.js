@@ -28,6 +28,17 @@ export async function health() {
   }
 }
 
+function httpSearchError(res) {
+  const raw = res.data?.error;
+  const msg = readableError(raw, `Request failed (${res.status})`);
+  const err = new Error(msg);
+  err.response = res;
+  err.status = res.status;
+  const code = res.data && typeof res.data === "object" && "code" in res.data ? res.data.code : undefined;
+  if (typeof code === "string") err.code = code;
+  return err;
+}
+
 export async function searchListings(params) {
   try {
     const res = await api.get("/api/zillow/search", {
@@ -35,14 +46,7 @@ export async function searchListings(params) {
       validateStatus: () => true,
     });
     if (res.status >= 400) {
-      const msg =
-        typeof res.data === "object" && res.data?.error
-          ? res.data.error
-          : `Request failed (${res.status})`;
-      const err = new Error(msg);
-      err.response = res;
-      err.status = res.status;
-      throw err;
+      throw httpSearchError(res);
     }
     return res.data;
   } catch (e) {
@@ -58,14 +62,7 @@ export async function searchByCoordinates(params) {
       validateStatus: () => true,
     });
     if (res.status >= 400) {
-      const msg =
-        typeof res.data === "object" && res.data?.error
-          ? res.data.error
-          : `Request failed (${res.status})`;
-      const err = new Error(msg);
-      err.response = res;
-      err.status = res.status;
-      throw err;
+      throw httpSearchError(res);
     }
     return res.data;
   } catch (e) {

@@ -41,6 +41,7 @@ import {
   writeIngestionMeta,
 } from "./lib/listingFreshness.js";
 import { locationSearchFallbacks } from "./lib/searchFallbacks.js";
+import { shouldAutoDemoFromError } from "./lib/demoFallback.js";
 
 const ListingMap = lazy(() => import("./components/ListingMap.jsx"));
 const PropertyModal = lazy(() => import("./components/PropertyModal.jsx"));
@@ -202,6 +203,8 @@ export default function ReedsHomeFinder() {
   const [view, setView] = useState(() => safeLocalStorageGet("reed-view", "split") || "split");
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
   const [apiOk, setApiOk] = useState(null);
+  /** From GET /api/health — false means no listing provider key configured (explore/sample mode). */
+  const [listingProviderConfigured, setListingProviderConfigured] = useState(/** @type {boolean | null} */ (null));
   /** Map-only: filter listing pin colors to a microclimate profile (toggle via hub markers). */
   const [climateMapFilter, setClimateMapFilter] = useState(null);
   /** Defer mounting Leaflet/Google map until the browser is idle — avoids blocking first paint on low-end hardware. */
@@ -342,7 +345,14 @@ export default function ReedsHomeFinder() {
       try {
         const r = await fetch("/api/health");
         const d = await r.json();
-        if (!cancelled) setApiOk(!!(d.ok && d.hasKey));
+        if (!cancelled) {
+          const has = !!d?.hasKey;
+          setListingProviderConfigured(has);
+          setApiOk(!!(d.ok && d.hasKey));
+          if (d?.hasKey === false) {
+            useReedStore.setState({ demoMode: true, error: null });
+          }
+        }
         safeLocalStorageSet(API_HEALTH_LAST_KEY, String(Date.now()));
       } catch {
         if (!cancelled) setApiOk(false);
@@ -547,6 +557,16 @@ export default function ReedsHomeFinder() {
       });
     } catch (e) {
       console.error(e);
+      if (shouldAutoDemoFromError(e)) {
+        const prev = useReedStore.getState().demoMode;
+        useReedStore.setState({ loading: false, error: null, demoMode: true });
+        if (!prev) {
+          toast.success("Using sample homes — map and filters work fully; add a listing provider later for live inventory.", {
+            duration: 4200,
+          });
+        }
+        return;
+      }
       const userMsg = readableApiError(e, "Search failed");
       useReedStore.setState({ listings: [], loading: false, error: userMsg });
       toast.error(userMsg);
@@ -646,7 +666,7 @@ export default function ReedsHomeFinder() {
       />
       <KeyboardShortcutsDialog open={shortcutsOpen} onClose={() => setShortcutsOpen(false)} />
 
-      <header className="sticky top-0 z-50 border-b border-stone-200/90 bg-white/90 shadow-sm backdrop-blur-md">
+      <header className="sticky top-0 z-50 border-b border-violet-200/40 bg-gradient-to-r from-white/95 via-fuchsia-50/40 to-teal-50/35 shadow-sm backdrop-blur-md">
         <div className="mx-auto flex max-w-[1600px] flex-col gap-2 px-4 py-3">
           <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
@@ -674,11 +694,31 @@ export default function ReedsHomeFinder() {
 
           <div className="flex flex-wrap items-center justify-end gap-2 sm:gap-3">
             <div
-              className="hidden items-center gap-1.5 rounded-full border border-stone-200 bg-stone-50/90 px-2.5 py-1 text-[10px] text-stone-500 sm:flex"
-              title="Zillow proxy status — rechecked on load and at most once per day when you return to this tab"
+              className={`hidden items-center gap-1.5 rounded-full border px-2.5 py-1 text-[10px] font-medium sm:flex ${
+                demoMode
+                  ? "border-amber-300/90 bg-gradient-to-r from-amber-50 to-orange-50 text-amber-950 shadow-sm shadow-amber-900/5"
+                  : listingProviderConfigured === false
+                    ? "border-violet-200 bg-violet-50/95 text-violet-900"
+                    : "border-stone-200 bg-stone-50/90 text-stone-600"
+              }`}
+              title="Listing provider: sample pins need no key; live MLS-style data uses backend/.env when you add one."
             >
-              <Activity className={`h-3.5 w-3.5 ${apiOk ? "text-emerald-600" : apiOk === false ? "text-red-500" : "text-stone-400"}`} />
-              <span>{apiOk == null ? "API…" : apiOk ? "API live" : "API down"}</span>
+              <Activity
+                className={`h-3.5 w-3.5 shrink-0 ${
+                  demoMode ? "text-amber-600" : apiOk ? "text-emerald-600" : apiOk === false ? "text-rose-500" : "text-stone-400"
+                }`}
+              />
+              <span>
+                {demoMode
+                  ? "Sample homes"
+                  : listingProviderConfigured === false
+                    ? "Explore mode"
+                    : apiOk == null
+                      ? "Checking…"
+                      : apiOk
+                        ? "Live inventory"
+                        : "Provider issue"}
+              </span>
             </div>
             {favoriteZpids.length > 0 && (
               <span className="flex items-center gap-1 rounded-full border border-rose-200 bg-rose-50 px-2 py-0.5 text-[10px] font-medium text-rose-800">
@@ -737,14 +777,12 @@ export default function ReedsHomeFinder() {
           </div>
           </div>
           {demoMode && (
-            <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-teal-200/90 bg-gradient-to-r from-teal-50/95 via-cyan-50/80 to-sky-50/70 px-3 py-2.5 text-xs text-teal-950 shadow-md shadow-teal-900/5 ring-1 ring-teal-100/80">
+            <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-300/80 bg-gradient-to-r from-amber-50 via-orange-50/95 to-rose-50/80 px-3 py-2.5 text-xs text-amber-950 shadow-md shadow-amber-900/10 ring-1 ring-amber-200/60">
               <span className="flex min-w-0 flex-1 items-start gap-2 font-medium leading-snug">
-                <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-teal-600" />
+                <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-orange-500" />
                 <span>
-                  <strong>Demo mode</strong> — full map + list experience with sample pins (not live MLS). Use{" "}
-                  <code className="rounded bg-white/80 px-1 py-0.5 text-[10px]">ZILLOW_API_KEY</code> (direct OpenWeb) or{" "}
-                  <code className="rounded bg-white/80 px-1 py-0.5 text-[10px]">RAPIDAPI_KEY</code> (same data via RapidAPI) in{" "}
-                  <code className="rounded bg-white/80 px-1 py-0.5 text-[10px]">backend/.env</code>, then Refresh.
+                  <strong className="text-amber-900">Sample homes on the map</strong> — explore filters, pins, and cards freely. Not real MLS listings.{" "}
+                  <span className="text-amber-800/90">Optional later: add a listing provider on the backend if you want live inventory.</span>
                 </span>
               </span>
               <button
@@ -753,9 +791,9 @@ export default function ReedsHomeFinder() {
                   setDemoMode(false);
                   runSearch();
                 }}
-                className="shrink-0 rounded-lg border border-teal-300 bg-white px-3 py-1.5 text-[11px] font-semibold text-teal-900 shadow-sm hover:bg-teal-50"
+                className="shrink-0 rounded-lg border border-violet-300 bg-white px-3 py-1.5 text-[11px] font-semibold text-violet-900 shadow-sm transition hover:bg-violet-50"
               >
-                Retry live data
+                Try live search
               </button>
             </div>
           )}
@@ -807,9 +845,14 @@ export default function ReedsHomeFinder() {
         )}
 
         <main id="reed-main" tabIndex={-1} className="min-w-0 flex-1 space-y-4 px-4 py-4 outline-none focus-visible:ring-2 focus-visible:ring-teal-400/80 focus-visible:ring-offset-2">
-          <ImmersiveResearchStrip marketLabel={active?.label} marketNotes={active?.notes || undefined} contextLine={marketContextLine} />
+          <ImmersiveResearchStrip
+            marketLabel={active?.label}
+            marketNotes={active?.notes || undefined}
+            contextLine={marketContextLine}
+            sampleInventory={demoMode || listingProviderConfigured === false}
+          />
 
-          <div className="rounded-2xl border border-stone-200/90 bg-white p-4 shadow-lg shadow-stone-200/40 ring-1 ring-stone-100">
+          <div className="rounded-2xl border border-violet-200/50 bg-gradient-to-br from-white via-violet-50/30 to-teal-50/25 p-4 shadow-lg shadow-violet-200/30 ring-1 ring-violet-100/80">
             <div className="flex flex-wrap items-end gap-3">
               <div className="min-w-[200px] flex-1">
                 <label className="text-[10px] font-bold uppercase tracking-wider text-stone-500">Active market</label>
@@ -1239,7 +1282,7 @@ function PresetChip({ label, onClick }) {
     <button
       type="button"
       onClick={onClick}
-      className="rounded-full border border-teal-200 bg-teal-50/80 px-3 py-1 text-[11px] font-medium text-teal-900 transition hover:bg-teal-100"
+      className="rounded-full border border-violet-200/80 bg-gradient-to-r from-violet-50 to-teal-50/90 px-3 py-1 text-[11px] font-semibold text-violet-900 shadow-sm transition hover:border-teal-300/80 hover:from-teal-50 hover:to-cyan-50"
     >
       {label}
     </button>
