@@ -203,7 +203,7 @@ export default function ReedsHomeFinder() {
   const [view, setView] = useState(() => safeLocalStorageGet("reed-view", "split") || "split");
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
   const [apiOk, setApiOk] = useState(null);
-  /** From GET /api/health — false means no listing provider key configured (explore/sample mode). */
+  /** From GET /api/health: true = key confirmed; false = no key or missing `hasKey`; null = health request failed. */
   const [listingProviderConfigured, setListingProviderConfigured] = useState(/** @type {boolean | null} */ (null));
   /** Map-only: filter listing pin colors to a microclimate profile (toggle via hub markers). */
   const [climateMapFilter, setClimateMapFilter] = useState(null);
@@ -346,16 +346,19 @@ export default function ReedsHomeFinder() {
         const r = await fetch("/api/health");
         const d = await r.json();
         if (!cancelled) {
-          const has = !!d?.hasKey;
-          setListingProviderConfigured(has);
-          setApiOk(!!(d.ok && d.hasKey));
-          if (d?.hasKey === false) {
+          const hk = d?.hasKey;
+          setListingProviderConfigured(hk === true);
+          setApiOk(!!(d?.ok && hk === true));
+          if (hk !== true) {
             useReedStore.setState({ demoMode: true, error: null });
           }
         }
         safeLocalStorageSet(API_HEALTH_LAST_KEY, String(Date.now()));
       } catch {
-        if (!cancelled) setApiOk(false);
+        if (!cancelled) {
+          setApiOk(false);
+          setListingProviderConfigured(null);
+        }
       }
     }
     ping();
