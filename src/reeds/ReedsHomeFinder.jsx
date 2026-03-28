@@ -1,6 +1,19 @@
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import toast, { Toaster } from "react-hot-toast";
-import { Activity, AlertTriangle, Heart, Home, Keyboard, Loader2, Map as MapIcon, Menu, RefreshCw, Search, Sparkles } from "lucide-react";
+import {
+  Activity,
+  AlertTriangle,
+  Heart,
+  HelpCircle,
+  Home,
+  Keyboard,
+  Loader2,
+  Map as MapIcon,
+  Menu,
+  RefreshCw,
+  Search,
+  Sparkles,
+} from "lucide-react";
 import { ALL_LOCATIONS, DEFAULT_LOCATION_ID, getLocationById } from "../data/reeds/locations/index.js";
 import { SONORA_TRAVEL_PLACES } from "../data/reeds/locations/sonoraFreeZone.js";
 import { SONORA_MEXICO } from "../data/reeds/locations/mexico.js";
@@ -15,6 +28,7 @@ import EmptyResults from "./components/EmptyResults.jsx";
 import ExploreListRail from "./components/ExploreListRail.jsx";
 import MarketMicroclimatePanel from "./components/MarketMicroclimatePanel.jsx";
 import ImmersiveResearchStrip from "./components/ImmersiveResearchStrip.jsx";
+import KeyboardShortcutsDialog from "./components/KeyboardShortcutsDialog.jsx";
 import { getMicroclimateBundle } from "./data/microclimateBridge.js";
 import { computeClimateHubs, SOUTHWEST_US_BOUNDS } from "./data/climateHubs.js";
 import { readableApiError } from "./lib/errorMessage.js";
@@ -185,6 +199,7 @@ export default function ReedsHomeFinder() {
   const [sidebar, setSidebar] = useState(true);
   const [libSearch, setLibSearch] = useState("");
   const [view, setView] = useState(() => safeLocalStorageGet("reed-view", "split") || "split");
+  const [shortcutsOpen, setShortcutsOpen] = useState(false);
   const [apiOk, setApiOk] = useState(null);
   /** Map-only: filter listing pin colors to a microclimate profile (toggle via hub markers). */
   const [climateMapFilter, setClimateMapFilter] = useState(null);
@@ -368,14 +383,23 @@ export default function ReedsHomeFinder() {
 
   useEffect(() => {
     const onKey = (e) => {
-      if (e.key === "/" && document.activeElement?.tagName !== "INPUT" && document.activeElement?.tagName !== "TEXTAREA") {
+      const tag = document.activeElement?.tagName;
+      const inField = tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT";
+      const blockingModal = document.querySelector('[role="dialog"][aria-modal="true"]');
+      if (e.key === "/" && !inField && !blockingModal) {
         e.preventDefault();
         locFilterRef.current?.focus();
+        return;
+      }
+      if (e.key === "?" && !inField) {
+        e.preventDefault();
+        if (blockingModal && !shortcutsOpen) return;
+        setShortcutsOpen((open) => !open);
       }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, []);
+  }, [shortcutsOpen]);
 
   const runSearch = useCallback(async () => {
     const snap = useReedStore.getState();
@@ -559,8 +583,21 @@ export default function ReedsHomeFinder() {
       </a>
       <Toaster
         position="top-center"
-        toastOptions={{ className: "bg-white text-stone-800 border border-stone-200 shadow-lg", duration: 3000 }}
+        toastOptions={{
+          duration: 3400,
+          className: "!font-sans !text-stone-800 !shadow-lg",
+          style: { borderRadius: 14 },
+          success: {
+            className: "!font-sans !bg-emerald-50 !text-emerald-950 !border !border-emerald-200/90",
+            iconTheme: { primary: "#047857", secondary: "#ecfdf5" },
+          },
+          error: {
+            className: "!font-sans !bg-red-50 !text-red-950 !border !border-red-200/90",
+            iconTheme: { primary: "#b91c1c", secondary: "#fef2f2" },
+          },
+        }}
       />
+      <KeyboardShortcutsDialog open={shortcutsOpen} onClose={() => setShortcutsOpen(false)} />
 
       <header className="sticky top-0 z-50 border-b border-stone-200/90 bg-white/90 shadow-sm backdrop-blur-md">
         <div className="mx-auto flex max-w-[1600px] flex-col gap-2 px-4 py-3">
@@ -570,8 +607,10 @@ export default function ReedsHomeFinder() {
               type="button"
               onClick={() => setSidebar((s) => !s)}
               className="rounded-xl border border-stone-200 bg-white p-2 text-stone-600 shadow-sm hover:bg-stone-50 lg:hidden"
+              aria-expanded={sidebar}
+              aria-controls="reed-sidebar-nav"
             >
-              <Menu className="h-5 w-5" />
+              <Menu className="h-5 w-5" aria-hidden />
             </button>
             <div className="flex items-center gap-2">
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-violet-600 via-fuchsia-600 to-teal-600 shadow-lg shadow-violet-900/25 ring-2 ring-white/60">
@@ -598,9 +637,18 @@ export default function ReedsHomeFinder() {
                 {favoriteZpids.length} saved
               </span>
             )}
-            <span className="hidden items-center gap-1 text-[10px] text-stone-500 md:flex">
-              <Keyboard className="h-3 w-3" />
-              <kbd className="rounded border border-stone-200 bg-white px-1 font-sans text-stone-600 shadow-sm">/</kbd> filter
+            <button
+              type="button"
+              onClick={() => setShortcutsOpen(true)}
+              className="flex rounded-xl border border-stone-200 bg-white p-2 text-stone-500 shadow-sm transition hover:border-violet-200 hover:bg-violet-50 hover:text-violet-800"
+              aria-label="Open keyboard shortcuts (?)"
+            >
+              <HelpCircle className="h-4 w-4" />
+            </button>
+            <span className="hidden items-center gap-1 text-[10px] text-stone-500 lg:flex">
+              <Keyboard className="h-3 w-3 shrink-0" aria-hidden />
+              <kbd className="rounded border border-stone-200 bg-white px-1 font-sans text-stone-600 shadow-sm">/</kbd> towns ·{" "}
+              <kbd className="rounded border border-stone-200 bg-white px-1 font-sans text-stone-600 shadow-sm">?</kbd> help
             </span>
             <div className="flex items-center gap-1 rounded-lg border border-stone-200 bg-stone-50 p-1">
               <button
@@ -686,6 +734,8 @@ export default function ReedsHomeFinder() {
 
       <div className="relative z-10 mx-auto flex max-w-[1600px] gap-0 lg:gap-4">
         <aside
+          id="reed-sidebar-nav"
+          aria-label="Markets and locations"
           className={`${
             sidebar ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
           } fixed inset-y-0 left-0 z-40 w-[min(100%,320px)] border-r border-stone-200 bg-white p-4 shadow-lg transition-transform lg:static lg:w-80 lg:shrink-0 lg:border-0 lg:bg-transparent lg:shadow-none`}
@@ -697,6 +747,7 @@ export default function ReedsHomeFinder() {
               value={libSearch}
               onChange={(e) => setLibSearch(e.target.value)}
               placeholder="Filter towns, state, or microclimate…"
+              aria-label="Filter markets by name, state, or microclimate"
               className="w-full bg-transparent text-sm text-stone-800 placeholder:text-stone-400 focus:outline-none"
             />
           </div>
@@ -874,9 +925,33 @@ export default function ReedsHomeFinder() {
 
           {microBundle && active && <MarketMicroclimatePanel bundle={microBundle} locationLabel={active.label} />}
 
-          {loading && <ListingSkeleton />}
+          {loading && <ListingSkeleton layout={view === "split" ? "rail" : "grid"} count={view === "split" ? 8 : 6} />}
 
-          {!loading && listings.length === 0 && <EmptyResults loading={loading} />}
+          {!loading && listings.length === 0 && (
+            <EmptyResults
+              loading={loading}
+              onResetFilters={() => {
+                setFilters({
+                  minPrice: "",
+                  maxPrice: "",
+                  minBedrooms: "",
+                  maxBedrooms: "",
+                  minBathrooms: "",
+                  maxBathrooms: "",
+                  minSqft: "",
+                  maxSqft: "",
+                  sort: "NEWEST",
+                  homeType: "HOUSES",
+                  page: 1,
+                });
+                toast.success("Filters cleared — fetching again…");
+              }}
+              onTryDemo={() => {
+                setDemoMode(true);
+                toast.success("Loading sample homes for this market…");
+              }}
+            />
+          )}
 
           {view === "split" && active && !loading && (
             <div className="grid gap-4 lg:grid-cols-[minmax(0,1.55fr)_minmax(300px,420px)] lg:items-start">

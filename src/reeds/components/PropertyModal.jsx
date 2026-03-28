@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { X, ExternalLink, Loader2, MapPin, Camera, Sparkles } from "lucide-react";
 import {
   LineChart,
@@ -18,6 +18,7 @@ import { fetchWikimediaPhotoNear, googleMapsStreetViewIntentUrl, streetViewEmbed
 import { isDemoListing } from "../lib/demoListings.js";
 
 export default function PropertyModal({ listing, onClose, priceSuffix = "" }) {
+  const headerCloseRef = useRef(null);
   const [detail, setDetail] = useState(null);
   const [zest, setZest] = useState(null);
   const [zestErr, setZestErr] = useState(null);
@@ -32,6 +33,12 @@ export default function PropertyModal({ listing, onClose, priceSuffix = "" }) {
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [onClose]);
+
+  useEffect(() => {
+    if (!listing) return undefined;
+    const t = window.setTimeout(() => headerCloseRef.current?.focus(), 60);
+    return () => window.clearTimeout(t);
+  }, [listing?.zpid, listing?.address]);
 
   useEffect(() => {
     let cancel = false;
@@ -162,8 +169,14 @@ export default function PropertyModal({ listing, onClose, priceSuffix = "" }) {
               {[asText(listing.city), asText(listing.state)].filter(Boolean).join(", ") || "—"}
             </p>
           </div>
-          <button type="button" onClick={onClose} className="rounded-xl p-2 text-stone-400 hover:bg-stone-100 hover:text-stone-800">
-            <X className="h-5 w-5" />
+          <button
+            ref={headerCloseRef}
+            type="button"
+            onClick={onClose}
+            className="rounded-xl p-2 text-stone-400 hover:bg-stone-100 hover:text-stone-800"
+            aria-label="Close listing details"
+          >
+            <X className="h-5 w-5" aria-hidden />
           </button>
         </div>
 

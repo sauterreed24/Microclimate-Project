@@ -2,6 +2,7 @@ import { LayoutList } from "lucide-react";
 import CoverageMexicoBanner from "./CoverageMexicoBanner.jsx";
 import SonoraVisitStrip from "./SonoraVisitStrip.jsx";
 import ListingCard from "./ListingCard.jsx";
+import ScrollFadeEdges from "./ScrollFadeEdges.jsx";
 
 /**
  * Map-first companion: dense, scannable list with geography/water context — keeps eyes near terrain + pins.
@@ -78,19 +79,21 @@ export default function ExploreListRail({
         </div>
       </div>
 
-      <div className="reed-explore-rail-scroll min-h-0 flex-1 space-y-2.5 overflow-y-auto overflow-x-hidden pr-1 pb-1">
-        {listings.map((li) => (
-          <ListingCard
-            key={li.zpid || li.address}
-            listing={li}
-            priceSuffix={priceSuffix}
-            variant="split"
-            onOpen={onOpenListing}
-            isFavorite={(z) => favoriteZpids.includes(z)}
-            onToggleFavorite={toggleFavorite}
-          />
-        ))}
-      </div>
+      <ScrollFadeEdges>
+        <div className="reed-explore-rail-scroll min-h-0 flex-1 space-y-2.5 overflow-y-auto overflow-x-hidden pr-1 pb-1 pt-0.5">
+          {listings.map((li) => (
+            <ListingCard
+              key={li.zpid || li.address}
+              listing={li}
+              priceSuffix={priceSuffix}
+              variant="split"
+              onOpen={onOpenListing}
+              isFavorite={(z) => favoriteZpids.includes(z)}
+              onToggleFavorite={toggleFavorite}
+            />
+          ))}
+        </div>
+      </ScrollFadeEdges>
     </div>
   );
 }

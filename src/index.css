@@ -9,6 +9,7 @@
 @layer base {
   html {
     -webkit-text-size-adjust: 100%;
+    color-scheme: light;
   }
   body {
     margin: 0;
@@ -17,6 +18,10 @@
     font-synthesis: none;
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
+  }
+  ::selection {
+    background: rgb(13 148 136 / 0.22);
+    color: inherit;
   }
   #root {
     min-height: 100vh;
@@ -105,6 +110,29 @@
   z-index: 1;
   border-radius: 1rem;
   box-shadow: inset 0 0 100px rgba(13, 148, 136, 0.07);
+}
+
+/* Explore split — scroll rail with soft edge fades */
+.reed-rail-scroll-mask {
+  isolation: isolate;
+}
+.reed-rail-scroll-mask::before,
+.reed-rail-scroll-mask::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 6px;
+  height: 14px;
+  z-index: 2;
+  pointer-events: none;
+}
+.reed-rail-scroll-mask::before {
+  top: 0;
+  background: linear-gradient(to bottom, rgb(255 255 255 / 0.97), transparent);
+}
+.reed-rail-scroll-mask::after {
+  bottom: 0;
+  background: linear-gradient(to top, rgb(250 250 249 / 0.98), transparent);
 }
 
 /* Explore split — list rail scrollbar */
@@ -321,4 +349,24 @@
   background:
     radial-gradient(ellipse 120% 70% at 50% -15%, rgb(45 212 191 / 0.14), transparent 52%),
     radial-gradient(ellipse 60% 50% at 100% 10%, rgb(59 130 246 / 0.06), transparent 45%);
+}
+
+/* Loading skeleton — respect reduced motion (no shimmer) */
+.reed-skeleton-pulse {
+  animation: reed-skeleton-shimmer 1.35s ease-in-out infinite;
+}
+@keyframes reed-skeleton-shimmer {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.72;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .reed-skeleton-pulse {
+    animation: none;
+    opacity: 0.85;
+  }
 }

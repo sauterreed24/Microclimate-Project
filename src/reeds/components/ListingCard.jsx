@@ -1,6 +1,18 @@
 import { Heart, Home } from "lucide-react";
 import { asText } from "../lib/formatDisplayValue.js";
 
+function listingOpenLabel(listing, priceSuffix) {
+  const price =
+    listing.price != null && Number.isFinite(Number(listing.price))
+      ? `$${Number(listing.price).toLocaleString()}${priceSuffix}`
+      : listing.price != null
+        ? `${asText(listing.price)}${priceSuffix}`
+        : "Price not shown";
+  const addr = asText(listing.address, "Address");
+  const citySt = [asText(listing.city), asText(listing.state)].filter(Boolean).join(", ");
+  return `Open listing: ${price}, ${addr}${citySt ? `, ${citySt}` : ""}`;
+}
+
 function formatLot(listing) {
   const v = listing.lotAreaValue;
   if (v == null || !Number.isFinite(Number(v))) return null;
@@ -32,10 +44,20 @@ export default function ListingCard({
   if (variant === "split") {
     return (
       <div className="group relative overflow-hidden rounded-xl border border-stone-200/90 bg-white shadow-sm ring-1 ring-stone-100/80 transition hover:border-teal-300/90 hover:shadow-md">
-        <button type="button" onClick={() => onOpen(listing)} className="flex w-full gap-3 p-2.5 text-left">
+        <button
+          type="button"
+          onClick={() => onOpen(listing)}
+          className="flex w-full gap-3 p-2.5 text-left"
+          aria-label={listingOpenLabel(listing, priceSuffix)}
+        >
           <div className="relative h-[4.5rem] w-[4.5rem] shrink-0 overflow-hidden rounded-lg bg-stone-100">
             {listing.image ? (
-              <img src={listing.image} alt="" className="h-full w-full object-cover transition group-hover:scale-[1.03]" loading="lazy" />
+              <img
+                src={listing.image}
+                alt={asText(listing.address, "Listing photo")}
+                className="h-full w-full object-cover transition group-hover:scale-[1.03]"
+                loading="lazy"
+              />
             ) : (
               <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-teal-100 to-stone-100">
                 <Home className="h-6 w-6 text-teal-700/50" />
@@ -111,10 +133,20 @@ export default function ListingCard({
         variant === "row" ? "md:flex md:items-stretch" : ""
       }`}
     >
-      <button type="button" onClick={() => onOpen(listing)} className="block w-full text-left">
+      <button
+        type="button"
+        onClick={() => onOpen(listing)}
+        className="block w-full text-left"
+        aria-label={listingOpenLabel(listing, priceSuffix)}
+      >
         {listing.image && (
           <div className={`relative overflow-hidden bg-stone-100 ${variant === "row" ? "aspect-[16/8] md:aspect-auto md:h-full md:w-64 md:shrink-0" : "aspect-[16/10]"}`}>
-            <img src={listing.image} alt="" className="h-full w-full object-cover transition group-hover:scale-[1.02]" loading="lazy" />
+            <img
+              src={listing.image}
+              alt={asText(listing.address, "Listing photo")}
+              className="h-full w-full object-cover transition group-hover:scale-[1.02]"
+              loading="lazy"
+            />
             <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-stone-900/35 to-transparent" />
           </div>
         )}

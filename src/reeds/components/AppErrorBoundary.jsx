@@ -33,13 +33,22 @@ export default class AppErrorBoundary extends Component {
               <li>Check the browser console (F12) for details</li>
             </ul>
             <pre className="mt-4 max-h-28 overflow-auto rounded-xl bg-stone-50 p-3 font-mono text-[11px] leading-snug text-red-900/90 ring-1 ring-stone-100">{msg}</pre>
-            <button
-              type="button"
-              className="mt-5 w-full rounded-xl bg-teal-600 px-4 py-3 text-sm font-semibold text-white shadow-md shadow-teal-900/15 transition hover:bg-teal-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
-              onClick={() => window.location.reload()}
-            >
-              Reload page
-            </button>
+            <div className="mt-5 flex flex-col gap-2 sm:flex-row">
+              <button
+                type="button"
+                className="flex-1 rounded-xl border border-stone-200 bg-white px-4 py-3 text-sm font-semibold text-stone-800 shadow-sm transition hover:bg-stone-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
+                onClick={() => this.setState({ err: null })}
+              >
+                Try again
+              </button>
+              <button
+                type="button"
+                className="flex-1 rounded-xl bg-teal-600 px-4 py-3 text-sm font-semibold text-white shadow-md shadow-teal-900/15 transition hover:bg-teal-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
+                onClick={() => window.location.reload()}
+              >
+                Full reload
+              </button>
+            </div>
           </div>
         </div>
       );
