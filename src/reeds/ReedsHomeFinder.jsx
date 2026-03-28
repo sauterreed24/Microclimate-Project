@@ -29,6 +29,7 @@ import ExploreListRail from "./components/ExploreListRail.jsx";
 import MarketMicroclimatePanel from "./components/MarketMicroclimatePanel.jsx";
 import ClimateFirstStrip from "./components/ClimateFirstStrip.jsx";
 import PlaceIntelligencePanel from "./components/PlaceIntelligencePanel.jsx";
+import ResilienceIndexPanel from "./components/ResilienceIndexPanel.jsx";
 import KeyboardShortcutsDialog from "./components/KeyboardShortcutsDialog.jsx";
 import { getMicroclimateBundle } from "./data/microclimateBridge.js";
 import { computeClimateHubs, SOUTHWEST_US_BOUNDS } from "./data/climateHubs.js";
@@ -856,6 +857,8 @@ export default function ReedsHomeFinder() {
           />
 
           {microBundle && active && <MarketMicroclimatePanel bundle={microBundle} locationLabel={active.label} />}
+
+          {active && <ResilienceIndexPanel location={active} microBundle={microBundle} />}
 
           {active && <PlaceIntelligencePanel location={active} />}
 
