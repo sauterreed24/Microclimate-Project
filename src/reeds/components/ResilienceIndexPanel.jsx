@@ -1,4 +1,6 @@
+import { useEffect, useState } from "react";
 import { Droplets, Globe2, Mountain, Radio, Shield, Zap } from "lucide-react";
+import { fetchEiaRetail, fetchOpenMeteoResilience } from "../api/resilienceClient.js";
 import {
   LONG_HORIZON_PLAYBOOK,
   RESILIENCE_DIMENSIONS,
@@ -17,6 +19,51 @@ const ICONS = {
 export default function ResilienceIndexPanel({ location, microBundle }) {
   const links = buildResilienceLookupUrls(location || {});
   const cross = crossRefMicroclimateToResilience(microBundle);
+
+  const [om, setOm] = useState({ loading: false, data: null, error: null });
+  const [eia, setEia] = useState({ loading: false, data: null, skipped: false, error: null });
+
+  useEffect(() => {
+    if (!location?.lat || !location?.lng) {
+      queueMicrotask(() => {
+        setOm({ loading: false, data: null, error: null });
+        setEia({ loading: false, data: null, skipped: false, error: null });
+      });
+      return;
+    }
+    let cancelled = false;
+    const lat = location.lat;
+    const lng = location.lng;
+    const st = String(location.state || "AZ").trim().slice(0, 2).toUpperCase() || "AZ";
+
+    queueMicrotask(() => {
+      if (cancelled) return;
+      setOm({ loading: true, data: null, error: null });
+      setEia({ loading: true, data: null, skipped: false, error: null });
+
+      fetchOpenMeteoResilience(lat, lng)
+        .then((d) => {
+          if (!cancelled) setOm({ loading: false, data: d, error: null });
+        })
+        .catch((e) => {
+          if (!cancelled) setOm({ loading: false, data: null, error: e?.message || "Open-Meteo failed" });
+        });
+
+      fetchEiaRetail(st)
+        .then((d) => {
+          if (cancelled) return;
+          if (d?.skipped) setEia({ loading: false, data: null, skipped: true, error: null });
+          else setEia({ loading: false, data: d, skipped: false, error: null });
+        })
+        .catch((e) => {
+          if (!cancelled) setEia({ loading: false, data: null, skipped: false, error: e?.message || "EIA failed" });
+        });
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [location?.id, location?.lat, location?.lng, location?.state]);
 
   const linkPills = [
     { label: "FCC broadband map", href: links.fccBroadband, hint: "Street-level fixed & mobile" },
@@ -64,6 +111,72 @@ export default function ResilienceIndexPanel({ location, microBundle }) {
           </p>
         )}
       </div>
+
+      {(location?.lat != null && location?.lng != null) && (
+        <div className="mt-3 rounded-xl border border-teal-200/80 bg-teal-50/40 p-3 ring-1 ring-teal-100/70">
+          <h3 className="text-[10px] font-bold uppercase tracking-wider text-teal-900">Live snapshot (proxied)</h3>
+          <p className="mt-1 text-[10px] leading-relaxed text-teal-950/80">
+            Open-Meteo elevation + current conditions for this market center; EIA annual residential retail price when{" "}
+            <code className="rounded bg-white/80 px-0.5 text-[9px]">EIA_API_KEY</code> is set on the API.
+          </p>
+          <div className="mt-2 grid gap-2 sm:grid-cols-2">
+            <div className="rounded-lg border border-white/80 bg-white/90 p-2.5 text-[11px] text-stone-800 shadow-sm">
+              <div className="font-semibold text-stone-900">Terrain & weather</div>
+              {om.loading && <p className="mt-1 text-stone-500">Loading…</p>}
+              {om.error && <p className="mt-1 text-red-800">{om.error}</p>}
+              {!om.loading && om.data && (
+                <ul className="mt-1 space-y-0.5 text-stone-700">
+                  <li>
+                    Elevation:{" "}
+                    {om.data.elevationFeet != null ? `${om.data.elevationFeet.toLocaleString()} ft` : "—"}
+                    {om.data.elevationMeters != null && (
+                      <span className="text-stone-500"> ({Math.round(om.data.elevationMeters)} m)</span>
+                    )}
+                  </li>
+                  <li>
+                    Now:{" "}
+                    {om.data.current?.temperatureF != null ? `${Math.round(om.data.current.temperatureF)}°F` : "—"}
+                    {om.data.current?.relativeHumidityPct != null && (
+                      <span>, {Math.round(om.data.current.relativeHumidityPct)}% RH</span>
+                    )}
+                    {om.data.current?.windMph != null && (
+                      <span>, wind {Math.round(om.data.current.windMph)} mph</span>
+                    )}
+                  </li>
+                </ul>
+              )}
+              {!om.loading && !om.data && !om.error && <p className="mt-1 text-stone-500">No data.</p>}
+            </div>
+            <div className="rounded-lg border border-white/80 bg-white/90 p-2.5 text-[11px] text-stone-800 shadow-sm">
+              <div className="font-semibold text-stone-900">Electricity (EIA)</div>
+              {eia.loading && <p className="mt-1 text-stone-500">Loading…</p>}
+              {eia.skipped && (
+                <p className="mt-1 leading-snug text-stone-600">
+                  Residential retail rate not loaded — add <code className="rounded bg-stone-100 px-0.5 text-[10px]">EIA_API_KEY</code> to{" "}
+                  <code className="rounded bg-stone-100 px-0.5 text-[10px]">backend/.env</code> and restart the API.
+                </p>
+              )}
+              {eia.error && <p className="mt-1 text-red-800">{eia.error}</p>}
+              {!eia.loading && !eia.skipped && eia.data && (
+                <ul className="mt-1 space-y-0.5 text-stone-700">
+                  <li>
+                    State {eia.data.state}:{" "}
+                    {eia.data.latest != null ? (
+                      <>
+                        <strong>{Number(eia.data.latest).toFixed(2)}</strong> {eia.data.unit || "¢/kWh"}
+                      </>
+                    ) : (
+                      "—"
+                    )}
+                    {eia.data.period && <span className="text-stone-500"> ({eia.data.period})</span>}
+                  </li>
+                  <li className="text-[10px] text-stone-500">Annual residential retail — see EIA for methodology.</li>
+                </ul>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
         {RESILIENCE_DIMENSIONS.map((d) => {

@@ -7,6 +7,7 @@ import express from "express";
 import cors from "cors";
 import axios from "axios";
 import dotenv from "dotenv";
+import { registerResilienceRoutes } from "./resilienceApi.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: path.join(__dirname, ".env") });
@@ -97,11 +98,25 @@ async function forwardGet(subPath, req, res) {
 app.get("/api/health", (_req, res) => {
   try {
     const u = getUpstream();
-    res.json({ ok: true, hasKey: true, provider: u.provider, base: u.base });
+    res.json({
+      ok: true,
+      hasKey: true,
+      provider: u.provider,
+      base: u.base,
+      hasEiaKey: !!process.env.EIA_API_KEY?.trim(),
+    });
   } catch {
-    res.json({ ok: true, hasKey: false, provider: null, base: null });
+    res.json({
+      ok: true,
+      hasKey: false,
+      provider: null,
+      base: null,
+      hasEiaKey: !!process.env.EIA_API_KEY?.trim(),
+    });
   }
 });
+
+registerResilienceRoutes(app);
 
 app.get("/api/zillow/search", (req, res) => forwardGet("/search", req, res));
 app.get("/api/zillow/search-coordinates", (req, res) => forwardGet("/search-coordinates", req, res));
