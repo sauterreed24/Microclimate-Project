@@ -7,11 +7,11 @@ function Stat({ k, v, sub }) {
   const main = asText(v, "");
   if (!main) return null;
   return (
-    <div className="rounded-xl border border-stone-100 bg-stone-50/80 px-3 py-2">
-      <p className="text-[9px] font-bold uppercase tracking-wider text-stone-400">{k}</p>
-      <p className="mt-0.5 text-sm font-semibold text-stone-900">{main}</p>
+    <div className="rounded-xl border border-stone-100 bg-stone-50/80 px-3 py-2.5">
+      <p className="text-[10px] font-bold uppercase tracking-wider text-stone-500">{k}</p>
+      <p className="mt-1 text-sm font-semibold leading-snug text-stone-900">{main}</p>
       {sub != null && asText(sub, "") !== "" && (
-        <p className="mt-0.5 text-[10px] leading-snug text-stone-500">{asText(sub)}</p>
+        <p className="mt-1 text-[11px] leading-relaxed text-stone-600">{asText(sub)}</p>
       )}
     </div>
   );
@@ -35,7 +35,7 @@ export default function MarketMicroclimatePanel({ bundle, locationLabel }) {
             </span>
             <div className="min-w-0">
               <p className="font-display text-base font-semibold tracking-tight text-stone-900">Microclimate · {loc.n}</p>
-              <p className="mt-0.5 text-xs leading-relaxed text-stone-600">{loc.tl}</p>
+              <p className="reed-read-wide mt-1 text-xs text-stone-600">{loc.tl}</p>
               {locationLabel && (
                 <p className="mt-1 flex items-center gap-1 text-[10px] text-emerald-800/90">
                   <Sparkles className="h-3 w-3 shrink-0" />
@@ -94,7 +94,7 @@ export default function MarketMicroclimatePanel({ bundle, locationLabel }) {
               <Leaf className="h-3.5 w-3.5 text-emerald-600" />
               Signature vegetation
             </p>
-            <p className="text-xs leading-relaxed text-stone-700">{loc.vg.join(" · ")}</p>
+            <p className="reed-read-wide text-xs text-stone-700">{loc.vg.join(" · ")}</p>
           </div>
         )}
 
@@ -109,7 +109,7 @@ export default function MarketMicroclimatePanel({ bundle, locationLabel }) {
               {bpOpen ? <ChevronUp className="h-4 w-4 text-stone-400" /> : <ChevronDown className="h-4 w-4 text-stone-400" />}
             </button>
             <div
-              className={`mt-2 text-sm leading-relaxed text-stone-700 ${bpOpen ? "" : "line-clamp-6"}`}
+              className={`reed-read mt-2 text-sm text-stone-700 ${bpOpen ? "" : "line-clamp-6"}`}
               style={{ whiteSpace: "pre-line" }}
             >
               {bp}

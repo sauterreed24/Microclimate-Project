@@ -11,8 +11,8 @@ export default function EmptyResults({ loading, onResetFilters, onTryDemo }) {
         <Compass className="h-7 w-7 text-violet-600" aria-hidden />
       </div>
       <h3 className="font-display text-lg font-semibold text-stone-900">No listings match this search</h3>
-      <p className="mt-2 max-w-md text-sm leading-relaxed text-stone-600">
-        Widen price or room ranges, set sort to <strong className="text-stone-800">Newest</strong>, or choose a larger market (metro or county-level often returns more inventory).
+      <p className="reed-read mx-auto mt-2 max-w-md text-sm text-stone-600">
+        Widen price or room ranges, set sort to <strong className="text-stone-800">Newest</strong>, or pick a larger market (metro or county). Third-party feeds rarely mirror every MLS town the way the Zillow site does, so sparse towns sometimes need a wider radius or a nearby hub.
       </p>
       <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
         {onResetFilters && (

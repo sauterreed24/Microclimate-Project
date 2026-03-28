@@ -40,6 +40,7 @@ import {
   shouldAutoRefresh,
   writeIngestionMeta,
 } from "./lib/listingFreshness.js";
+import { locationSearchFallbacks } from "./lib/searchFallbacks.js";
 
 const ListingMap = lazy(() => import("./components/ListingMap.jsx"));
 const PropertyModal = lazy(() => import("./components/PropertyModal.jsx"));
@@ -454,12 +455,59 @@ export default function ReedsHomeFinder() {
               list = extractListings(raw);
             }
           }
+          if (list.length === 0) {
+            const loc = getLocationById(snap.locationId);
+            const lat = loc?.lat ?? loc?.latitude;
+            const lng = loc?.lng ?? loc?.longitude ?? loc?.long;
+            const r0 = Number(loc?.coordRadiusMiles);
+            if (
+              Number.isFinite(Number(lat)) &&
+              Number.isFinite(Number(lng)) &&
+              Number.isFinite(r0) &&
+              r0 > 0 &&
+              r0 < 50
+            ) {
+              const r1 = Math.min(50, Math.round(r0 * 1.75));
+              if (r1 > r0) {
+                const wide = stripUndefined({
+                  ...withRelaxedHousingFilters(req.params),
+                  page: "1",
+                  latitude: String(lat),
+                  longitude: String(lng),
+                  long: String(lng),
+                  radius: String(r1),
+                });
+                params = wide;
+                fetchListings = (p) => searchByCoordinates(p);
+                raw = await fetchListings(wide);
+                list = extractListings(raw);
+              }
+            }
+          }
         } else {
           const locationRetry = { ...withRelaxedHousingFilters(req.params), page: "1" };
           params = locationRetry;
           fetchListings = (p) => searchListings(p);
           raw = await fetchListings(locationRetry);
           list = extractListings(raw);
+        }
+      }
+
+      if (list.length === 0 && req.kind === "location") {
+        const loc = getLocationById(snap.locationId);
+        const fallbacks = locationSearchFallbacks(loc);
+        const base = withRelaxedHousingFilters(req.params);
+        const primaryLoc = String(base.location || "").trim();
+        for (const fq of fallbacks) {
+          if (fq === primaryLoc) continue;
+          const tryParams = stripUndefined({ ...base, location: fq, page: "1" });
+          raw = await searchListings(tryParams);
+          list = extractListings(raw);
+          if (list.length > 0) {
+            params = tryParams;
+            fetchListings = (p) => searchListings(p);
+            break;
+          }
         }
       }
 

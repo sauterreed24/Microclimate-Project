@@ -51,7 +51,7 @@ export default function ImmersiveResearchStrip({ marketLabel, marketNotes, conte
               Immersive discovery — not a flat grid of thumbnails
             </h2>
             {marketLabel && (
-              <p className="mt-1 max-w-2xl text-xs leading-relaxed text-violet-100/85">
+              <p className="reed-read-wide mt-1 max-w-2xl text-xs text-violet-100/85">
                 Active market: <span className="font-semibold text-white">{marketLabel}</span>
                 {contextLine ? (
                   <>
@@ -62,14 +62,14 @@ export default function ImmersiveResearchStrip({ marketLabel, marketNotes, conte
               </p>
             )}
           </div>
-          <p className="max-w-xs text-[10px] leading-snug text-violet-200/70">
+          <p className="max-w-xs text-[11px] leading-relaxed text-violet-200/75">
             Listing copy refreshes when you open a home (detail API). Search inventory re-pulls on filter changes, manual refresh, and automatically after ~{refreshDays}{" "}
             {refreshDays === 1 ? "day" : "days"} for the same search (tab open or when you come back).
           </p>
         </div>
 
         {marketNotes ? (
-          <div className="mt-4 rounded-xl border border-teal-400/25 bg-teal-500/10 px-3 py-2.5 text-[11px] leading-relaxed text-teal-50 ring-1 ring-teal-400/20">
+          <div className="reed-read-wide mt-4 rounded-xl border border-teal-400/25 bg-teal-500/10 px-3 py-2.5 text-xs text-teal-50 ring-1 ring-teal-400/20">
             <span className="font-bold text-teal-200">Local lens · </span>
             {marketNotes}
           </div>
@@ -89,7 +89,7 @@ export default function ImmersiveResearchStrip({ marketLabel, marketNotes, conte
                   <Glyph className="h-4 w-4 text-white" aria-hidden />
                 </div>
                 <p className="text-xs font-bold uppercase tracking-wider text-white">{title}</p>
-                <p className="mt-1.5 text-[11px] leading-snug text-violet-100/88">{body}</p>
+                <p className="mt-2 text-[12px] leading-[1.65] text-violet-100/90">{body}</p>
               </div>
             );
           })}

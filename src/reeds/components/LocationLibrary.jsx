@@ -41,6 +41,7 @@ function LocationGroupList({ groups, browseMode, locationId, onSelect, search })
           <button
             type="button"
             onClick={() => setOpen((s) => ({ ...s, [g.key]: !s[g.key] }))}
+            aria-expanded={!!open[g.key]}
             className="flex w-full items-center justify-between gap-2 px-3 py-2.5 text-left text-sm font-medium text-stone-800 hover:bg-stone-50"
           >
             <span className="min-w-0 flex-1">
@@ -77,6 +78,11 @@ function LocationGroupList({ groups, browseMode, locationId, onSelect, search })
                       {asText(l.notes) ? (
                         <span className="mt-1 block line-clamp-3 text-[10px] leading-snug text-violet-900/85">
                           {asText(l.notes)}
+                        </span>
+                      ) : null}
+                      {active && asText(l.searchQuery) ? (
+                        <span className="mt-1 block break-words font-mono text-[9px] leading-snug text-stone-400" title="Query sent to the listing provider">
+                          Search query: {asText(l.searchQuery)}
                         </span>
                       ) : null}
                     </span>

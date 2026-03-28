@@ -149,13 +149,13 @@ export default function PropertyModal({ listing, onClose, priceSuffix = "" }) {
     Number.isFinite(laN) && Number.isFinite(lnN) ? googleMapsStreetViewIntentUrl(laN, lnN) : null;
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-end justify-center sm:items-center sm:p-6">
+    <div className="fixed inset-0 z-[100] flex items-end justify-center pb-[env(safe-area-inset-bottom,0px)] sm:items-center sm:p-6">
       <button type="button" className="absolute inset-0 bg-stone-900/50 backdrop-blur-[3px]" aria-label="Close" onClick={onClose} />
       <div
         role="dialog"
         aria-modal="true"
         aria-labelledby="reed-modal-title"
-        className="relative z-10 max-h-[92vh] w-full max-w-3xl overflow-y-auto rounded-t-3xl border border-stone-200/90 bg-gradient-to-b from-sky-50/40 via-white to-white shadow-2xl ring-1 ring-stone-100/80 sm:rounded-3xl"
+        className="relative z-10 max-h-[min(92vh,calc(100dvh-env(safe-area-inset-bottom)-0.75rem))] w-full max-w-3xl overflow-y-auto rounded-t-3xl border border-stone-200/90 bg-gradient-to-b from-sky-50/40 via-white to-white shadow-2xl ring-1 ring-stone-100/80 sm:rounded-3xl"
       >
         <div className="sticky top-0 z-[1] flex items-start justify-between gap-4 border-b border-stone-100/90 bg-white/90 p-5 backdrop-blur-md">
           <div>
@@ -196,7 +196,7 @@ export default function PropertyModal({ listing, onClose, priceSuffix = "" }) {
                   <div className="overflow-hidden rounded-xl ring-1 ring-sky-200/80">
                     <iframe
                       title="Street View near listing"
-                      className="h-52 w-full border-0 bg-black/5"
+                      className="h-[min(13rem,min(40vh,280px))] w-full max-w-full border-0 bg-black/5"
                       loading="lazy"
                       referrerPolicy="no-referrer-when-downgrade"
                       allowFullScreen
@@ -208,7 +208,7 @@ export default function PropertyModal({ listing, onClose, priceSuffix = "" }) {
                     href={streetIntent}
                     target="_blank"
                     rel="noreferrer"
-                    className="flex h-52 flex-col items-center justify-center rounded-xl bg-sky-950/5 px-4 text-center text-sm font-medium text-sky-900 ring-1 ring-sky-200/80 hover:bg-sky-100/40"
+                    className="flex h-[min(13rem,min(40vh,280px)] min-h-[180px] max-w-full flex-col items-center justify-center rounded-xl bg-sky-950/5 px-4 text-center text-sm font-medium text-sky-900 ring-1 ring-sky-200/80 hover:bg-sky-100/40"
                   >
                     <Camera className="mb-2 h-8 w-8 text-sky-600" />
                     Open immersive Street View in Google Maps
@@ -221,7 +221,7 @@ export default function PropertyModal({ listing, onClose, priceSuffix = "" }) {
                     <img
                       src={listing.image}
                       alt=""
-                      className="h-40 w-full rounded-xl object-cover ring-1 ring-stone-200/80"
+                      className="reed-media-safe rounded-xl ring-1 ring-stone-200/80"
                       loading="lazy"
                     />
                   )}
@@ -241,7 +241,7 @@ export default function PropertyModal({ listing, onClose, priceSuffix = "" }) {
                       <img
                         src={wikiPhoto.thumbUrl}
                         alt=""
-                        className="h-40 w-full object-cover transition group-hover:opacity-95"
+                        className="reed-media-safe transition group-hover:opacity-95"
                         loading="lazy"
                       />
                       <p className="bg-amber-50/95 px-2 py-1.5 text-[10px] text-amber-950/90">
@@ -325,7 +325,7 @@ export default function PropertyModal({ listing, onClose, priceSuffix = "" }) {
                 <Sparkles className="h-3.5 w-3.5 text-violet-600" />
                 Listing story
               </h4>
-              <p className="text-sm leading-relaxed text-stone-800">{descriptionText}</p>
+              <p className="reed-read text-sm text-stone-800">{descriptionText}</p>
               <p className="mt-2 text-[10px] text-violet-900/60">
                 Sourced from the live detail feed when available; wording belongs to the listing agent/broker.
               </p>
@@ -345,8 +345,8 @@ export default function PropertyModal({ listing, onClose, priceSuffix = "" }) {
               <dl className="grid grid-cols-2 gap-2 text-sm">
                 {Object.entries(summaryFacts).map(([k, v]) => (
                   <div key={k} className="flex flex-col">
-                    <dt className="text-[10px] uppercase text-stone-500">{k.replace(/([A-Z])/g, " $1")}</dt>
-                    <dd className="text-stone-800">{asText(v, "—")}</dd>
+                    <dt className="text-[11px] uppercase tracking-wide text-stone-500">{k.replace(/([A-Z])/g, " $1")}</dt>
+                    <dd className="leading-snug text-stone-800">{asText(v, "—")}</dd>
                   </div>
                 ))}
               </dl>
